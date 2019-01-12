@@ -1,0 +1,28 @@
+#! /bin/bash
+
+mkdir -p ./var/log
+
+if [ "$1" = "start" ]; then
+	if [ ! -f ./var/log/pid.nginx ]; then
+		echo Starting nginx
+		nginx -c nginx.conf -p .
+	fi
+
+	if [ ! -f ./var/log/pid.gunicorn ]; then
+		echo Starting gunicorn
+		python3 app.py serve --gunicorn_args --access-logfile ./var/log/http.access.log.gunicorn --error-logfile ./var/log/http.error.log.gunicorn --pid ./var/log/pid.gunicorn --timeout 600 --reload &
+	fi
+else
+	if [ -f ./var/log/pid.nginx ]; then
+		echo Stopping nginx
+		nginx -c nginx.conf -p . -s stop
+		rm ./var/log/pid.nginx
+		ps -ax | grep nginx | awk '{print $1}' | xargs kill
+	fi
+
+	if [ -f ./var/log/pid.gunicorn ]; then
+		echo Stopping gunicorn
+		kill -9 $(cat ./var/log/pid.gunicorn)
+		rm ./var/log/pid.gunicorn
+	fi
+fi

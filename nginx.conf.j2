@@ -1,0 +1,133 @@
+error_log ./var/log/error.log.nginx;
+
+pid var/log/pid.nginx;
+
+events {}
+
+http {
+	{% if environment == 'production' %}
+		proxy_cache_path ./var/cache/nginx/api_cache levels=1:2 keys_zone=api_cache:5m max_size=100m inactive=24h;
+
+		server {
+			listen 80;
+			server_name {{ hostname }};
+
+			root {{ root }};
+
+			client_body_temp_path ./var/client_body_temp;
+
+			location /.well-known {
+				allow all;
+			}
+
+			location / {
+				rewrite  ^/(.*)$  https://schitaytesami.live/$1  permanent;
+				break;
+			}
+		}
+	{% endif %}
+
+	server {
+		{% if environment == 'production' %}
+			listen 443 ssl http2;
+			server_name {{ hostname }};
+
+			#auth_basic "Restricted access";
+			#auth_basic_user_file /var/www/schitaytesami.live/schitaytesami/label/.htpasswd;
+			add_header X-GG-Cache-Status $upstream_cache_status;
+
+			ssl on;
+			ssl_certificate       /etc/letsencrypt/live/schitaytesami.live/fullchain.pem;
+			ssl_certificate_key   /etc/letsencrypt/live/schitaytesami.live/privkey.pem;
+			ssl_trusted_certificate /etc/letsencrypt/live/schitaytesami.live/chain.pem;
+			ssl_protocols         TLSv1 TLSv1.1 TLSv1.2;
+			## Use more secure and less CPU tasking ciphers compared to nginx defaults
+			ssl_ciphers 'ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS';
+			ssl_session_cache     shared:SSL:25m;
+			ssl_dhparam /etc/ssl/certs/dhparam.pem;
+			ssl_verify_client off;
+			## Improves TTFB by using a smaller SSL buffer than the nginx default
+			ssl_buffer_size 8k;
+
+			## Specifies that server ciphers should be preferred over client ciphers
+			ssl_prefer_server_ciphers on;
+			ssl_session_timeout 1h;
+
+			# Enables OCSP stapling
+			ssl_stapling on;
+			resolver_timeout 10s;
+			ssl_stapling_verify on;
+			resolver {{ resolvers }} valid=360s ipv6=off;
+
+			#proxy_hide_header Strict-Transport-Security;
+			add_header Strict-Transport-Security max-age=31536000; # 1 year
+		{% endif %}
+
+		{% if environment == 'development' %}
+			listen 8080;
+		{% endif %}
+
+		server_name {{ hostname }};
+		gzip on;
+		gzip_proxied any;
+		gzip_types text/css text/javascript text/xml text/plain application/javascript application/x-javascript application/json;
+
+		proxy_read_timeout 600;
+		proxy_connect_timeout 600;
+
+		error_log ./var/log/http.error.log.nginx;
+		access_log ./var/log/http.access.log.nginx;
+		root {{ root }};
+
+		client_body_temp_path ./var/client_body_temp;
+
+		location = / {
+			index index.html;
+		}
+
+		location /images {
+			allow all;
+		}
+
+		location = /index.html {
+			{% if environment == 'production' %}
+				expires 1h;
+			{% endif %}
+		}
+
+		location ~ ^/(stats) {
+			{% if environment == 'production' %}
+				set $skip_cache 0;
+				if ($args ~ skip_cache) {
+						set $skip_cache 1;
+				}
+
+				proxy_cache api_cache;
+				proxy_cache_revalidate on;
+				proxy_cache_lock on;
+				proxy_cache_lock_timeout 10s;
+				proxy_cache_bypass     $skip_cache;
+				proxy_no_cache         $skip_cache;
+				proxy_cache_valid any 1m;
+				proxy_cache_use_stale error timeout invalid_header updating http_500 http_502 http_503 http_504;
+				proxy_cache_background_update on;
+
+				expires 1m;
+			{% endif %}
+
+			proxy_pass http://localhost:8000;
+		}
+
+		location ~ ^/(task|events|user) {
+			proxy_pass http://localhost:8000;
+		}
+
+		location /.well-known {
+			allow all;
+		}
+
+		location / {
+			deny all;
+		}
+	}
+}

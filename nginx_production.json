@@ -1,0 +1,6 @@
+{
+  "environment": "production",
+  "hostname": "schitaytesami.live",
+  "root": "/var/www/schitaytesami.live/schitaytesami.website",
+  "resolvers": "213.133.99.99 213.133.98.98 8.8.8.8"
+}
