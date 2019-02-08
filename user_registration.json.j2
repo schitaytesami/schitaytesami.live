@@ -2,12 +2,11 @@
 	"nicknames" : ["алёшапопович", "добрыня", "горыныч", "кощей", "яга", "василисапремудрая", "василисапрекрасная", "жарптица", "иванцаревич", "колобок", "леший", "снегурочка", "дедмороз", "чудоюдо", "тараканище", "мойдодыр", "айболит", "водяной", "ильямуромец", "соловейразбойник", "иванушкадурачок", "алёнушка", "серыйволк", "виннипух", "пятачок", "сова"],
 	"http" : {
 		"endpoint" : "https://api.sendgrid.com/v3/mail/send", 
-		"headers" : {"Authorization" : "Bearer PASTE_SENDGRID_BEARER_TOKEN_HERE", "Content-Type" : "application/json"},
+		"headers" : {"Content-Type" : "application/json"},
 		"data" : "{\"personalizations\": [{\"to\": [{\"email\": \"$recipient\"}]}],\"from\": {\"email\": \"$sender_email\", \"name\" : \"$sender_name\"},\"subject\": \"$registration_email_subject\",\"content\": [{\"type\": \"text/plain\", \"value\": \"$registration_email_body\"}]}"
 	},
-
 	"sender_email" : "schitaytesami@gmail.com",
 	"sender_name" : "Считайте Сами",
 	"registration_email_subject" : "Считайте Сами - Регистрация",
-	"registration_email_body" : "Добрый день!\\n\\nСпасибо за интерес к проекту. Ваша ссылка для начала работы:\\n\\nhttps://schitaytesami.live/#login/$user_token\\n\\nНе удаляйте это письмо, эта ссылка - ваш код для входа на https://schitaytesami.live. Это письмо отправлено автоматически." 
+	"registration_email_body" : "Добрый день!\\n\\nСпасибо за интерес к проекту. Ваша ссылка для начала работы:\\n\\n$website_root/#login/$user_token\\n\\nНе удаляйте это письмо, эта ссылка - ваш код для входа на https://schitaytesami.live. Это письмо отправлено автоматически."
 } 

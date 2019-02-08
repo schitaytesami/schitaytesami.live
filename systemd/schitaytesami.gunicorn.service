@@ -1,6 +1,6 @@
 [Unit]
-Description=gunicorn daemon
-Requires=gunicorn.socket
+Description=schitaytesami.gunicorn daemon
+Requires=schitaytesami.gunicorn.socket
 After=network.target
 
 [Service]

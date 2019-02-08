@@ -1,7 +1,10 @@
 ## Development setup:
 
 ```shell
-python3 app.py config --config_path nginx.conf.j2 --variables nginx_development.json
+# generate config file with default development values, user registration emails will be saved in ./debug_user_registration_email.txt
+python3 app.py config
+
+# start and stop development web servers
 ./scripts/up start
 ./scripts/up stop
 ```
@@ -9,27 +12,31 @@ python3 app.py config --config_path nginx.conf.j2 --variables nginx_development.
 ## Production setup:
 
 ```shell
-python3 app.py config --config nginx.conf.j2 --variables nginx_production.json
-sudo systemctl enable <full path to>/schitaytesami.website/systemd/nginx.service
-sudo systemctl enable <full path to>/schitaytesami.website/systemd/gunicorn.service
-sudo systemctl enable <full path to>/schitaytesami.website/systemd/gunicorn.socket
-sudo systemctl start nginx.service
-sudo systemctl start gunicorn.service
+# generate config files
+python3 app.py config --enfironment production --hostname schitaytesami.live --root /var/www/schitaytesami.live/schitaytesami.website --resolvers "213.133.99.99 213.133.98.98 8.8.8.8" --email_authorization_bearer_token USE_ACTUAL_SENDGRID_BEARER_TOKEN_HERE
+
+sudo systemctl enable ./systemd/schitaytesami.nginx.service
+sudo systemctl enable ./systemd/schitaytesami.gunicorn.service
+sudo systemctl enable ./systemd/schitaytesami.gunicorn.socket
+sudo systemctl start schitaytesami.nginx.service
+sudo systemctl start schitaytesami.gunicorn.service
 
 # restart services
-sudo systemctl restart nginx.service
-sudo systemctl restart gunicorn.service
+sudo systemctl restart schitaytesami.nginx.service
+sudo systemctl restart schitaytesami.gunicorn.service
 
 # validate config
 sudo /usr/sbin/nginx -t -p . -c nginx.conf
 ```
 
-## Init sequence
+## Database init
 ```shell
 # init app.db
 python3 app.py setup
+
 # import clips
 python3 app.py import --clips_path https://proverim.webcam/speedup/clips.json --gold 5
+
 # import official turnout
 python3 app.py import --stations_path https://github.com/schitaytesami/data/releases/download/20180318/stations.json --turnout
 ```

@@ -9,6 +9,7 @@ import argparse
 import bcrypt
 import time
 import string
+import urllib.request
 import requests
 import functools
 import logging
@@ -17,8 +18,9 @@ import peewee as pw
 import flask
 import gunicorn.app.wsgiapp
 import jinja2
-import urllib.request
 
+ngxinx_conf = 'nginx.conf'
+user_registration_conf = 'user_registration.json'
 incomplete_task_threshold = dict(vote = 4)
  
 class User(pw.Model):
@@ -47,9 +49,12 @@ class User(pw.Model):
 	def is_admin(self):
 		return 'admin' in self.role
 
-	def send_registration_email(self, user_token, registration_email_subject, registration_email_body, sender_email, sender_name, endpoint, headers, data):
+	def send_registration_email(self, user_token, registration_email_subject, registration_email_body, sender_email, sender_name, endpoint, headers, data, debug_user_registration_email_file_path):
 		payload = string.Template(data).substitute(registration_email_subject = registration_email_subject, registration_email_body = string.Template(registration_email_body).substitute(user_token = user_token), sender_email = sender_email, sender_name = sender_name, recipient = self.email)
-		requests.post(endpoint, headers = headers, data = payload.encode('utf-8'))
+		if debug_user_registration_email_file_path is not None:
+			open(debug_user_registration_email_file_path, 'w').write(payload)
+		else:
+			requests.post(endpoint, headers = headers, data = payload.encode('utf-8'))
 
 	@staticmethod
 	def normalize_email(email):
@@ -194,8 +199,8 @@ def events_post(clip_id, user):
 		Event.insert_many([dict(creator = user, clip = ev.get('clip'), value = ev.get('value', ''), offset = ev['offset'], type = ev['type']) for ev in flask.request.get_json() if ev.get('clip') == clip_id]).execute()
 	return flask.jsonify(success = True)
 
-def user_post(user_registration_json = 'user_registration.json'):
-	settings = json.load(open(user_registration_json))
+def user_post():
+	settings = json.load(open(user_registration_conf))
 	display = random.choice(settings['nicknames']) + '_' + str(random.randint(100, 1000))
 
 	email = flask.request.data.decode('utf-8')
@@ -206,7 +211,7 @@ def user_post(user_registration_json = 'user_registration.json'):
 		user_token = user.generate_token()
 		user.hash_password()
 		user.save()
-		user.send_registration_email(user_token = user_token, registration_email_subject = settings['registration_email_subject'], registration_email_body = settings['registration_email_body'], sender_email = settings['sender_email'], sender_name = settings['sender_name'], **settings['http'])
+		user.send_registration_email(user_token = user_token, registration_email_subject = settings['registration_email_subject'], registration_email_body = settings['registration_email_body'], sender_email = settings['sender_email'], sender_name = settings['sender_name'], debug_user_registration_email_file_path = settings.get('debug_user_registration_email_file_path') **settings['http'])
 
 	return flask.jsonify(success = True)
 
@@ -218,7 +223,6 @@ def init_db(db_path):
 
 def import_(db_path, clips_path, stations_path, turnout = False, gold = 0):
 	init_db(db_path)
-
 	json_load = lambda uri: json.loads((open(uri, 'rb') if not uri.startswith('http') else urllib.request.urlopen(uri)).read().decode('utf-8'))	
 	if clips_path is not None and turnout is False:
 		clips = json_load(clips_path)
@@ -270,10 +274,16 @@ def setup(db_path):
 	db.create_tables([User, Station, Clip, Event])
 	print('Database created:', db_path)
 
-def config(config_path, variables):
-	template = jinja2.Template(open(config_path).read())
-	generated = template.render(**json.load(open(variables)))
-	open(os.path.splitext(config_path)[0], 'w').write(generated)
+def config(environment, root, hostname, website, debug_user_registration_email_file_path, email_authorization_bearer_token):
+	conf = jinja2.Template(open(nginx_conf + '.j2').read()).render(environment = environment, root = os.path.abspath(root), hostname = hostname, resolvers = resolvers)
+	open(nginx_conf, 'w').write(conf)
+
+	conf = json.loads(open(user_registration_conf + '.j2', 'rb').read())
+	if email_authorization_bearer_token not None:
+		conf['http']['headers']['Authorization'] = 'Bearer ' + email_authorization_bearer_token
+	else:
+		conf['debug_user_registration_email_file_path'] = debug_user_registration_email_file_path
+	open(user_registration_conf, 'w').write(conf)
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -303,8 +313,13 @@ if __name__ == '__main__':
 	cmd.set_defaults(func = export_)
 	
 	cmd = subparsers.add_parser('config')
-	cmd.add_argument('--config_path')
-	cmd.add_argument('--variables')
+	cmd.add_argument('--environment', default = 'development')
+	cmd.add_argument('--hostname', default = 'localhost')
+	cmd.add_argument('--root', default = '.')
+	cmd.add_argument('--resolvers')
+	cmd.add_argument('--website_http_location', default = 'http://localhost:8080')
+	cmd.add_argument('--debug_user_registration_email_file_path', default = 'debug_user_registration_email.txt')
+	cmd.add_argument('--email_authorization_bearer_token')
 	cmd.set_defaults(func = config)
 	
 	args = vars(parser.parse_args())

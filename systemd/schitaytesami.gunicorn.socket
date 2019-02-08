@@ -1,6 +1,6 @@
 [Unit]
-Description=gunicorn socket
-PartOf=gunicorn.service
+Description=schitaytesami.gunicorn socket
+PartOf=schitaytesami.gunicorn.service
 
 [Socket]
 ListenStream=127.0.0.1:8000
