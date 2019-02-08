@@ -1,3 +1,8 @@
+## Pip dependencies
+```
+pip3 install -r requirements.txt
+```
+
 ## Development setup:
 
 ```shell
