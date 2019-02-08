@@ -1,10 +1,8 @@
-## Pip dependencies
-```
-pip3 install -r requirements.txt
-```
+## Prerequisites
+Linux or Windows/WSL; Nginx, Python3, Pip3
+Pip dependencies: `pip3 install -r requirements.txt`
 
 ## Development setup:
-
 ```shell
 # generate config file with default development values, user registration emails will be saved in ./debug_user_registration_email.txt
 python3 app.py config
@@ -15,7 +13,6 @@ python3 app.py config
 ```
 
 ## Production setup:
-
 ```shell
 # generate config files
 python3 app.py config --enfironment production --hostname schitaytesami.live --root /var/www/schitaytesami.live/schitaytesami.website --resolvers "213.133.99.99 213.133.98.98 8.8.8.8" --email_authorization_bearer_token USE_ACTUAL_SENDGRID_BEARER_TOKEN_HERE
