@@ -1,5 +1,8 @@
 ## Prerequisites
-Linux or Windows/WSL; Nginx, Python3, Pip3
+- Linux or Windows/WSL
+- nginx
+- python3, pip3
+
 Pip dependencies: `pip3 install -r requirements.txt`
 
 ## Development setup:
