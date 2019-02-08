@@ -19,7 +19,7 @@ import flask
 import gunicorn.app.wsgiapp
 import jinja2
 
-ngxinx_conf = 'nginx.conf'
+nginx_conf = 'nginx.conf'
 user_registration_conf = 'user_registration.json'
 incomplete_task_threshold = dict(vote = 4)
  
@@ -49,8 +49,8 @@ class User(pw.Model):
 	def is_admin(self):
 		return 'admin' in self.role
 
-	def send_registration_email(self, user_token, registration_email_subject, registration_email_body, sender_email, sender_name, endpoint, headers, data, debug_user_registration_email_file_path):
-		payload = string.Template(data).substitute(registration_email_subject = registration_email_subject, registration_email_body = string.Template(registration_email_body).substitute(user_token = user_token), sender_email = sender_email, sender_name = sender_name, recipient = self.email)
+	def send_registration_email(self, user_token, registration_email_subject, registration_email_body, sender_email, sender_name, endpoint, headers, data, website_http_location, debug_user_registration_email_file_path):
+		payload = string.Template(data).substitute(registration_email_subject = registration_email_subject, registration_email_body = string.Template(registration_email_body).substitute(user_token = user_token, website_http_location = website_http_location), sender_email = sender_email, sender_name = sender_name, recipient = self.email)
 		if debug_user_registration_email_file_path is not None:
 			open(debug_user_registration_email_file_path, 'w').write(payload)
 		else:
@@ -211,7 +211,7 @@ def user_post():
 		user_token = user.generate_token()
 		user.hash_password()
 		user.save()
-		user.send_registration_email(user_token = user_token, registration_email_subject = settings['registration_email_subject'], registration_email_body = settings['registration_email_body'], sender_email = settings['sender_email'], sender_name = settings['sender_name'], debug_user_registration_email_file_path = settings.get('debug_user_registration_email_file_path') **settings['http'])
+		user.send_registration_email(user_token = user_token, registration_email_subject = settings['registration_email_subject'], registration_email_body = settings['registration_email_body'], sender_email = settings['sender_email'], sender_name = settings['sender_name'], website_http_location = settings['website_http_location'], debug_user_registration_email_file_path = settings.get('debug_user_registration_email_file_path'), **settings['http'])
 
 	return flask.jsonify(success = True)
 
@@ -274,16 +274,17 @@ def setup(db_path):
 	db.create_tables([User, Station, Clip, Event])
 	print('Database created:', db_path)
 
-def config(environment, root, hostname, website, debug_user_registration_email_file_path, email_authorization_bearer_token):
+def config(environment, root, hostname, website_http_location, resolvers, debug_user_registration_email_file_path, email_authorization_bearer_token):
 	conf = jinja2.Template(open(nginx_conf + '.j2').read()).render(environment = environment, root = os.path.abspath(root), hostname = hostname, resolvers = resolvers)
 	open(nginx_conf, 'w').write(conf)
 
 	conf = json.loads(open(user_registration_conf + '.j2', 'rb').read())
-	if email_authorization_bearer_token not None:
+	conf['website_http_location'] = website_http_location
+	if email_authorization_bearer_token is not None:
 		conf['http']['headers']['Authorization'] = 'Bearer ' + email_authorization_bearer_token
 	else:
 		conf['debug_user_registration_email_file_path'] = debug_user_registration_email_file_path
-	open(user_registration_conf, 'w').write(conf)
+	open(user_registration_conf, 'w').write(json.dumps(conf, ensure_ascii = False, indent = 2))
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
