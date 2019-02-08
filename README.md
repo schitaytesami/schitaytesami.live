@@ -1,3 +1,9 @@
+## Principles of current impl
+1. Simplicity; ease of deployment and operation
+2. Static content over dynamic content; very few requests to backend; minimalistic http backend
+3. Immutable database (served well so far)
+4. Currently no admin UI; admin works with DB via CLI commands implemented in backend
+
 ## Prerequisites
 - Linux or Windows/WSL
 - nginx
