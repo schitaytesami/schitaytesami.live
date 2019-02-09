@@ -769,7 +769,7 @@
 						stats() {
 							return {
 								num_users : this.$root.stats.num_users,
-								num_station : this.$root.stats.num_stations,
+								num_stations : this.$root.stats.num_stations,
 								num_stations_labeled : this.$root.stats.num_stations_labeled,
 								num_hours : this.$root.stats.num_seconds ? (this.$root.stats.num_seconds / 3600).toFixed(0) : 0,
 								num_hours_labeled : this.$root.stats.num_seconds_labeled ? (this.$root.stats.num_seconds_labeled / 3600).toFixed(0): 0
@@ -782,7 +782,7 @@
 								const idx = Math.floor(Math.random() * clips.length);
 								const clip = this.$root.stats.clips_dict[idx];
 								const station = this.$root.stats.stations_dict[clip.station_id];
-								thumbs.push({ id: i, src: clip.thumbnail, title :formatThumbnailTitle(station, clip) });
+								thumbs.push({ id: i, src: clip.thumbnail, title : formatThumbnailTitle(station, clip) });
 							}
 							return thumbs;
 						},
