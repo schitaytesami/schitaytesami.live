@@ -17,8 +17,8 @@ Pip dependencies: `pip3 install -r requirements.txt`
 python3 app.py config
 
 # start and stop development web servers
-./scripts/up start
-./scripts/up stop
+bash ./scripts/up start
+bash ./scripts/up stop
 ```
 
 ## Production setup:
