@@ -292,8 +292,8 @@
 				<h3 class="text-center lead">Подсчёт явки</h3>
 				<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
 				<template v-if="$root.user">
-					<app-selection :options="$root.stats.options || []"/>
-					<router-link :to="{ name: 'task-vote' }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
+					<app-selection :options="$root.stats.options || []" :election.sync="election" :region.sync="region" :station.sync="station" />
+					<router-link :to="{ name: 'task-vote', params: { election, region, station } }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
 				</template>
 				<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
 				<p>Это задание более близко к реальному наблюдению на участке и требует изучения процедуры подсчёта голосов избирательной комиссии, изложенной в нашей инструкции. Мы попросим вас просмотреть <strong>3-4-часовые</strong> фрагменты и отметить, как избирательная комиссия выполнила требования закона о выборах.</p>
@@ -684,7 +684,7 @@
 			<div class="form-row">
 				<div class="form-group col-md-6">
 					<label for="election">Выборы</label>
-						<select id="election" class="form-control" v-model="election">
+						<select id="election" class="form-control" @change="$emit('update:election', $event.target.value)">
 							<option v-for="[ n, v ] in electionList" :value="v">{{ n }}</option>
 						</select>
 				</div>
@@ -696,7 +696,7 @@
 			<div class="form-row">
 				<div class="form-group col-md-6">
 					<label for="region">Регион</label>
-						<select id="region" class="form-control" v-model="region">
+						<select id="region" class="form-control" @change="$emit('update:region', $event.target.value)">
 							<option v-for="[ n, v ] in regionList" :value="v">{{ n }}</option>
 						</select>
 				</div>
@@ -708,7 +708,7 @@
 			<div class="form-row">
 				<div class="form-group col-md-6">
 					<label for="station">Участок</label>
-						<select id="station" class="form-control" v-model="station">
+						<select id="station" class="form-control" @change="$emit('update:station', $event.target.value)">
 							<option v-for="[ n, v ] in stationList" :value="v">{{ n }}</option>
 						</select>
 				</div>
@@ -774,8 +774,9 @@
 					});
 				};
 
-				const nextTask = (self, task) => {
+				const nextTask = (self, task, params) => {
 					if (!self.user) return Promise.resolve();
+					console.log(params);
 					return fetch(`/task/${task}`)
 						.then(res => {
 							if (!res.ok) throw makeError(res);
@@ -836,7 +837,13 @@
 
 				const appTask = {
 					data() {
-						return { email: '', registered: false }
+						return {
+							email: '',
+							registered: false,
+							election: 1,
+							region: 1,
+							station: 1,
+						}
 					},
 					methods	: {
 						register() {
@@ -968,7 +975,7 @@
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
-						nextTask(this, 'vote');
+						nextTask(this, 'vote', this.$route.params);
 					},
 					template: '#app-task-vote',
 				};
@@ -1086,14 +1093,20 @@
 							type: Array,
 							required: true,
 						},
+						election: {
+							required: true,
+						},
+						region: {
+							required: true,
+						},
+						station: {
+							required: true,
+						},
 					},
 					data() {
 						return {
-							election: 1,
 							electionFilter: '',
-							region: 1,
 							regionFilter: '',
-							station: 1,
 							stationFilter: '',
 						};
 					},
@@ -1104,13 +1117,13 @@
 						},
 						regionList() {
 							return this.options
-								.find(opt => opt[1] === this.election)[2]
+								.find(opt => opt[1] == this.election)[2]
 								.filter(opt => this.filter(opt[0], this.regionFilter));
 						},
 						stationList() {
 							return this.options
-								.find(opt => opt[1] === this.election)[2]
-								.find(opt => opt[1] === this.region)[2]
+								.find(opt => opt[1] == this.election)[2]
+								.find(opt => opt[1] == this.region)[2]
 								.filter(opt => this.filter(opt[0], this.stationFilter));
 						}
 					},
