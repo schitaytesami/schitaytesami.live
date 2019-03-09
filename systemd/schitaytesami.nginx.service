@@ -4,8 +4,8 @@ After=syslog.target network.target remote-fs.target nss-lookup.target
 
 [Service]
 Type=forking
-PIDFile=/var/www/schitaytesami.live/schitaytesami.website/var/log/pid.nginx
-WorkingDirectory=/var/www/schitaytesami.live/schitaytesami.website
+PIDFile=/var/www/sami/schitaytesami.live/var/log/pid.nginx
+WorkingDirectory=/var/www/sami/schitaytesami.live
 ExecStartPre=/usr/sbin/nginx -t
 ExecStart=/usr/sbin/nginx -c nginx.conf -p .
 ExecReload=/bin/kill -s HUP $MAINPID

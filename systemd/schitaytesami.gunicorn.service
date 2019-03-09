@@ -4,12 +4,12 @@ Requires=schitaytesami.gunicorn.socket
 After=network.target
 
 [Service]
-PIDFile=/var/www/schitaytesami.live/schitaytesami.website/var/log/pid.gunicorn
+PIDFile=/var/www/sami/schitaytesami.live/var/log/pid.gunicorn
 User=sami
 Group=sami
 RuntimeDirectory=gunicorn
-WorkingDirectory=/var/www/schitaytesami.live/schitaytesami.website
-ExecStart=/usr/bin/python3 app.py serve --gunicorn_args --access-logfile /var/www/schitaytesami.live/schitaytesami.website/var/log/http.access.log.gunicorn --error-logfile /var/www/schitaytesami.live/schitaytesami.website/var/log/http.error.log.gunicorn --pid /var/www/schitaytesami.live/schitaytesami.website/var/log/pid.gunicorn --timeout 600 --reload
+WorkingDirectory=/var/www/sami/schitaytesami.live
+ExecStart=/usr/bin/python3 app.py serve --gunicorn_args --access-logfile /var/www/sami/schitaytesami.live/var/log/http.access.log.gunicorn --error-logfile /var/www/sami/schitaytesami.live/var/log/http.error.log.gunicorn --pid /var/www/sami/schitaytesami.live/var/log/pid.gunicorn --timeout 600 --reload
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true
