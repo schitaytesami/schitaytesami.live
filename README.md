@@ -24,7 +24,7 @@ bash ./scripts/up stop
 ## Production setup:
 ```shell
 # generate config files
-python3 app.py config --enfironment production --hostname schitaytesami.live --root /var/www/schitaytesami.live/schitaytesami.website --resolvers "213.133.99.99 213.133.98.98 8.8.8.8" --email_authorization_bearer_token USE_ACTUAL_SENDGRID_BEARER_TOKEN_HERE
+python3 app.py config --environment production --hostname schitaytesami.live --root /var/www/sami/schitaytesami.live --resolvers "213.133.99.99 213.133.98.98 8.8.8.8" --email_authorization_bearer_token USE_ACTUAL_SENDGRID_BEARER_TOKEN_HERE
 
 sudo systemctl enable ./systemd/schitaytesami.nginx.service
 sudo systemctl enable ./systemd/schitaytesami.gunicorn.service
@@ -35,6 +35,11 @@ sudo systemctl start schitaytesami.gunicorn.service
 # restart services
 sudo systemctl restart schitaytesami.nginx.service
 sudo systemctl restart schitaytesami.gunicorn.service
+
+# create directories
+cd /var/www/sami/schitaytesami.live
+mkdir -p var/cache/nginx
+mkdir -p var/log
 
 # validate config
 sudo /usr/sbin/nginx -t -p . -c nginx.conf
