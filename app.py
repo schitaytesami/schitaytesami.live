@@ -278,7 +278,7 @@ def config(environment, root, hostname, website_http_location, resolvers, debug_
 	conf = jinja2.Template(open(nginx_conf + '.j2').read()).render(environment = environment, root = os.path.abspath(root), hostname = hostname, resolvers = resolvers)
 	open(nginx_conf, 'w').write(conf)
 
-	conf = json.loads(open(user_registration_conf + '.j2', 'rb').read())
+	conf = json.loads(open(user_registration_conf + '.j2', 'r').read())
 	conf['website_http_location'] = website_http_location
 	if email_authorization_bearer_token is not None:
 		conf['http']['headers']['Authorization'] = 'Bearer ' + email_authorization_bearer_token

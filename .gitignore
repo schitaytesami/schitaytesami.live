@@ -1,3 +1,4 @@
 nginx.conf
 var
 app.db
+user_registration.json
