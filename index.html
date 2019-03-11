@@ -750,6 +750,12 @@
 					return `${address} ${station.station_number} ${timeStart}-${timeEnd}`;
 				};
 
+				const formatStationThumnail = (station, amountOfClips) => {
+					const address = `${station.station_address.split(',')[0]}, УИК`;
+					const clips = amountOfClips > 0 ? `, Сегментов: ${amountOfClips}.` : '';
+					return `${address} ${station.station_number}${clips}`;
+				};
+
 				const makeError = err => {
 					const status = err.status ? `${err.status}: ` : '';
 					const message = err.statusText || 'Что-то пошло не так';
@@ -792,12 +798,12 @@
 						.catch(err => self.$emit('error', err));
 				};
 
-				
+
 				const taskSubmitResultsText = (self) => {
 					let message = 'Разметка этого видео закончена. Спасибо!';
 					let button = 'Отправить результаты';
 
-					if (self.submitted) 
+					if (self.submitted)
 						button = 'Перейти к разметке следующего видео';
 
 					if (self.failed) {
@@ -906,7 +912,7 @@
 							this['playbackRate' + idx] = player.playbackRate;
 						},
 
-						submitResults() {	
+						submitResults() {
 							if (!this.submitted) {
 								const events = [];
 								//for(var question_id in this.questions) {
@@ -946,7 +952,7 @@
 							let seconds = Math.floor(offset % 60);
 							if (seconds < 10) seconds = `0${seconds}`;
 							return `${minutes}:${seconds}`;
-						}, 
+						},
 						submitResults() {
 							if (!this.submitted && (this.failed || this.completed))
 								sendEvents(this, this.events);
@@ -1075,12 +1081,24 @@
 							return this.$root.stats.users ? this.$root.stats.users.find(u => u.display === this.$route.params.display) : {};
 						},
 						thumbnails() {
+							if (!this.$root.stats.clips) return;
+
 							const clips = this.user.clips ? this.user.clips.split(',').map(Number) : [];
-							return clips.map(key => {
+
+							const clipsByStation = clips.reduce((acc, key) => {
 								const clip = this.$root.stats.clips_dict[key];
 								const station = this.$root.stats.stations_dict[clip.station_id];
-								return {id: key, src: clip.thumbnail, title: formatThumbnailTitle(station, clip) };
-							});
+								acc[clip.station_id] = acc[clip.station_id] || [];
+								acc[clip.station_id].push(clip);
+								return acc;
+							}, {});
+
+							return Object.keys(clipsByStation).map(id => ({
+									id,
+									src: clipsByStation[id][0].thumbnail,
+									title: formatStationThumnail(this.$root.stats.stations_dict[id], clipsByStation[id].length)
+								})
+							);
 						},
 					},
 					template: '#app-user'
