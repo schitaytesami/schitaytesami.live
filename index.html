@@ -752,8 +752,8 @@
 
 				const formatStationThumnail = (station, amountOfClips) => {
 					const address = `${station.station_address.split(',')[0]}, УИК`;
-					const clips = amountOfClips > 1 ? `Сегментов: ${amountOfClips}.` : '';
-					return `${address} ${station.station_number}, ${clips}`;
+					const clips = amountOfClips > 0 ? `, Сегментов: ${amountOfClips}.` : '';
+					return `${address} ${station.station_number}${clips}`;
 				};
 
 				const makeError = err => {
@@ -798,12 +798,12 @@
 						.catch(err => self.$emit('error', err));
 				};
 
-				
+
 				const taskSubmitResultsText = (self) => {
 					let message = 'Разметка этого видео закончена. Спасибо!';
 					let button = 'Отправить результаты';
 
-					if (self.submitted) 
+					if (self.submitted)
 						button = 'Перейти к разметке следующего видео';
 
 					if (self.failed) {
@@ -912,7 +912,7 @@
 							this['playbackRate' + idx] = player.playbackRate;
 						},
 
-						submitResults() {	
+						submitResults() {
 							if (!this.submitted) {
 								const events = [];
 								//for(var question_id in this.questions) {
@@ -952,7 +952,7 @@
 							let seconds = Math.floor(offset % 60);
 							if (seconds < 10) seconds = `0${seconds}`;
 							return `${minutes}:${seconds}`;
-						}, 
+						},
 						submitResults() {
 							if (!this.submitted && (this.failed || this.completed))
 								sendEvents(this, this.events);
