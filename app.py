@@ -171,7 +171,9 @@ def stats_get():
 			'LEFT OUTER JOIN Clip c ON c.id = e.clip_id '
 			'GROUP BY u.id, u.display '
 			'ORDER BY num_votes DESC'
-		).dicts())
+		).dicts()),
+		options = [["Выборы 1",1,[["Регион 1",1,[["УИК 1",1],["УИК 2",2],["УИК 3",3]]],["Регион 2",2,[["УИК 10",1],["УИК 20",2],["УИК 30",3]]]]],["Выборы 2",2,[["Регион 3",1,[["УИК 4",1],["УИК 3",2],["УИК 2",3]]],["Регион 2",2,[["УИК 10",1],["УИК 20",2],["УИК 30",3]]]]]]
+
 	), ensure_ascii = False, indent = 2), status = 200, mimetype = 'application/json')
 
 @user_must_be_active()
