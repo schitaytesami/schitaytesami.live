@@ -1127,15 +1127,21 @@
 					},
 					computed: {
 						electionList() {
+							if (this.options.length === 0) return [];
+
 							return this.options
 								.filter(opt => this.filter(opt[0], this.electionFilter));
 						},
 						regionList() {
+							if (this.options.length === 0) return [];
+
 							return this.options
 								.find(opt => opt[1] == this.election)[2]
 								.filter(opt => this.filter(opt[0], this.regionFilter));
 						},
 						stationList() {
+							if (this.options.length === 0) return [];
+
 							return this.options
 								.find(opt => opt[1] == this.election)[2]
 								.find(opt => opt[1] == this.region)[2]
