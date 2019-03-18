@@ -64,8 +64,8 @@
 
 		.thumbnail {
 			display: inline-block;
-			width: 120px;
-			height: 80px;
+			width: 120px; /* 640 */
+			height: 90px; /* 480 */
 			padding: 2px;
 		}
 
@@ -540,23 +540,69 @@
 	</script>
 
 	<script type="text/x-template" id="app-user">
-		<div class="row" v-if="!this.$root.showError">
-			<div class="col-md-8 offset-md-2">
-				<h4 class="text-center lead">@<span>{{ user.display }}</span></h4>
-				<dl class="row">
-					<dt class="col-md-4 offset-md-3">Избиратели</dt>
-					<dd class="col-md-2 text-right">{{ user.num_votes }}</dd>
-					<dt class="col-md-4 offset-md-3">Участки</dt>
-					<dd class="col-md-2 text-right">{{ user.num_stations }}</dd>
-					<dt class="col-md-4 offset-md-3">Время</dt>
-					<dd class="col-md-2 text-right">{{ (user.num_seconds / 60).toFixed(0) }}</dd>
-					<dt class="col-md-4 offset-md-3">Сегменты</dt>
-					<dd class="col-md-2 text-right">{{ user.num_clips }}</dd>
-					<dt class="col-md-4 offset-md-3">Комментарии</dt>
-					<dd class="col-md-2 text-right">{{ user.num_notes }}</dd>
-				</dl>
-				<div>
-					<img class="thumbnail" width="120" height="80" :src="thumb.src" :title="thumb.title" :key="thumb.id" v-for="thumb in thumbnails" />
+		<div class="container" v-if="!this.$root.showError">
+			<div class="row mb-2">
+					<div class="col-12">
+						<h4 class="text-center lead">@<span>{{ user.display }}</span></h4>
+					</div>
+
+				<div class="col-md-4">
+					<h5 class="text-center">Статистика</h5>
+					<table class="table table-sm table-borderless">
+						<tbody>
+							<tr>
+								<th scope="row">Избиратели</th>
+								<td>{{ user.num_votes }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Участки</th>
+								<td>{{ user.num_stations }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Время</th>
+								<td>{{ (user.num_seconds / 60).toFixed(0) }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Сегменты</th>
+								<td>{{ user.num_clips }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Комментарии</th>
+								<td>{{ user.num_notes }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="col-md-8">
+					<h5 class="text-center">Закладки</h5>
+					<table class="table table-sm">
+						<thead>
+							<th scope="col">Год</th>
+							<th scope="col">Регион</th>
+							<th scope="col">Номер Участка</th>
+							<th scope="col">Ссылка</th>
+							<th scope="col">Добавлено</th>
+						</thead>
+						<tbody>
+							<tr v-for="bookmark in bookmarks">
+								<td>{{ String(bookmark.election_number).substring(0, 4) }}</td>
+								<td>{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
+								<td>{{ bookmark.station_number }}</td>
+								<td><a :href="bookmark.url">Перейти</a></td>
+								<td>{{ new Date(bookmark.timestamp).toLocaleString('ru-RU') }}</td>
+							</tr>
+ 						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col">
+					<h5>Участки</h5>
+					<div>
+						<img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" v-for="thumb in thumbnails" />
+					</div>
 				</div>
 			</div>
 		</div>
@@ -1096,6 +1142,11 @@
 								})
 							);
 						},
+						bookmarks() {
+							if (!this.user.bookmarks) return [];
+
+							return this.user.bookmarks.sort((a, b) => b.timestamp - a.timestamp);
+						}
 					},
 					template: '#app-user'
 				};
@@ -1231,6 +1282,16 @@
 										stats.stations_dict[station.id] = station;
 										stats.stations_dict_station_id[station.station_id] = station;
 									});
+
+									/* MOCK Bookmarks */
+									data.users[0].bookmarks =
+										data.stations.slice(0, 2).map(({ election_number, station_address, station_number }, i) => ({
+											election_number,
+											station_address,
+											station_number,
+											timestamp: Date.now() - i * 1000000,
+											url: '#'
+										}));
 
 									this.stats = { ...this.stats, ...stats };
 								});
