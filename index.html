@@ -270,35 +270,37 @@
 	</script>
 
 	<script type="text/x-template" id="app-task">
-		<div class="row">
-			<div class="col-md-6 offset-md-3">
-				<div class="bg-warning" v-if="!$root.user">
-					<h1 class="lead text-center">Как начать работу</h1>
-					<p class="p-2 mb-0">Введите ваш адрес электронной почты и получите ссылку-приглашение:</p>
-					<div class="container">
-						<div class="row pl-2 pr-2">
-							<div class="form-group col pl-0">
-								<input type="text" class="form-control user_email" v-model="email" />
-							</div>
-							<div class="ml-auto">
-								<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
+		<div class="container">
+			<div class="row">
+				<div class="col">
+					<div class="bg-warning mb-3" v-if="!$root.user">
+						<h1 class="lead text-center">Как начать работу</h1>
+						<p class="p-2 mb-0">Введите ваш адрес электронной почты и получите ссылку-приглашение:</p>
+						<div class="container">
+							<div class="row pl-2 pr-2">
+								<div class="form-group col pl-0">
+									<input type="text" class="form-control user_email" v-model="email" />
+								</div>
+								<div class="ml-auto">
+									<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
+								</div>
 							</div>
 						</div>
+						<div v-if="registered">
+							<p class="bg-success text-center">Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
+						</div>
 					</div>
-					<div v-if="registered">
-						<p class="bg-success text-center">Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
-					</div>
+					<h3 class="text-center lead">Подсчёт явки</h3>
+					<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
+					<template v-if="false">
+						<app-selection :options="$root.stats.task_selector_options || []" :election.sync="election" :region.sync="region" :station.sync="station" />
+						<router-link :to="{ name: 'task-vote', params: { election, region, station } }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
+					</template>
+					<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
+					<p>Это задание более близко к реальному наблюдению на участке и требует изучения процедуры подсчёта голосов избирательной комиссии, изложенной в нашей инструкции. Мы попросим вас просмотреть <strong>3-4-часовые</strong> фрагменты и отметить, как избирательная комиссия выполнила требования закона о выборах.</p>
+					<p class="text-center text-danger">Задание пока недоступно. В разработке.</p>
+					<router-link :to="{ name: 'task-proc' }" class="btn btn-primary mb-2 mt-2 w-100" v-if="false && $root.user"><h3>Начать работу</h3></router-link>
 				</div>
-				<h3 class="text-center lead">Подсчёт явки</h3>
-				<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
-				<template v-if="false">
-					<app-selection :options="$root.stats.options || []" :election.sync="election" :region.sync="region" :station.sync="station" />
-					<router-link :to="{ name: 'task-vote', params: { election, region, station } }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
-				</template>
-				<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
-				<p>Это задание более близко к реальному наблюдению на участке и требует изучения процедуры подсчёта голосов избирательной комиссии, изложенной в нашей инструкции. Мы попросим вас просмотреть <strong>3-4-часовые</strong> фрагменты и отметить, как избирательная комиссия выполнила требования закона о выборах.</p>
-				<p class="text-center text-danger">Задание пока недоступно. В разработке.</p>
-				<router-link :to="{ name: 'task-proc' }" class="btn btn-primary mb-2 mt-2 w-100" v-if="false && $root.user"><h3>Начать работу</h3></router-link>
 			</div>
 		</div>
 	</script>
@@ -682,35 +684,32 @@
 	<script type="text/x-template" id="app-selection">
 		<form>
 			<div class="form-group row">
-				<label class="col-xl-1 col-form-label" for="election">Выборы</label>
-				<div class="col-xl-6 mb-3 mb-xl-0">
+				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="election" class="form-control" @change="$emit('update:election', $event.target.value)">
 						<option v-for="[ n, v ] in electionList" :value="v">{{ n }}</option>
 					</select>
 				</div>
-				<div class="col-xl-5">
+				<div class="col-md-6">
 					<input type="text" class="form-control" placeholder="Фильтр" v-model="electionFilter">
 				</div>
 			</div>
 			<div class="form-group row">
-				<label class="col-xl-1 col-form-label" for="region">Регион</label>
-				<div class="col-xl-6 mb-3 mb-xl-0">
+				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="region" class="form-control" @change="$emit('update:region', $event.target.value)">
 						<option v-for="[ n, v ] in regionList" :value="v">{{ n }}</option>
 					</select>
 				</div>
-				<div class="col-xl-5">
+				<div class="col-md-6">
 					<input type="text" class="form-control" placeholder="Фильтр" v-model="regionFilter">
 				</div>
 			</div>
 			<div class="form-group row">
-				<label class="col-xl-1 col-form-label" for="station">Участок</label>
-				<div class="col-xl-6 mb-3 mb-xl-0">
+				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="station" class="form-control" @change="$emit('update:station', $event.target.value)">
 						<option v-for="[ n, v ] in stationList" :value="v">{{ n }}</option>
 					</select>
 				</div>
-				<div class="col-xl-5">
+				<div class="col-md-6">
 					<input type="text" class="form-control" placeholder="Фильтр" v-model="stationFilter">
 				</div>
 			</div>
@@ -1127,8 +1126,6 @@
 					},
 					computed: {
 						electionList() {
-							if (this.options.length === 0) return [];
-
 							return this.options
 								.filter(opt => this.filter(opt[0], this.electionFilter));
 						},

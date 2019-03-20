@@ -22,7 +22,7 @@ import jinja2
 nginx_conf = 'nginx.conf'
 user_registration_conf = 'user_registration.json'
 incomplete_task_threshold = dict(vote = 4)
- 
+
 class User(pw.Model):
 	id = pw.PrimaryKeyField()
 	display = pw.TextField()
@@ -38,7 +38,7 @@ class User(pw.Model):
 
 	def check_password(self, user):
 		return bcrypt.checkpw(self.password.encode('utf-8'), user.hashed.encode('utf-8'))
-	
+
 	def generate_token(self):
 		return base64.b64encode(json.dumps(dict(id = self.id, display = self.display, role = self.role, password = self.password)).encode('ascii')).decode('ascii').rstrip('=')
 
@@ -60,7 +60,7 @@ class User(pw.Model):
 	def normalize_email(email):
 		splitted = email.split('@')
 		return splitted[0].split('+')[0].replace('.', '') + '@' + (splitted[1] if len(splitted) >= 2 else '')
-	
+
 class Station(pw.Model):
 	id = pw.PrimaryKeyField()
 	station_number = pw.IntegerField()
@@ -87,7 +87,7 @@ class Clip(pw.Model):
 	camera_id = pw.TextField(default = '')
 	csrf = pw.IntegerField(default = lambda: random.randint(0, 1e9))
 	gold = pw.BooleanField(default = False)
-	
+
 class Event(pw.Model):
 	creator = pw.ForeignKeyField(User, null = True)
 	timestamp = pw.IntegerField(default = lambda : int(time.time()))
@@ -126,7 +126,7 @@ def estimate_station(station, clip_turnout):
 	official = ([json.loads(ev.value) for ev in station.events if ev.type == 'turnout_official'] + [{}])[0]
 	progress = sum(1 if t['completed'] else 0 for t in clip_turnout_) / float(len(clip_turnout_))
 	comment = ' || '.join(t['final']['comment'] for t in clip_turnout_ if (t['final'] or {}).get('comment') not in ['', None])
-	
+
 	def interval_turnout(hours_begin = None, hours_end = None, timestamp_begin = None, timestamp_end = None, hours_baseline = 8, normalize = True):
 		interval_start, interval_end = ((station.station_interval_start - hours_baseline * 60 * 60) + hours_begin * 60 * 60, (station.station_interval_start - hours_baseline * 60 * 60) + hours_end * 60 * 60) if hours_begin is not None and hours_end is not None else (timestamp_begin, timestamp_end)
 		clip_turnout_in = [clip_turnout[clip.id] for clip in station.clips if (interval_start <= clip.clip_interval_start and clip.clip_interval_end <= interval_end) or (clip.clip_interval_start <= interval_end and clip.clip_interval_end >= interval_end)]
@@ -172,7 +172,7 @@ def stats_get():
 			'GROUP BY u.id, u.display '
 			'ORDER BY num_votes DESC'
 		).dicts()),
-		options = [["Выборы 1",1,[["Регион 1",1,[["УИК 1",1],["УИК 2",2],["УИК 3",3]]],["Регион 2",2,[["УИК 10",1],["УИК 20",2],["УИК 30",3]]]]],["Выборы 2",2,[["Регион 3",1,[["УИК 4",1],["УИК 3",2],["УИК 2",3]]],["Регион 2",2,[["УИК 10",1],["УИК 20",2],["УИК 30",3]]]]]]
+		task_selector_options = [["Выборы 1",1,[["Регион 1",1,[["УИК 1",1],["УИК 2",2],["УИК 3",3]]],["Регион 2",2,[["УИК 10",1],["УИК 20",2],["УИК 30",3]]]]],["Выборы 2",2,[["Регион 3",1,[["УИК 4",1],["УИК 3",2],["УИК 2",3]]],["Регион 2",2,[["УИК 10",1],["УИК 20",2],["УИК 30",3]]]]]]
 
 	), ensure_ascii = False, indent = 2), status = 200, mimetype = 'application/json')
 
@@ -225,7 +225,7 @@ def init_db(db_path):
 
 def import_(db_path, clips_path, stations_path, turnout = False, gold = 0):
 	init_db(db_path)
-	json_load = lambda uri: json.loads((open(uri, 'rb') if not uri.startswith('http') else urllib.request.urlopen(uri)).read().decode('utf-8'))	
+	json_load = lambda uri: json.loads((open(uri, 'rb') if not uri.startswith('http') else urllib.request.urlopen(uri)).read().decode('utf-8'))
 	if clips_path is not None and turnout is False:
 		clips = json_load(clips_path)
 		Clip.insert_many([dict(clip_interval_start = c.get('clip_interval_start'), clip_interval_end = c.get('clip_interval_end'), video = c.get('video'), thumbnail = c.get('thumbnail'), meta = c.get('meta', ''), station_id = Station.get_or_create(station_number = c['station_number'], region_number = c['region_number'], election_number = c['election_number'], defaults = dict(station_address = c['station_address'], timezone_offset = c['timezone_offset'], station_interval_start = c['station_interval_start'], station_interval_end = c['station_interval_end']))[0].id, task = c.get('task', ''), camera_id = c.get('camera_id' ''), gold = c.get('gold', random.random() < float(gold) / len(clips))) for c in clips]).execute()
@@ -237,7 +237,7 @@ def import_(db_path, clips_path, stations_path, turnout = False, gold = 0):
 		stations = json_load(stations_path)
 		turnout_official = {station['station_id'] : station for station in stations}
 		Event.insert_many([dict(station = station, type = 'turnout_official', value = json.dumps({'10h' : turnout_official[station.station_id]['turnout_10h'], '12h' : turnout_official[station.station_id]['turnout_12h'], '15h' : turnout_official[station.station_id]['turnout_15h'], '18h' : turnout_official[station.station_id]['turnout_18h'], '20h' : turnout_official[station.station_id]['ballots_given_at_station_on_election_day'] / float(turnout_official[station.station_id]['voters_registered']), 'final' : turnout_official[station.station_id]['ballots_given_at_station_on_election_day']})) for station in list(Station.select().prefetch(Event)) if not any(ev.type == 'turnout_official' for ev in station.events)]).execute()
-			
+
 def export_(stations_path, db_path):
 	init_db(db_path)
 	json.dump([dict(id = station.id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, clips = [dict(camera_id = clip.camera_id, thumbnail = clip.thumbnail, task = clip.task, events = [dict(id = ev.id, timestamp = ev.timestamp, type = ev.type, offset = ev.offset, value = ev.value, creator = ev.creator.display, clip = ev.clip_id, station = ev.station_id) for ev in clip.events], completed = estimate_clip(clip)['completed']) for clip in station.clips]) for station in Station.select().prefetch(Clip).prefetch(Event).prefetch(User)], open(stations_path, 'w'), ensure_ascii = False, indent = 2, sort_keys = True)
@@ -314,7 +314,7 @@ if __name__ == '__main__':
 	cmd.add_argument('--db_path', default = 'app.db')
 	cmd.add_argument('--stations_path')
 	cmd.set_defaults(func = export_)
-	
+
 	cmd = subparsers.add_parser('config')
 	cmd.add_argument('--environment', default = 'development')
 	cmd.add_argument('--hostname', default = 'localhost')
@@ -324,7 +324,7 @@ if __name__ == '__main__':
 	cmd.add_argument('--debug_user_registration_email_file_path', default = 'debug_user_registration_email.txt')
 	cmd.add_argument('--email_authorization_bearer_token')
 	cmd.set_defaults(func = config)
-	
+
 	args = vars(parser.parse_args())
 	func = args.pop('func')
 	func(**args)
