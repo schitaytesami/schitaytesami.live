@@ -1126,8 +1126,6 @@
 					},
 					computed: {
 						electionList() {
-							if (this.options.length === 0) return [];
-
 							return this.options
 								.filter(opt => this.filter(opt[0], this.electionFilter));
 						},
