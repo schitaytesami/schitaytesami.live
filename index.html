@@ -684,35 +684,32 @@
 	<script type="text/x-template" id="app-selection">
 		<form>
 			<div class="form-group row">
-				<label class="col-xl-1 col-form-label" for="election">Выборы</label>
-				<div class="col-xl-6 mb-3 mb-xl-0">
+				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="election" class="form-control" @change="$emit('update:election', $event.target.value)">
 						<option v-for="[ n, v ] in electionList" :value="v">{{ n }}</option>
 					</select>
 				</div>
-				<div class="col-xl-5">
+				<div class="col-md-6">
 					<input type="text" class="form-control" placeholder="Фильтр" v-model="electionFilter">
 				</div>
 			</div>
 			<div class="form-group row">
-				<label class="col-xl-1 col-form-label" for="region">Регион</label>
-				<div class="col-xl-6 mb-3 mb-xl-0">
+				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="region" class="form-control" @change="$emit('update:region', $event.target.value)">
 						<option v-for="[ n, v ] in regionList" :value="v">{{ n }}</option>
 					</select>
 				</div>
-				<div class="col-xl-5">
+				<div class="col-md-6">
 					<input type="text" class="form-control" placeholder="Фильтр" v-model="regionFilter">
 				</div>
 			</div>
 			<div class="form-group row">
-				<label class="col-xl-1 col-form-label" for="station">Участок</label>
-				<div class="col-xl-6 mb-3 mb-xl-0">
+				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="station" class="form-control" @change="$emit('update:station', $event.target.value)">
 						<option v-for="[ n, v ] in stationList" :value="v">{{ n }}</option>
 					</select>
 				</div>
-				<div class="col-xl-5">
+				<div class="col-md-6">
 					<input type="text" class="form-control" placeholder="Фильтр" v-model="stationFilter">
 				</div>
 			</div>
