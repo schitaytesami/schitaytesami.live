@@ -164,10 +164,12 @@ def stats_get():
 			'INNER JOIN Event ev ON ev.clip_id == c.id AND ev.type == "vote" '
 			'WHERE c.task == "vote"'
 		).fetchone()[0],
+		events = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station.id if ev.station is not None else ev.clip.station.id if ev.clip is not None else None) for ev in Event.select().prefetch(Station).prefetch(Clip)],
 		users = list(User.raw(
-			'SELECT u.id, u.display, IFNULL(SUM(e.type == "vote"), 0) as num_votes, SUM(IFNULL(c.clip_interval_end - c.clip_interval_start, 0)) as num_seconds, IFNULL(COUNT(DISTINCT c.station_id), 0) as num_stations, IFNULL(SUM(e.type == "note"), 0) as num_notes, IFNULL(GROUP_CONCAT(DISTINCT e.clip_id), "") as clips, IFNULL(COUNT(DISTINCT e.clip_id), 0) as num_clips '
+			'SELECT u.id, u.display, IFNULL(SUM(e.type == "vote"), 0) as num_votes, SUM(IFNULL(c.clip_interval_end - c.clip_interval_start, 0)) as num_seconds, IFNULL(COUNT(DISTINCT c.station_id), 0) as num_stations, IFNULL(SUM(e.type == "note"), 0) as num_notes, IFNULL(GROUP_CONCAT(DISTINCT e.clip_id), "") as clips, IFNULL(COUNT(DISTINCT e.clip_id), 0) as num_clips, IFNULL(GROUP_CONCAT(DISTINCT eb.id), "") as bookmarks '
 			'FROM User u '
-			'LEFT OUTER JOIN Event e ON e.creator_id = u.id '
+			'LEFT OUTER JOIN Event e ON e.creator_id = u.id AND e.type != "bookmark" '
+			'LEFT OUTER JOIN Event eb ON eb.creator_id = u.id AND eb.type == "bookmark" '
 			'LEFT OUTER JOIN Clip c ON c.id = e.clip_id '
 			'GROUP BY u.id, u.display '
 			'ORDER BY num_votes DESC'
