@@ -338,7 +338,7 @@
 			<div class="row mt-3">
 				<div class="col-md-5">
 					<div v-if="clip">
-						<h3>УИК <span>{{ clip.station.station_number }}</span><span class="float-right">{{ $root.interval(clip) }}</span></h3>
+						<h3>УИК <span>{{ clip.station.station_number }}</span> <app-bookmark-button :clip="clip"/> <span class="float-right">{{ $root.interval(clip) }}</span></h3>
 						<h6><span>{{ clip.station.station_address }}</span><span class="float-right">UTC+<span>{{ $root.timezoneOffset(clip.station) }}</span></span></h6>
 						<div style="position:relative">
 							<video class="w-100" controls="controls" preload="auto" :src="clip.video" @ended="completed = true" ref="player" @play.once="$refs['instruction-video'].remove()"></video>
@@ -541,12 +541,12 @@
 
 	<script type="text/x-template" id="app-user">
 		<div class="container" v-if="!this.$root.showError">
-			<div class="row mb-2">
-					<div class="col-12">
-						<h4 class="text-center lead">@<span>{{ user.display }}</span></h4>
-					</div>
+			<div class="row mb-2 justify-content-center">
+				<div class="col-12">
+					<h4 class="text-center lead">@<span>{{ user.display }}</span></h4>
+				</div>
 
-				<div class="col-md-4">
+				<div class="col-lg-6">
 					<h5 class="text-center">Статистика</h5>
 					<table class="table table-sm table-borderless">
 						<tbody>
@@ -573,8 +573,10 @@
 						</tbody>
 					</table>
 				</div>
+			</div>
 
-				<div class="col-md-8">
+			<div class="row mb-2 justify-content-center" v-if="$root.user && $route.params.display === $root.user.display">
+				<div class="col-lg-10">
 					<h5 class="text-center">Закладки</h5>
 					<table class="table table-sm">
 						<thead>
@@ -594,6 +596,7 @@
 							</tr>
  						</tbody>
 					</table>
+					<h6 class="text-center" v-if="bookmarks.length < 1">Вы ещё не добавили закладки.</h6>
 				</div>
 			</div>
 
@@ -761,6 +764,15 @@
 			</div>
 		</form>
 	</script>
+
+  <script type="text/x-template" id="app-bookmark-button">
+    <button
+    	class="btn btn-primary btn-sm"
+    	:class="{ 'btn-success': submitted }"
+    	:disabled="submitted"
+    	@click="submit"
+    >{{ submitted ? 'Добавлено' : 'Добавить в закладки' }}</button>
+  </script>
 
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
 	<script src="https://unpkg.com/vue-router@3.0.1/dist/vue-router.min.js"></script>
@@ -1145,8 +1157,11 @@
 						bookmarks() {
 							if (!this.user.bookmarks) return [];
 
-							return this.user.bookmarks.sort((a, b) => b.timestamp - a.timestamp);
-						}
+              return this.user.bookmarks
+                .split(',')
+                .map(id => this.$root.stats.events_dict[id])
+                .sort((a, b) => b.timestamp - a.timestamp);
+						},
 					},
 					template: '#app-user'
 				};
@@ -1204,6 +1219,28 @@
 					template: '#app-selection',
 				};
 
+        const appBookmarkButton = {
+          name: 'bookmark-button',
+          props: {
+            clip: {
+              type: Object,
+              required: true,
+            },
+          },
+          data() {
+            return {
+              submitted: false,
+              failed: false,
+            }
+          },
+          methods: {
+            submit() {
+              sendEvents(this, [{ type: 'bookmark', offset: 0, value: '#', clip: this.clip.id }]);
+            },
+          },
+          template: '#app-bookmark-button',
+        };
+
 				const router = new VueRouter({
 					linkActiveClass: 'active',
 					routes: [
@@ -1233,7 +1270,8 @@
 					],
 				});
 
-				Vue.component('app-selection', appSelection);
+        Vue.component('app-selection', appSelection);
+				Vue.component('app-bookmark-button', appBookmarkButton);
 
 				const app = new Vue({
 					el: '#app',
@@ -1283,15 +1321,20 @@
 										stats.stations_dict_station_id[station.station_id] = station;
 									});
 
-									/* MOCK Bookmarks */
-									data.users[0].bookmarks =
-										data.stations.slice(0, 2).map(({ election_number, station_address, station_number }, i) => ({
-											election_number,
-											station_address,
-											station_number,
-											timestamp: Date.now() - i * 1000000,
-											url: '#'
-										}));
+                  stats.events_dict = stats.events.reduce((acc, event) => {
+                    const station = stats.stations_dict[event.station_id];
+
+                    return {
+                      ...acc,
+                      [event.id]: {
+                        election_number: station.election_number,
+                        station_address: station.station_address,
+                        station_number: station.station_number,
+                        url: event.value,
+                        timestamp: event.timestamp * 1000,
+                      },
+                    };
+                  }, {});
 
 									this.stats = { ...this.stats, ...stats };
 								});
