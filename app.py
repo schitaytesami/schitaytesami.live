@@ -144,7 +144,7 @@ def stats_get():
 
 	groupby = lambda l, key: [(k, list(g)) for k, g in itertools.groupby(sorted(l, key = key), key = key)]
 	by_station = lambda stations: [('УИК #{station.station_number}'.format(station = station), station.station_number) for station in sorted(stations, key = lambda s: s.station_number)]
-	by_region = lambda stations: [(g[0].station_address.split(',')[0], k, by_station(g)) for k, g in groupby(stations, key = lambda s: s.region_number)]
+	by_region = lambda stations: [('Автоматический выбор', -1, [('Автоматический выбор', -1)]] + [(g[0].station_address.split(',')[0], k, [('Автоматический выбор', -1)] + by_station(g)) for k, g in groupby(stations, key = lambda s: s.region_number)]
 	by_election = lambda stations: [('Выборы {k}'.format(k = k), k, by_region(g)) for k, g in groupby(stations, key = lambda s: s.election_number)]
 
 	return flask.Response(response = json.dumps(dict(
