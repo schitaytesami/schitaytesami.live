@@ -292,7 +292,7 @@
 					</div>
 					<h3 class="text-center lead">Подсчёт явки</h3>
 					<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
-					<template v-if="false">
+					<template v-if="true">
 						<app-selection :options="$root.stats.task_selector_options || []" :election.sync="election" :region.sync="region" :station.sync="station" />
 						<router-link :to="{ name: 'task-vote', params: { election, region, station } }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
 					</template>
