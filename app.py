@@ -185,7 +185,7 @@ def stats_get():
 	), ensure_ascii = False, indent = 2), status = 200, mimetype = 'application/json')
 
 @user_must_be_active()
-def task_get(task_type, user, active_set = 20):
+def task_get(task_type, election_number, region_number, station_number, user, active_set = 20):
 	clip = None
 	if not (user is None or not (user.is_admin() or ('task/' + task_type) in user.role)):
 		incomplete_tasks = list(Clip.raw(
@@ -260,7 +260,8 @@ def serve(db_path, log_sql, gunicorn_args):
 	api = flask.Flask(__name__, static_url_path = '')
 	api.route('/stats', methods = ['GET'])(stats_get)
 	api.route('/user', methods = ['POST'])(user_post)
-	api.route('/task/<task_type>', methods = ['GET'])(task_get)
+	api.route('/task/<task_type>', methods = ['GET'], defaults = dict(election_number = -1, region_number = -1, station_number = -1))(task_get)
+	api.route('/task/<task_type>/election/<int:election_number>/region/<int:region_number>/station/<int:station_number>', methods = ['GET'])(task_get)
 	api.route('/events/<int:clip_id>', methods = ['POST'])(events_post)
 
 	def before_request():
