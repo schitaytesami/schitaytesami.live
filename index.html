@@ -1235,7 +1235,7 @@
           },
           methods: {
             submit() {
-              sendEvents(this, [{ type: 'bookmark', offset: 0, value: '#', clip: this.clip.id }]);
+              sendEvents(this, [{ type: 'bookmark', offset: 0, value: window.location.href, clip: this.clip.id }]);
             },
           },
           template: '#app-bookmark-button',
