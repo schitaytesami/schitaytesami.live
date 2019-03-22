@@ -580,19 +580,19 @@
 					<h5 class="text-center">Закладки</h5>
 					<table class="table table-sm">
 						<thead>
-							<th scope="col">Год</th>
+							<th scope="col">Дата голосования</th>
 							<th scope="col">Регион</th>
-							<th scope="col">Номер Участка</th>
+							<th scope="col">УИК</th>
 							<th scope="col">Ссылка</th>
 							<th scope="col">Добавлено</th>
 						</thead>
 						<tbody>
 							<tr v-for="bookmark in bookmarks">
-								<td>{{ String(bookmark.election_number).substring(0, 4) }}</td>
+								<td>{{ bookmark.date }}</td>
 								<td>{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
 								<td>{{ bookmark.station_number }}</td>
 								<td><a :href="bookmark.url">Перейти</a></td>
-								<td>{{ new Date(bookmark.timestamp).toLocaleString('ru-RU') }}</td>
+								<td>{{ bookmark.timestamp }}</td>
 							</tr>
  						</tbody>
 					</table>
@@ -1160,6 +1160,11 @@
               return this.user.bookmarks
                 .split(',')
                 .map(id => this.$root.stats.events_dict[id])
+                .map(bookmark => ({
+                	...bookmark,
+                	date: formatDate(bookmark.election_number),
+                	timestamp: new Date(bookmark.timestamp).toLocaleString('ru-RU'),
+                }))
                 .sort((a, b) => b.timestamp - a.timestamp);
 						},
 					},
@@ -1235,7 +1240,7 @@
           },
           methods: {
             submit() {
-              sendEvents(this, [{ type: 'bookmark', offset: 0, value: '#', clip: this.clip.id }]);
+              sendEvents(this, [{ type: 'bookmark', offset: 0, value: window.location.href, clip: this.clip.id }]);
             },
           },
           template: '#app-bookmark-button',
