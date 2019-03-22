@@ -141,6 +141,12 @@ def stats_get():
 	stations, clips = list(Station.select().prefetch(Event).prefetch(Clip)), list(Clip.select().where(Clip.task == 'vote').prefetch(Event).prefetch(Station))
 	clip_turnout = {clip.id : estimate_clip(clip) for clip in clips}
 	station_turnout = {station.id : estimate_station(station, clip_turnout) for station in stations}
+
+	groupby = lambda l, key: [(k, list(g)) for k, g in itertools.groupby(sorted(l, key = key), key = key)]
+	by_station = lambda stations: [('УИК #{station.station_number}'.format(station = station), station.station_number) for station in sorted(stations, key = lambda s: s.station_number)]
+	by_region = lambda stations: [(g[0].station_address.split(',')[0], k, by_station(g)) for k, g in groupby(stations, key = lambda s: s.region_number)]
+	by_election = lambda stations: [('Выборы {k}'.format(k = k), k, by_region(g)) for k, g in groupby(stations, key = lambda s: s.election_number)]
+
 	return flask.Response(response = json.dumps(dict(
 
 		stations = [dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, turnout = station_turnout[station.id], clips = ','.join(str(clip.id) for clip in station.clips)) for station in Station.select().order_by(Station.election_number, Station.region_number, Station.station_number).prefetch(Clip)],
@@ -174,7 +180,7 @@ def stats_get():
 			'GROUP BY u.id, u.display '
 			'ORDER BY num_votes DESC'
 		).dicts()),
-		task_selector_options = [["Выборы 1",1,[["Регион 1",1,[["УИК 1",1],["УИК 2",2],["УИК 3",3]]],["Регион 2",2,[["УИК 10",1],["УИК 20",2],["УИК 30",3]]]]],["Выборы 2",2,[["Регион 3",1,[["УИК 4",1],["УИК 3",2],["УИК 2",3]]],["Регион 2",2,[["УИК 10",1],["УИК 20",2],["УИК 30",3]]]]]]
+		task_selector_options = by_election(stations)
 
 	), ensure_ascii = False, indent = 2), status = 200, mimetype = 'application/json')
 
