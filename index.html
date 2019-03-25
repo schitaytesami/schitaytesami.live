@@ -270,45 +270,43 @@
 	</script>
 
 	<script type="text/x-template" id="app-task">
-		<div class="container">
-			<div class="row">
-				<div class="col">
-					<div class="bg-warning mb-3" v-if="!$root.user">
-						<h1 class="lead text-center">Как начать работу</h1>
-						<p class="p-2 mb-0">Введите ваш адрес электронной почты и получите ссылку-приглашение:</p>
-						<div class="container">
-							<div class="row pl-2 pr-2">
-								<div class="form-group col pl-0">
-									<input type="text" class="form-control user_email" v-model="email" />
-								</div>
-								<div class="ml-auto">
-									<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
-								</div>
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				<div class="bg-warning mb-3" v-if="!$root.user">
+					<h1 class="lead text-center">Как начать работу</h1>
+					<p class="p-2 mb-0">Введите ваш адрес электронной почты и получите ссылку-приглашение:</p>
+					<div class="container">
+						<div class="row pl-2 pr-2">
+							<div class="form-group col pl-0">
+								<input type="text" class="form-control user_email" v-model="email" />
+							</div>
+							<div class="ml-auto">
+								<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
 							</div>
 						</div>
-						<div v-if="registered">
-							<p class="bg-success text-center">Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
-						</div>
 					</div>
-					<h3 class="text-center lead">Подсчёт явки</h3>
-					<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
-					<template v-if="$root.user">
-						<app-selection
-							:options="$root.stats.task_selector_options"
-							v-if="$root.stats.task_selector_options"
-						>
-						<router-link
-							class="btn btn-primary mb-2 mt-2 w-100"
-							slot-scope="{ election_number, region_number, station_number }"
-							:to="{ name: 'task-vote', params: { election_number, region_number, station_number }}"
-							><h5 class="mb-0">Начать работу</h5></router-link>
-					</app-selection>
-					</template>
-					<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
-					<p>Это задание более близко к реальному наблюдению на участке и требует изучения процедуры подсчёта голосов избирательной комиссии, изложенной в нашей инструкции. Мы попросим вас просмотреть <strong>3-4-часовые</strong> фрагменты и отметить, как избирательная комиссия выполнила требования закона о выборах.</p>
-					<p class="text-center text-danger">Задание пока недоступно. В разработке.</p>
-					<router-link :to="{ name: 'task-proc' }" class="btn btn-primary mb-2 mt-2 w-100" v-if="false && $root.user"><h3>Начать работу</h3></router-link>
+					<div v-if="registered">
+						<p class="bg-success text-center">Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
+					</div>
 				</div>
+				<h3 class="text-center lead">Подсчёт явки</h3>
+				<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
+				<template v-if="$root.user">
+					<app-selection
+						:options="$root.stats.task_selector_options"
+						v-if="$root.stats.task_selector_options"
+					>
+					<router-link
+						class="btn btn-primary mb-2 mt-2 w-100"
+						slot-scope="{ election_number, region_number, station_number }"
+						:to="{ name: 'task-vote', params: { election_number, region_number, station_number }}"
+						><h5 class="mb-0">Начать работу</h5></router-link>
+				</app-selection>
+				</template>
+				<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
+				<p>Это задание более близко к реальному наблюдению на участке и требует изучения процедуры подсчёта голосов избирательной комиссии, изложенной в нашей инструкции. Мы попросим вас просмотреть <strong>3-4-часовые</strong> фрагменты и отметить, как избирательная комиссия выполнила требования закона о выборах.</p>
+				<p class="text-center text-danger">Задание пока недоступно. В разработке.</p>
+				<router-link :to="{ name: 'task-proc' }" class="btn btn-primary mb-2 mt-2 w-100" v-if="false && $root.user"><h3>Начать работу</h3></router-link>
 			</div>
 		</div>
 	</script>
@@ -1202,25 +1200,34 @@
 					},
 					computed: {
 						election_list() {
-							return this.options
-								.filter(opt => this.filter(opt[0], this.election_filter));
+							return this.filter(this.options, 'election');
 						},
 						region_list() {
-							if (this.options.length === 0) return [];
-
-							return this.getList([this.election_number])
-								.filter(opt => this.filter(opt[0], this.region_filter));
+							return this.filter(this.getList([this.election_number]), 'region');
 						},
 						station_list() {
-							if (this.options.length === 0) return [];
-
-							return this.getList([this.election_number, this.region_number])
-								.filter(opt => this.filter(opt[0], this.station_filter));
+							return this.filter(this.getList([this.election_number, this.region_number]), 'station');
 						}
 					},
 					methods: {
-						filter(str, substr) {
-							return str.toLowerCase().includes(substr.toLowerCase());
+						filter(list, value) {
+							if (this[value + '_filter'] === '') return list;
+
+							const filtered_special = list.filter(opt => opt[1] < 0);
+							const filtered = list.filter(opt =>
+								opt[1] >= 0 &&
+								String(opt[0]).toLowerCase().includes(this[value + '_filter'].toLowerCase())
+							);
+
+							this[value + '_number'] = filtered.length > 0 ?
+								filtered[0][1] :
+								filtered_special.length > 0 ?
+								filtered_special[0][1] :
+								list[0][1];
+
+							return filtered_special.length + filtered.length > 0 ?
+								filtered_special.concat(filtered) :
+								list;
 						},
 						getList(values) {
 							return values.reduce((list, value) =>
