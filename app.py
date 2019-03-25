@@ -188,17 +188,22 @@ def stats_get():
 def task_get(task_type, election_number, region_number, station_number, user, active_set = 20):
 	clip = None
 	if not (user is None or not (user.is_admin() or ('task/' + task_type) in user.role)):
+		filter_sql, filter_sql_args = '', []
+		for k, v in dict(election_number = election_number, region_number = region_number, station_number = station_number).items():
+			if v is not None and v >= 0:
+				filter_sql += ' AND s.{k} == ? '.format(k = k)
+				filter_sql_args += [v]
 		incomplete_tasks = list(Clip.raw(
 			'SELECT c.*,  IFNULL(COUNT(DISTINCT ev.creator_id), 0) as num_completed, IFNULL(MAX(ev.creator_id == ?), 0) as is_completed '
 			'FROM Clip c '
 			'JOIN Station s ON c.station_id = s.id '
 			'LEFT OUTER JOIN Event ev ON ev.clip_id == c.id AND ev.type == "vote" '
-			'WHERE c.task == ? '
+			'WHERE c.task == ? ' + filter_sql + ' '
 			'GROUP BY c.id, c.station_id, c.video, c.thumbnail, c.clip_interval_start, c.clip_interval_end, s.election_number, s.region_number, s.station_number '
 			'HAVING is_completed == 0 AND num_completed < ? '
 			'ORDER BY c.gold DESC, num_completed DESC, s.election_number ASC, s.region_number ASC, s.station_number ASC, c.clip_interval_start ASC, c.clip_interval_end ASC '
 			'LIMIT ?',
-			user.id, task_type, incomplete_task_threshold[task_type], active_set
+			*([user.id, task_type] + filter_sql_args + [incomplete_task_threshold[task_type], active_set])
 		)) or [None]
 		clip = random.choice(incomplete_tasks[:active_set])
 	return flask.Response(response = json.dumps(dict(id = clip.id, task = clip.task, thumbnail = clip.thumbnail, video = clip.video, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, csrf = clip.csrf, station = dict(station_number = clip.station.station_number, station_address = clip.station.station_address, timezone_offset = clip.station.timezone_offset, election_number = clip.station.election_number)) if clip is not None else None, ensure_ascii = False), status = 200, mimetype = 'application/json')
