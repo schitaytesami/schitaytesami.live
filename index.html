@@ -273,12 +273,11 @@
 		<div class="row">
 			<div class="col-md-6 offset-md-3">
 				<div class="bg-warning mb-3" v-if="!$root.user">
-					<h1 class="lead text-center">Как начать работу</h1>
-					<p class="p-2 mb-0">Введите ваш адрес электронной почты и получите ссылку-приглашение:</p>
+					<h1 class="lead text-center">Для начала работы введите адрес эл. почты и зарегистрируйтесь</h1>
 					<div class="container">
 						<div class="row pl-2 pr-2">
 							<div class="form-group col pl-0">
-								<input type="text" class="form-control user_email" v-model="email" />
+								<input type="text" class="form-control user_email" v-model="email" placeholder="Эл. почта" />
 							</div>
 							<div class="ml-auto">
 								<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
