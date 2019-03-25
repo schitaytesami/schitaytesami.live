@@ -1193,8 +1193,8 @@
 						return {
 							/* the options prop must contain the value for election_number */
 							election_number: this.options[0][1],
-							region_number: -1, /* auto */
-							station_number: -1, /* auto */
+							region_number: this.options[0][2][0][1],
+							station_number: this.options[0][2][0][2][0][1],
 							election_filter: '',
 							region_filter: '',
 							station_filter: '',
@@ -1229,10 +1229,13 @@
 					watch: {
 						/* reset the subselects not only visually but also in data */
 						election_number() {
-							this.region_number = -1;
+							this.region_number = this.options
+								.find(opt => opt[1] == this.election_number)[2][0][1];
 						},
 						region_number() {
-							this.station_number = -1;
+							this.station_number = this.options
+								.find(opt => opt[1] == this.election_number)[2]
+								.find(opt => opt[1] == this.region_number)[2][0][1];
 						},
 					},
 					template: '#app-selection',
