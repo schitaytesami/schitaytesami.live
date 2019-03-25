@@ -1208,34 +1208,34 @@
 						region_list() {
 							if (this.options.length === 0) return [];
 
-							return this.options
-								.find(opt => opt[1] == this.election_number)[2]
+							return this.getList([this.election_number])
 								.filter(opt => this.filter(opt[0], this.region_filter));
 						},
 						station_list() {
 							if (this.options.length === 0) return [];
 
-							return this.options
-								.find(opt => opt[1] == this.election_number)[2]
-								.find(opt => opt[1] == this.region_number)[2]
+							return this.getList([this.election_number, this.region_number])
 								.filter(opt => this.filter(opt[0], this.station_filter));
 						}
 					},
 					methods: {
 						filter(str, substr) {
 							return str.toLowerCase().includes(substr.toLowerCase());
-						}
+						},
+						getList(values) {
+							return values.reduce((list, value) =>
+								list.find(opt => opt[1] === value)[2], this.options);
+						},
 					},
 					watch: {
 						/* reset the subselects not only visually but also in data */
 						election_number() {
-							this.region_number = this.options
-								.find(opt => opt[1] == this.election_number)[2][0][1];
+							this.region_number =
+								this.getList([this.election_number])[0][1];
 						},
 						region_number() {
-							this.station_number = this.options
-								.find(opt => opt[1] == this.election_number)[2]
-								.find(opt => opt[1] == this.region_number)[2][0][1];
+							this.station_number =
+								this.getList([this.election_number, this.region_number])[0][1];
 						},
 					},
 					template: '#app-selection',
