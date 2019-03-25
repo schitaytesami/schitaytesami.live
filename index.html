@@ -552,7 +552,6 @@
 				</div>
 
 				<div class="col-lg-6">
-					<h5 class="text-center">Статистика</h5>
 					<table class="table table-sm table-borderless">
 						<tbody>
 							<tr>
@@ -607,9 +606,8 @@
 
 			<div class="row">
 				<div class="col">
-					<h5>Участки</h5>
 					<div>
-						<img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" v-for="thumb in thumbnails" />
+						<router-link :to="{name: 'station', params: { id: thumb.id } }" v-for="thumb in thumbnails"><img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" /></router-link>
 					</div>
 				</div>
 			</div>
