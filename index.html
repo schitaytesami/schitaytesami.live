@@ -579,30 +579,35 @@
 				</div>
 			</div>
 
-			<div class="row mb-2 justify-content-center" v-if="$root.user && $route.params.display === $root.user.display">
-				<div class="col-lg-10">
-					<h5 class="text-center">Закладки</h5>
-					<table class="table table-sm">
-						<thead>
-							<th scope="col">Дата голосования</th>
-							<th scope="col">Регион</th>
-							<th scope="col">УИК</th>
-							<th scope="col">Ссылка</th>
-							<th scope="col">Добавлено</th>
-						</thead>
-						<tbody>
-							<tr v-for="bookmark in bookmarks">
-								<td>{{ bookmark.date }}</td>
-								<td>{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
-								<td>{{ bookmark.station_number }}</td>
-								<td><a :href="bookmark.url">Перейти</a></td>
-								<td>{{ bookmark.timestamp }}</td>
-							</tr>
- 						</tbody>
-					</table>
-					<h6 class="text-center" v-if="bookmarks.length < 1">Вы ещё не добавили закладки.</h6>
+			<hr>
+
+			<template v-if="$root.user && $route.params.display === $root.user.display">
+				<div class="row mb-2 justify-content-center">
+					<div class="col-lg-10">
+						<h5 class="text-center">Закладки</h5>
+						<table class="table table-sm">
+							<thead>
+								<th scope="col">Дата голосования</th>
+								<th scope="col">Регион</th>
+								<th scope="col">УИК</th>
+								<th scope="col">Ссылка</th>
+								<th scope="col">Добавлено</th>
+							</thead>
+							<tbody>
+								<tr v-for="bookmark in bookmarks">
+									<td>{{ bookmark.date }}</td>
+									<td>{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
+									<td>{{ bookmark.station_number }}</td>
+									<td><a :href="bookmark.url">Перейти</a></td>
+									<td>{{ bookmark.timestamp }}</td>
+								</tr>
+	 						</tbody>
+						</table>
+						<h6 class="text-center" v-if="bookmarks.length < 1">Вы ещё не добавили закладки.</h6>
+					</div>
 				</div>
-			</div>
+				<hr>
+			</template>
 
 			<div class="row">
 				<div class="col">
@@ -1018,7 +1023,7 @@
 							if (!this.submitted && (this.failed || this.completed))
 								sendEvents(this, this.events);
 							else
-								nextTask(this, 'vote', this.$router.params);
+								nextTask(this, 'vote', this.$route.params);
 						},
 						addEvent(offset, type, value = '') {
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
