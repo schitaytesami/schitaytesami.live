@@ -185,6 +185,12 @@ def stats_get():
 			'GROUP BY u.id, u.display '
 			'ORDER BY num_votes DESC'
 		).dicts()),
+		station_access = list(StationAccess.raw(
+			'SELECT a.user_id, a.station_id, MAX(a.granted) as granted, MAX(a.timestamp) as timestamp '
+			'FROM StationAccess a '
+			'GROUP BY a.user_id, a.station_id '
+			'ORDER BY timestamp DESC'
+		).dicts()),
 		task_selector_options = by_election(stations)
 
 	), ensure_ascii = False, indent = 2), status = 200, mimetype = 'application/json')
