@@ -214,6 +214,13 @@ def task_get(task_type, election_number, region_number, station_number, user, ac
 	return flask.Response(response = json.dumps(dict(id = clip.id, task = clip.task, thumbnail = clip.thumbnail, video = clip.video, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, csrf = clip.csrf, station = dict(station_number = clip.station.station_number, station_address = clip.station.station_address, timezone_offset = clip.station.timezone_offset, election_number = clip.station.election_number)) if clip is not None else None, ensure_ascii = False), status = 200, mimetype = 'application/json')
 
 @user_must_be_active()
+def station_access_post(station_id, user_id, user):
+	if user.is_admin() or user_id == user.id:
+		StationAccess.create(station_id = station_id, user_id = user_id, granted = user.is_admin()).save()
+		return flask.jsonify(success = True)
+	return flask.jsonify(success = False)
+
+@user_must_be_active()
 def events_post(clip_id, user):
 	if len(flask.request.get_json()) > 0 and Clip.get(Clip.id == clip_id).csrf == int(flask.request.args.get('csrf', 0)):
 		Event.insert_many([dict(creator = user, clip = ev.get('clip'), value = ev.get('value', ''), offset = ev['offset'], type = ev['type']) for ev in flask.request.get_json() if ev.get('clip') == clip_id]).execute()
@@ -237,8 +244,9 @@ def user_post():
 
 def init_db(db_path):
 	db = pw.SqliteDatabase(db_path, autocommit = False)
-	for model in [User, Station, Clip, Event, StationAccess]:
-		model._meta.database = db
+	db.bind([User, Station, Clip, Event, StationAccess])
+	#for model in [User, Station, Clip, Event, StationAccess]:
+	#	model._meta.database = db
 	return db
 
 def import_(db_path, clips_path, stations_path, batch_size, turnout = False, gold = 0):
@@ -279,6 +287,7 @@ def serve(db_path, log_sql, gunicorn_args):
 	api.route('/task/<task_type>', methods = ['GET'], defaults = dict(election_number = -1, region_number = -1, station_number = -1))(task_get)
 	api.route('/task/<task_type>/election/<election_number>/region/<region_number>/station/<station_number>', methods = ['GET'])(task_get)
 	api.route('/events/<int:clip_id>', methods = ['POST'])(events_post)
+	api.route('/access/station/<int:station_id>/user/<int:user_id>', methods = ['POST'])(station_access_post)
 
 	def before_request():
 		if db.is_closed():
@@ -333,7 +342,7 @@ if __name__ == '__main__':
 	cmd.add_argument('--stations_path')
 	cmd.add_argument('--turnout', action = 'store_true')
 	cmd.add_argument('--gold', type = int, default = 0)
-	cmd.add_argument('--batch', type = int, dest = 'batch_size', default = 100)
+	cmd.add_argument('--batch', type = int, dest = 'batch_size', default = 32)
 	cmd.set_defaults(func = import_)
 
 	cmd = subparsers.add_parser('export')
