@@ -842,10 +842,10 @@
 					});
 				};
 
-				const nextTask = (self, task, params) => {
+				const nextTask = (self, task, { election_number, region_number, station_number }) => {
 					if (!self.user) return Promise.resolve();
-					console.log(params);
-					return fetch(`/task/${task}`)
+
+					return fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`)
 						.then(res => {
 							if (!res.ok) throw makeError(res);
 							return res.json();
@@ -980,11 +980,11 @@
 								sendEvents(this, events);
 								return;
 							}
-							nextTask(this, 'vote');
+							nextTask(this, 'vote', this.$route.params);
 						}
 					},
 					created() {
-						nextTask(this, 'vote');
+						nextTask(this, 'vote', this.$route.params);
 					},
 					template: '#app-task-proc',
 				};
@@ -1016,7 +1016,7 @@
 							if (!this.submitted && (this.failed || this.completed))
 								sendEvents(this, this.events);
 							else
-								nextTask(this, 'vote');
+								nextTask(this, 'vote', this.$router.params);
 						},
 						addEvent(offset, type, value = '') {
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
@@ -1274,8 +1274,16 @@
 					routes: [
 						{ path: '/', name: 'index', component: appIndex },
 						{ path: '/task', name: 'task', component: appTask },
-						{ path: '/task/vote', name: 'task-vote', component: appTaskVote },
-						{ path: '/task/proc', name: 'task-proc', component: appTaskProc },
+						{
+							path: '/task/vote/election/:election_number/region/:region_number/station/:station_number',
+							name: 'task-vote',
+							component: appTaskVote
+						},
+						{
+							path: '/task/proc/election/:election_number/region/:region_number/station/:station_number',
+							name: 'task-proc',
+							component: appTaskProc
+						},
 						{ path: '/results', name: 'results', component: appResults },
 						{ path: '/station/:id/:full_video?', name: 'station', component: appStation },
 						{ path: '/users', name: 'users', component: appUsers },
