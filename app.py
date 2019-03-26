@@ -241,7 +241,7 @@ def init_db(db_path):
 		model._meta.database = db
 	return db
 
-def import_(db_path, clips_path, stations_path, turnout = False, gold = 0, batch_size = 100):
+def import_(db_path, clips_path, stations_path, batch_size, turnout = False, gold = 0):
 	json_load = lambda uri: json.loads((open(uri, 'rb') if not uri.startswith('http') else urllib.request.urlopen(uri)).read().decode('utf-8'))
 	with init_db(db_path).atomic():
 		if clips_path is not None and turnout is False:
@@ -333,6 +333,7 @@ if __name__ == '__main__':
 	cmd.add_argument('--stations_path')
 	cmd.add_argument('--turnout', action = 'store_true')
 	cmd.add_argument('--gold', type = int, default = 0)
+	cmd.add_argument('--batch', type = int, dest = 'batch_size', default = 100)
 	cmd.set_defaults(func = import_)
 
 	cmd = subparsers.add_parser('export')
