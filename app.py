@@ -1,8 +1,8 @@
 import os
+import sys
 import math
 import base64
 import itertools
-import sys
 import random
 import binascii
 import argparse
@@ -14,10 +14,10 @@ import requests
 import functools
 import logging
 import json
-import peewee as pw
 import flask
-import gunicorn.app.wsgiapp
 import jinja2
+import peewee as pw
+import gunicorn.app.wsgiapp
 
 nginx_conf = 'nginx.conf'
 user_registration_conf = 'user_registration.json'
