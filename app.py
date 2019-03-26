@@ -148,9 +148,8 @@ def stats_get():
 	by_election = lambda stations: [('Выборы {k}'.format(k = k), k, by_region(g)) for k, g in groupby(stations, key = lambda s: s.election_number)]
 
 	return flask.Response(response = json.dumps(dict(
-
+		
 		stations = [dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, turnout = station_turnout[station.id], clips = ','.join(str(clip.id) for clip in station.clips)) for station in Station.select().order_by(Station.election_number, Station.region_number, Station.station_number).prefetch(Clip)],
-
 		clips = [dict(id = clip.id, thumbnail = clip.thumbnail, video = clip.video, station_id = clip.station_id, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, turnout = clip_turnout[clip.id]) for clip in clips],
 		num_users = User.select().count(),
 		num_stations_labeled = sum(1 for turnout in station_turnout.values() if turnout['estimate'].get('final') is not None),
@@ -190,9 +189,9 @@ def task_get(task_type, election_number, region_number, station_number, user, ac
 	if not (user is None or not (user.is_admin() or ('task/' + task_type) in user.role)):
 		filter_sql, filter_sql_args = '', []
 		for k, v in dict(election_number = election_number, region_number = region_number, station_number = station_number).items():
-			if v is not None and v >= 0:
+			if v is not None and int(v) >= 0:
 				filter_sql += ' AND s.{k} == ? '.format(k = k)
-				filter_sql_args += [v]
+				filter_sql_args += [int(v)]
 		incomplete_tasks = list(Clip.raw(
 			'SELECT c.*,  IFNULL(COUNT(DISTINCT ev.creator_id), 0) as num_completed, IFNULL(MAX(ev.creator_id == ?), 0) as is_completed '
 			'FROM Clip c '
@@ -266,7 +265,7 @@ def serve(db_path, log_sql, gunicorn_args):
 	api.route('/stats', methods = ['GET'])(stats_get)
 	api.route('/user', methods = ['POST'])(user_post)
 	api.route('/task/<task_type>', methods = ['GET'], defaults = dict(election_number = -1, region_number = -1, station_number = -1))(task_get)
-	api.route('/task/<task_type>/election/<int:election_number>/region/<int:region_number>/station/<int:station_number>', methods = ['GET'])(task_get)
+	api.route('/task/<task_type>/election/<election_number>/region/<region_number>/station/<station_number>', methods = ['GET'])(task_get)
 	api.route('/events/<int:clip_id>', methods = ['POST'])(events_post)
 
 	def before_request():
