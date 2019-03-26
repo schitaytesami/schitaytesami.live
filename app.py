@@ -237,7 +237,7 @@ def user_post():
 
 def init_db(db_path):
 	db = pw.SqliteDatabase(db_path, autocommit = False)
-	for model in [User, Station, Clip, Event]:
+	for model in [User, Station, Clip, Event, StationAccess]:
 		model._meta.database = db
 	return db
 
@@ -298,7 +298,7 @@ def serve(db_path, log_sql, gunicorn_args):
 def setup(db_path):
 	db = init_db(db_path)
 	db.connect()
-	db.create_tables([User, Station, Clip, Event])
+	db.create_tables([User, Station, Clip, Event, StationAccess])
 	print('Database created:', db_path)
 
 def config(environment, root, hostname, website_http_location, resolvers, debug_user_registration_email_file_path, email_authorization_bearer_token):
