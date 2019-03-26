@@ -738,7 +738,7 @@
 			<div class="form-group row">
 				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="election" class="form-control form-control-sm" v-model="election_number">
-						<option v-for="[ n, v ] in election_list" :value="v">{{ n }}</option>
+						<option v-for="[ n, v ] in election_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
 					</select>
 				</div>
 				<div class="col-md-6">
@@ -748,7 +748,7 @@
 			<div class="form-group row">
 				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="region" class="form-control form-control-sm"v-model="region_number">
-						<option v-for="[ n, v ] in region_list" :value="v">{{ n }}</option>
+						<option v-for="[ n, v ] in region_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
 					</select>
 				</div>
 				<div class="col-md-6">
@@ -758,7 +758,7 @@
 			<div class="form-group row">
 				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="station" class="form-control form-control-sm" v-model="station_number">
-						<option v-for="[ n, v ] in station_list" :value="v">{{ n }}</option>
+						<option v-for="[ n, v ] in station_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
 					</select>
 				</div>
 				<div class="col-md-6">
@@ -1208,19 +1208,21 @@
 					},
 					methods: {
 						filter(list, value) {
-							if (this[value + '_filter'] === '') return list;
-
 							const filtered_special = list.filter(opt => opt[1] < 0);
 							const filtered = list.filter(opt =>
 								opt[1] >= 0 &&
 								String(opt[0]).toLowerCase().includes(this[value + '_filter'].toLowerCase())
 							);
 
-							this[value + '_number'] = filtered.length > 0 ?
-								filtered[0][1] :
-								filtered_special.length > 0 ?
-								filtered_special[0][1] :
-								list[0][1];
+							if (filtered_special.length > 0 && filtered.length > 0)
+								filtered_special.push(['━━━━━━━━━━━━', 'disabled']);
+
+							if (this[value + '_filter'] !== '')
+								this[value + '_number'] = filtered.length > 0 ?
+									filtered[0][1] :
+									filtered_special.length > 0 ?
+									filtered_special[0][1] :
+									list[0][1];
 
 							return filtered_special.length + filtered.length > 0 ?
 								filtered_special.concat(filtered) :
