@@ -579,30 +579,35 @@
 				</div>
 			</div>
 
-			<div class="row mb-2 justify-content-center" v-if="$root.user && $route.params.display === $root.user.display">
-				<div class="col-lg-10">
-					<h5 class="text-center">Закладки</h5>
-					<table class="table table-sm">
-						<thead>
-							<th scope="col">Дата голосования</th>
-							<th scope="col">Регион</th>
-							<th scope="col">УИК</th>
-							<th scope="col">Ссылка</th>
-							<th scope="col">Добавлено</th>
-						</thead>
-						<tbody>
-							<tr v-for="bookmark in bookmarks">
-								<td>{{ bookmark.date }}</td>
-								<td>{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
-								<td>{{ bookmark.station_number }}</td>
-								<td><a :href="bookmark.url">Перейти</a></td>
-								<td>{{ bookmark.timestamp }}</td>
-							</tr>
- 						</tbody>
-					</table>
-					<h6 class="text-center" v-if="bookmarks.length < 1">Вы ещё не добавили закладки.</h6>
+			<hr>
+
+			<template v-if="$root.user && $route.params.display === $root.user.display">
+				<div class="row mb-2 justify-content-center">
+					<div class="col-lg-10">
+						<h5 class="text-center">Закладки</h5>
+						<table class="table table-sm">
+							<thead>
+								<th scope="col">Дата голосования</th>
+								<th scope="col">Регион</th>
+								<th scope="col">УИК</th>
+								<th scope="col">Ссылка</th>
+								<th scope="col">Добавлено</th>
+							</thead>
+							<tbody>
+								<tr v-for="bookmark in bookmarks">
+									<td>{{ bookmark.date }}</td>
+									<td>{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
+									<td>{{ bookmark.station_number }}</td>
+									<td><a :href="bookmark.url">Перейти</a></td>
+									<td>{{ bookmark.timestamp }}</td>
+								</tr>
+	 						</tbody>
+						</table>
+						<h6 class="text-center" v-if="bookmarks.length < 1">Вы ещё не добавили закладки.</h6>
+					</div>
 				</div>
-			</div>
+				<hr>
+			</template>
 
 			<div class="row">
 				<div class="col">
@@ -738,7 +743,7 @@
 			<div class="form-group row">
 				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="election" class="form-control form-control-sm" v-model="election_number">
-						<option v-for="[ n, v ] in election_list" :value="v">{{ n }}</option>
+						<option v-for="[ n, v ] in election_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
 					</select>
 				</div>
 				<div class="col-md-6">
@@ -748,7 +753,7 @@
 			<div class="form-group row">
 				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="region" class="form-control form-control-sm"v-model="region_number">
-						<option v-for="[ n, v ] in region_list" :value="v">{{ n }}</option>
+						<option v-for="[ n, v ] in region_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
 					</select>
 				</div>
 				<div class="col-md-6">
@@ -758,7 +763,7 @@
 			<div class="form-group row">
 				<div class="col-md-6 mb-3 mb-md-0">
 					<select id="station" class="form-control form-control-sm" v-model="station_number">
-						<option v-for="[ n, v ] in station_list" :value="v">{{ n }}</option>
+						<option v-for="[ n, v ] in station_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
 					</select>
 				</div>
 				<div class="col-md-6">
@@ -842,10 +847,10 @@
 					});
 				};
 
-				const nextTask = (self, task, params) => {
+				const nextTask = (self, task, { election_number, region_number, station_number }) => {
 					if (!self.user) return Promise.resolve();
-					console.log(params);
-					return fetch(`/task/${task}`)
+
+					return fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`)
 						.then(res => {
 							if (!res.ok) throw makeError(res);
 							return res.json();
@@ -929,6 +934,7 @@
 				};
 
 				const appTaskProc = {
+					name: 'app-task-proc',
 					data() {
 						return {
 							questions : [
@@ -980,16 +986,17 @@
 								sendEvents(this, events);
 								return;
 							}
-							nextTask(this, 'vote');
+							nextTask(this, 'vote', this.$route.params);
 						}
 					},
 					created() {
-						nextTask(this, 'vote');
+						nextTask(this, 'vote', this.$route.params);
 					},
 					template: '#app-task-proc',
 				};
 
 				const appTaskVote = {
+					name: 'app-task-vote',
 					data() {
 						return {
 							showInstruction: false,
@@ -1016,7 +1023,7 @@
 							if (!this.submitted && (this.failed || this.completed))
 								sendEvents(this, this.events);
 							else
-								nextTask(this, 'vote');
+								nextTask(this, 'vote', this.$route.params);
 						},
 						addEvent(offset, type, value = '') {
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
@@ -1208,19 +1215,21 @@
 					},
 					methods: {
 						filter(list, value) {
-							if (this[value + '_filter'] === '') return list;
-
 							const filtered_special = list.filter(opt => opt[1] < 0);
 							const filtered = list.filter(opt =>
 								opt[1] >= 0 &&
 								String(opt[0]).toLowerCase().includes(this[value + '_filter'].toLowerCase())
 							);
 
-							this[value + '_number'] = filtered.length > 0 ?
-								filtered[0][1] :
-								filtered_special.length > 0 ?
-								filtered_special[0][1] :
-								list[0][1];
+							if (filtered_special.length > 0 && filtered.length > 0)
+								filtered_special.push(['━━━━━━━━━━━━', 'disabled']);
+
+							if (this[value + '_filter'] !== '')
+								this[value + '_number'] = filtered.length > 0 ?
+									filtered[0][1] :
+									filtered_special.length > 0 ?
+									filtered_special[0][1] :
+									list[0][1];
 
 							return filtered_special.length + filtered.length > 0 ?
 								filtered_special.concat(filtered) :
@@ -1272,8 +1281,16 @@
 					routes: [
 						{ path: '/', name: 'index', component: appIndex },
 						{ path: '/task', name: 'task', component: appTask },
-						{ path: '/task/vote', name: 'task-vote', component: appTaskVote },
-						{ path: '/task/proc', name: 'task-proc', component: appTaskProc },
+						{
+							path: '/task/vote/election/:election_number/region/:region_number/station/:station_number',
+							name: 'task-vote',
+							component: appTaskVote
+						},
+						{
+							path: '/task/proc/election/:election_number/region/:region_number/station/:station_number',
+							name: 'task-proc',
+							component: appTaskProc
+						},
 						{ path: '/results', name: 'results', component: appResults },
 						{ path: '/station/:id/:full_video?', name: 'station', component: appStation },
 						{ path: '/users', name: 'users', component: appUsers },
@@ -1404,7 +1421,7 @@
 									},
 								},
 								[
-									c('keep-alive', { props: { exclude: ['app-station', 'app-user'] } }, [
+									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-vote', 'app-task-proc'] } }, [
 										c('router-view', { on: { error: this.erroHandler } }),
 									]),
 								]
