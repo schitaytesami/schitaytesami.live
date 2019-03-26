@@ -96,6 +96,12 @@ class Event(pw.Model):
 	value = pw.TextField()
 	offset = pw.DoubleField(default = 0.0)
 	type = pw.TextField()
+	
+class StationAccess(pw.Model):
+	station = pw.ForeignKeyField(Station)
+	user = pw.ForeignKeyField(User)
+	timestamp = pw.IntegerField(default = lambda : int(time.time()))
+	granted = pw.BooleanField(default = False)
 
 def user_must_be_active(admin = False, fail = True):
 	def wrap(method):
