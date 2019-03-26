@@ -929,6 +929,7 @@
 				};
 
 				const appTaskProc = {
+					name: 'app-task-proc',
 					data() {
 						return {
 							questions : [
@@ -990,6 +991,7 @@
 				};
 
 				const appTaskVote = {
+					name: 'app-task-vote',
 					data() {
 						return {
 							showInstruction: false,
@@ -1414,7 +1416,7 @@
 									},
 								},
 								[
-									c('keep-alive', { props: { exclude: ['app-station', 'app-user'] } }, [
+									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-vote', 'app-task-proc'] } }, [
 										c('router-view', { on: { error: this.erroHandler } }),
 									]),
 								]
