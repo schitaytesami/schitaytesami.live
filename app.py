@@ -189,7 +189,7 @@ def stats_get():
 			'SELECT a.user_id, a.station_id, MAX(a.granted) as granted, MAX(a.timestamp) as timestamp '
 			'FROM StationAccess a '
 			'GROUP BY a.user_id, a.station_id '
-			'ORDER BY timestamp DESC'
+			'ORDER BY granted ASC, timestamp DESC'
 		).dicts()),
 		task_selector_options = by_election(stations)
 
