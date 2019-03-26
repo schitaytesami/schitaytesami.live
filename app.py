@@ -236,19 +236,19 @@ def init_db(db_path):
 	return db
 
 def import_(db_path, clips_path, stations_path, turnout = False, gold = 0):
-	init_db(db_path)
 	json_load = lambda uri: json.loads((open(uri, 'rb') if not uri.startswith('http') else urllib.request.urlopen(uri)).read().decode('utf-8'))
-	if clips_path is not None and turnout is False:
-		clips = json_load(clips_path)
-		Clip.insert_many([dict(clip_interval_start = c.get('clip_interval_start'), clip_interval_end = c.get('clip_interval_end'), video = c.get('video'), thumbnail = c.get('thumbnail'), meta = c.get('meta', ''), station_id = Station.get_or_create(station_number = c['station_number'], region_number = c['region_number'], election_number = c['election_number'], defaults = dict(station_address = c['station_address'], timezone_offset = c['timezone_offset'], station_interval_start = c['station_interval_start'], station_interval_end = c['station_interval_end']))[0].id, task = c.get('task', ''), camera_id = c.get('camera_id' ''), gold = c.get('gold', random.random() < float(gold) / len(clips))) for c in clips]).execute()
-	elif clips_path is not None and turnout is True:
-		clips = json_load(clips_path)
-		turnout_estimate = {clip_estimate['id'] : clip_estimate for clip_estimate in clips}
-		Event.insert_many([dict(clip = clip, type = 'turnout_estimate', value = json.dumps(turnout_estimate[clip.id], ensure_ascii = False) ) for clip in list(Clip.select().prefetch(Event)) if not any(ev.type == 'turnout_estimate' for ev in clip.events) and clip.id in turnout_estimate]).execute()
-	elif stations_path is not None and turnout:
-		stations = json_load(stations_path)
-		turnout_official = {station['station_id'] : station for station in stations}
-		Event.insert_many([dict(station = station, type = 'turnout_official', value = json.dumps({'10h' : turnout_official[station.station_id]['turnout_10h'], '12h' : turnout_official[station.station_id]['turnout_12h'], '15h' : turnout_official[station.station_id]['turnout_15h'], '18h' : turnout_official[station.station_id]['turnout_18h'], '20h' : turnout_official[station.station_id]['ballots_given_at_station_on_election_day'] / float(turnout_official[station.station_id]['voters_registered']), 'final' : turnout_official[station.station_id]['ballots_given_at_station_on_election_day']})) for station in list(Station.select().prefetch(Event)) if not any(ev.type == 'turnout_official' for ev in station.events)]).execute()
+	with init_db(db_path).atomic():
+		if clips_path is not None and turnout is False:
+			clips = json_load(clips_path)
+			Clip.insert_many([dict(clip_interval_start = c.get('clip_interval_start'), clip_interval_end = c.get('clip_interval_end'), video = c.get('video'), thumbnail = c.get('thumbnail'), meta = c.get('meta', ''), station_id = Station.get_or_create(station_number = c['station_number'], region_number = c['region_number'], election_number = c['election_number'], defaults = dict(station_address = c['station_address'], timezone_offset = c['timezone_offset'], station_interval_start = c['station_interval_start'], station_interval_end = c['station_interval_end']))[0].id, task = c.get('task', ''), camera_id = c.get('camera_id' ''), gold = c.get('gold', random.random() < float(gold) / len(clips))) for c in clips]).execute()
+		elif clips_path is not None and turnout is True:
+			clips = json_load(clips_path)
+			turnout_estimate = {clip_estimate['id'] : clip_estimate for clip_estimate in clips}
+			Event.insert_many([dict(clip = clip, type = 'turnout_estimate', value = json.dumps(turnout_estimate[clip.id], ensure_ascii = False) ) for clip in list(Clip.select().prefetch(Event)) if not any(ev.type == 'turnout_estimate' for ev in clip.events) and clip.id in turnout_estimate]).execute()
+		elif stations_path is not None and turnout:
+			stations = json_load(stations_path)
+			turnout_official = {station['station_id'] : station for station in stations}
+			Event.insert_many([dict(station = station, type = 'turnout_official', value = json.dumps({'10h' : turnout_official[station.station_id]['turnout_10h'], '12h' : turnout_official[station.station_id]['turnout_12h'], '15h' : turnout_official[station.station_id]['turnout_15h'], '18h' : turnout_official[station.station_id]['turnout_18h'], '20h' : turnout_official[station.station_id]['ballots_given_at_station_on_election_day'] / float(turnout_official[station.station_id]['voters_registered']), 'final' : turnout_official[station.station_id]['ballots_given_at_station_on_election_day']})) for station in list(Station.select().prefetch(Event)) if not any(ev.type == 'turnout_official' for ev in station.events)]).execute()
 
 def export_(stations_path, db_path):
 	init_db(db_path)
