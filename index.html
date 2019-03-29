@@ -531,11 +531,11 @@
 								<td>
 									<router-link :to="{ name: 'user', params: { display: user.display } }">{{ user.display }}</router-link>
 								</td>
-								<td>{{ user.votes }}</td>
-								<td>{{ user.stations }}</td>
-								<td>{{ user.minutes }}</td>
-								<td>{{ user.clips }}</td>
-								<td>{{ user.notes }}</td>
+								<td>{{ user.num_votes }}</td>
+								<td>{{ user.num_stations }}</td>
+								<td>{{ user.num_minutes }}</td>
+								<td>{{ user.num_clips }}</td>
+								<td>{{ user.num_notes }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -1130,11 +1130,11 @@
 								i: i + 1,
 								id: user.id,
 								display: user.display,
-								votes: user.num_votes,
-								stations: user.num_stations,
-								minutes: (user.num_seconds / 60).toFixed(0),
-								clips: user.num_clips,
-								notes: user.num_notes,
+								num_votes: user.num_votes,
+								num_stations: user.num_stations,
+								num_minutes: (user.num_seconds / 60).toFixed(0),
+								num_clips: user.num_clips,
+								num_notes: user.num_notes,
 							}));
 						},
 					},
