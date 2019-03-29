@@ -1056,10 +1056,9 @@
 					computed: {
 						stations() {
 							return (this.$root.stats.stations || []).map(station => ({
+								...station,
 								date: formatDate(station.election_number),
 								region: station.station_address.split(',')[0],
-								station_id: station.station_id,
-								station_number: station.station_number,
 								official: station.turnout.official.final,
 								estimate: station.turnout.estimate.final,
 								progress: `${(station.turnout.progress * 100).toFixed(0)}%`,
@@ -1127,14 +1126,9 @@
 					computed: {
 						users() {
 							return (this.$root.stats.users || []).map((user, i) => ({
+								...user,
 								i: i + 1,
-								id: user.id,
-								display: user.display,
-								num_votes: user.num_votes,
-								num_stations: user.num_stations,
 								num_minutes: (user.num_seconds / 60).toFixed(0),
-								num_clips: user.num_clips,
-								num_notes: user.num_notes,
 							}));
 						},
 					},
