@@ -616,6 +616,28 @@
 					</div>
 				</div>
 			</div>
+			
+			<div class="row mb-2 justify-content-center">
+				<div class="col-lg-10">
+					<h5 class="text-center">Доступ</h5>
+					<table class="table table-sm">
+						<thead>
+							<th scope="col">Имя</th>
+							<th scope="col">Участок</th>
+							<th scope="col">Разрешен</th>
+							<th scope="col">Добавлено</th>
+						</thead>
+						<tbody>
+							<tr v-for="sa in $root.stats.station_access">
+								<td>{{ sa.user_id }}</td>
+								<td>{{ sa.station_id }}</td>
+								<td>{{ sa.granted }}</td>
+								<td>{{ sa.timestamp }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 	</script>
 
