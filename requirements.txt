@@ -1,6 +1,5 @@
 peewee==3.5.2
 flask
-requests
 jinja2
 gunicorn
 bcrypt

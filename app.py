@@ -10,7 +10,6 @@ import bcrypt
 import time
 import string
 import urllib.request
-import requests
 import functools
 import logging
 import json
@@ -54,7 +53,7 @@ class User(pw.Model):
 		if debug_user_registration_email_file_path is not None:
 			open(debug_user_registration_email_file_path, 'w').write(payload)
 		else:
-			requests.post(endpoint, headers = headers, data = payload.encode('utf-8'))
+			urllib.request.Request(endpoint, headers = headers, data = payload.encode('utf-8')).urlopen()
 
 	@staticmethod
 	def normalize_email(email):
@@ -83,7 +82,7 @@ class Clip(pw.Model):
 	clip_interval_start = pw.IntegerField(null = True)
 	clip_interval_end = pw.IntegerField(null = True)
 	meta = pw.TextField(default = '')
-	task = pw.TextField(default = '')
+	task = pw.TextField(default = '', index = True)
 	camera_id = pw.TextField(default = '')
 	csrf = pw.IntegerField(default = lambda: random.randint(0, 1e9))
 	gold = pw.BooleanField(default = False)
@@ -95,7 +94,7 @@ class Event(pw.Model):
 	station = pw.ForeignKeyField(Station, null = True, backref = 'events')
 	value = pw.TextField()
 	offset = pw.DoubleField(default = 0.0)
-	type = pw.TextField()
+	type = pw.TextField(index = True)
 	
 class StationAccess(pw.Model):
 	station = pw.ForeignKeyField(Station)
@@ -144,7 +143,7 @@ def estimate_station(station, clip_turnout):
 	return dict(estimate = estimate, official = official, comment = comment, progress = progress)
 
 def stats_get():
-	stations, clips = list(Station.select().prefetch(Event).prefetch(Clip)), list(Clip.select().where(Clip.task == 'vote').prefetch(Event).prefetch(Station))
+	stations, clips = list(Station.select().order_by(Station.election_number, Station.region_number, Station.station_number).prefetch(Event).prefetch(Clip)), list(Clip.select().where(Clip.task == 'vote').prefetch(Event).prefetch(Station))
 	clip_turnout = {clip.id : estimate_clip(clip) for clip in clips}
 	station_turnout = {station.id : estimate_station(station, clip_turnout) for station in stations}
 
@@ -155,7 +154,7 @@ def stats_get():
 
 	return flask.Response(response = json.dumps(dict(
 		
-		stations = [dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, turnout = station_turnout[station.id], clips = ','.join(str(clip.id) for clip in station.clips)) for station in Station.select().order_by(Station.election_number, Station.region_number, Station.station_number).prefetch(Clip)],
+		stations = [dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, turnout = station_turnout[station.id], clips = ','.join(str(clip.id) for clip in station.clips)) for station in stations],
 		clips = [dict(id = clip.id, thumbnail = clip.thumbnail, video = clip.video, station_id = clip.station_id, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, turnout = clip_turnout[clip.id]) for clip in clips],
 		num_users = User.select().count(),
 		num_stations_labeled = sum(1 for turnout in station_turnout.values() if turnout['estimate'].get('final') is not None),
@@ -177,13 +176,30 @@ def stats_get():
 		).fetchone()[0],
 		events = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station_id if ev.station is not None else ev.clip.station_id if ev.clip is not None else None) for ev in Event.select().where(Event.type == 'bookmark').prefetch(Clip)],
 		users = list(User.raw(
-			'SELECT u.id, u.display, IFNULL(SUM(e.type == "vote"), 0) as num_votes, SUM(IFNULL(c.clip_interval_end - c.clip_interval_start, 0)) as num_seconds, IFNULL(COUNT(DISTINCT c.station_id), 0) as num_stations, IFNULL(SUM(e.type == "note"), 0) as num_notes, IFNULL(GROUP_CONCAT(DISTINCT e.clip_id), "") as clips, IFNULL(COUNT(DISTINCT e.clip_id), 0) as num_clips, IFNULL(GROUP_CONCAT(DISTINCT eb.id), "") as bookmarks '
-			'FROM User u '
-			'LEFT OUTER JOIN Event e ON e.creator_id = u.id AND e.type != "bookmark" '
-			'LEFT OUTER JOIN Event eb ON eb.creator_id = u.id AND eb.type == "bookmark" '
-			'LEFT OUTER JOIN Clip c ON c.id = e.clip_id '
-			'GROUP BY u.id, u.display '
-			'ORDER BY num_votes DESC'
+			'SELECT u1.id, u1.display, u1.num_votes, u1.num_seconds, u1.num_stations, u1.num_notes, u1.clips, u1.num_clips, u2.bookmarks FROM '
+				'(SELECT u.id,'  
+				'	u.display, ' 
+				'	IFNULL(SUM(e.type == "vote"), 0) as num_votes, ' 
+				'	SUM(IFNULL(c.clip_interval_end - c.clip_interval_start, 0)) as num_seconds, '
+				'	IFNULL(COUNT(DISTINCT c.station_id), 0) as num_stations, '
+				'	IFNULL(SUM(e.type == "note"), 0) as num_notes, '
+				'	IFNULL(GROUP_CONCAT(DISTINCT e.clip_id), "") as clips, '
+				'	IFNULL(COUNT(DISTINCT e.clip_id), 0) as num_clips '
+				'FROM User u '
+				'LEFT OUTER JOIN Event e ON e.creator_id = u.id AND e.type != "bookmark" '
+				'LEFT OUTER JOIN Clip c ON c.id = e.clip_id '
+				'GROUP BY u.id, u.display '
+				'ORDER BY num_votes DESC'
+				') as u1 '
+
+				'LEFT OUTER JOIN '
+				'(SELECT u.id, IFNULL(GROUP_CONCAT((SELECT DISTINCT(b.id) FROM Event b WHERE b.creator_id = u.id AND b.type == "bookmark")), "") as bookmarks '
+				'FROM User u '
+				'LEFT OUTER JOIN Event b ON b.creator_id = u.id AND b.type = "bookmark" '
+				'GROUP BY u.id '
+				') as u2 '
+				'ON u2.id = u1.id;'
+
 		).dicts()),
 		station_access = list(StationAccess.raw(
 			'SELECT a.user_id, a.station_id, MAX(a.granted) as granted, MAX(a.timestamp) as timestamp '
@@ -251,8 +267,6 @@ def user_post():
 def init_db(db_path):
 	db = pw.SqliteDatabase(db_path, autocommit = False)
 	db.bind([User, Station, Clip, Event, StationAccess])
-	#for model in [User, Station, Clip, Event, StationAccess]:
-	#	model._meta.database = db
 	return db
 
 def import_(db_path, clips_path, stations_path, batch_size, turnout = False, gold = 0):
