@@ -420,6 +420,7 @@
 								<th>Дата голосования</th>
 								<th>Регион</th>
 								<th>УИК</th>
+								<th v-if="$root.user">Полный доступ</th>
 								<th>Явка, официальная</th>
 								<th style="border-right: 2px solid black">Явка, видеоподсчет</th>
 								<th class="text-muted">Прогресс</th>
@@ -431,6 +432,7 @@
 								<td>{{ station.date }}</td>
 								<td>{{ station.region }}</td>
 								<td><router-link :to="{name: 'station', params: { id: station.station_id } }">{{ station.station_number }}</router-link></td>
+								<td class="text-muted" v-if="$root.user"><app-access-button :station_id="station.id" :user_id="$root.user.id" /></td>
 								<td>{{ station.official }}</td>
 								<td style="border-right: 2px solid black">{{ station.estimate }}</td>
 								<td class="text-muted">{{ station.progress }}</td>
@@ -800,13 +802,12 @@
 	</script>
 
   <script type="text/x-template" id="app-bookmark-button">
-    <button
-    	class="btn btn-primary btn-sm"
-    	:class="{ 'btn-success': submitted }"
-    	:disabled="submitted"
-    	@click="submit"
-    >{{ submitted ? 'Добавлено' : 'Добавить в закладки' }}</button>
+    <button	class="btn btn-sm" :class="{ 'btn-success': submitted, 'btn-primary' : !submitted }" :disabled="submitted" @click="submit">{{ submitted ? 'Добавлено' : 'Добавить в закладки' }}</button>
   </script>
+
+	<script type="text/x-template" id="app-access-button">
+		<button class="btn btn-sm" :class="{  'btn-success' : granted, 'btn-light' : !granted }"  :disabled="granted" @click="submit">{{ granted ? "Разрешён доступ" : is_admin ? "Дать доступ" : "Запросить доступ" }}</button>
+	</script>
 
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
 	<script src="https://unpkg.com/vue-router@3.0.1/dist/vue-router.min.js"></script>
@@ -1267,27 +1268,45 @@
 					template: '#app-selection',
 				};
 
-        const appBookmarkButton = {
-          name: 'bookmark-button',
-          props: {
-            clip: {
-              type: Object,
-              required: true,
-            },
-          },
-          data() {
-            return {
-              submitted: false,
-              failed: false,
-            }
-          },
-          methods: {
-            submit() {
-              sendEvents(this, [{ type: 'bookmark', offset: 0, value: window.location.href, clip: this.clip.id }]);
-            },
-          },
-          template: '#app-bookmark-button',
-        };
+				const appBookmarkButton = {
+				  name: 'bookmark-button',
+				  props: {
+					clip: {
+					  type: Object,
+					  required: true,
+					},
+				  },
+				  data() {
+					return {
+					  submitted: false,
+					  failed: false,
+					}
+				  },
+				  methods: {
+					submit() {
+					  sendEvents(this, [{ type: 'bookmark', offset: 0, value: window.location.href, clip: this.clip.id }]);
+					},
+				  },
+				  template: '#app-bookmark-button',
+				};
+
+				const appAccessButton = {
+				  name: 'access-button',
+				  props: ['station_id', 'user_id'],
+				  data() {
+					return {
+					  granted: (this.$root.stats.station_access.find(x => x.station_id == this.station_id && x.user_id == this.user_id) || {granted : false}).granted,
+					  is_admin: this.$root.user && this.$root.user.is_admin(),
+					}
+				  },
+				  methods: {
+					submit() {
+						console.log(this.station_id, this.user_id);
+						this.granted = true;
+					},
+				  },
+				  template: '#app-access-button',
+				};
 
 				const router = new VueRouter({
 					linkActiveClass: 'active',
@@ -1326,8 +1345,9 @@
 					],
 				});
 
-        Vue.component('app-selection', appSelection);
+		        Vue.component('app-selection', appSelection);
 				Vue.component('app-bookmark-button', appBookmarkButton);
+				Vue.component('app-access-button', appAccessButton);
 
 				const app = new Vue({
 					el: '#app',
@@ -1397,7 +1417,7 @@
 						},
 						login(token) {
 							const userToken = token != null ? token : (document.cookie.match(/user_token=([^;^$]+)/) || [, ''])[1];
-							this.user = userToken ? JSON.parse(atob(userToken)) : null;
+							this.user = userToken ? { ...JSON.parse(atob(userToken)), is_admin : function() { return this.role.includes('admin'); } } : null;
 							document.cookie = 'user_token=' + userToken + ';';
 						},
 						logout() {
