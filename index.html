@@ -1319,7 +1319,7 @@
 				  },
 				  methods: {
 					submit() {
-						console.log(this.station_id, this.user_id);
+						sendAccess(this, this.user_id, this.station_id);
 						this.granted = true;
 					},
 				  },
