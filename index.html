@@ -868,6 +868,24 @@
 						self.$root.showError = true;
 					});
 				};
+				
+				const sendAccess = (self, user_id, station_id) => {
+					return fetch(`/access/user/${user_id}/station/${station_id}`, {
+						method: 'post',
+						headers: {'Content-type': 'application/json'},
+						body: JSON.stringify(events),
+					})
+					.then(res => {
+						//self.submitted = true;
+						if (!res.ok) throw makeError(res);
+						//self.failed = false;
+						return res;
+					})
+					.catch(() => {
+						//self.failed = true;
+						self.$root.showError = true;
+					});
+				};
 
 				const nextTask = (self, task, { election_number, region_number, station_number }) => {
 					if (!self.user) return Promise.resolve();
