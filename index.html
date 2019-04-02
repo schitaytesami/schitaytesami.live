@@ -497,7 +497,7 @@
 							</table>
 						</div>
 					</div>
-					
+
 					<div v-if="true" v-if="$root.user">
 						<h3 class="text-center lead">Дополнительно</h3>
 						<div class="row no-gutters text-center"><app-access-button :station_id="station.id" :user_id="$root.user.id" /></div>
@@ -610,7 +610,7 @@
 						<h6 class="text-center" v-if="bookmarks.length < 1">Вы ещё не добавили закладки.</h6>
 					</div>
 				</div>
-				<hr v-if="tnumbnails" />
+				<hr v-if="thumbnails" />
 			</template>
 
 			<div class="row">
@@ -620,7 +620,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="row mb-2 justify-content-center">
 				<div class="col-lg-10">
 					<h5 class="text-center">Доступ</h5>
@@ -871,7 +871,7 @@
 						self.$root.showError = true;
 					});
 				};
-				
+
 				const sendAccess = (self, user_id, station_id) => {
 					return fetch(`/access/user/${user_id}/station/${station_id}`, {
 						method: 'post',
