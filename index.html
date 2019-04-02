@@ -623,22 +623,31 @@
 				</div>
 			</div>
 
-			<div class="row mb-2 justify-content-center">
+			<div class="row mb-2 justify-content-center" v-if="station_access.length > 0">
 				<div class="col-lg-10">
 					<h5 class="text-center">Доступ</h5>
 					<table class="table table-sm">
 						<thead>
-							<th scope="col">Имя</th>
-							<th scope="col">Участок</th>
-							<th scope="col">Разрешен</th>
-							<th scope="col">Добавлено</th>
+							<th scope="col">Дата голосования</th>
+							<th scope="col">Регион</th>
+							<th scope="col">УИК</th>
+							<th scope="col">Статус</th>
 						</thead>
 						<tbody>
-							<tr v-for="sa in $root.stats.station_access">
-								<td>{{ sa.user_id }}</td>
-								<td>{{ sa.station_id }}</td>
-								<td>{{ sa.granted }}</td>
-								<td>{{ sa.timestamp }}</td>
+							<tr v-for="sa in station_access">
+								<td>{{ sa.date }}</td>
+								<td>{{ sa.station_address.substring(0, sa.station_address.indexOf(',')) }}</td>
+								<td>
+									<router-link :to="{ name: 'station', params: { id: sa.station_id_full }}">
+										{{ sa.station_number }}
+									</router-link>
+								</td>
+								<td>
+									<app-access-button
+										:title="sa.timestamp"
+										:station_id="sa.station_id"
+										:user_id="user.id"/>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -1218,6 +1227,23 @@
                 	timestamp: new Date(bookmark.timestamp).toLocaleString('ru-RU'),
                 }))
                 .sort((a, b) => b.timestamp - a.timestamp);
+						},
+						station_access() {
+							const { station_access, stations_dict } = this.$root.stats;
+							if (!station_access) return [];
+
+							const user_station_access = station_access
+								.filter(x => x.user_id === this.user.id)
+								.sort((a, b) => a - b);
+
+							return user_station_access.map(({ station_id, timestamp }) => ({
+								station_id,
+								station_id_full: stations_dict[station_id].station_id,
+								station_number: stations_dict[station_id].station_number,
+								station_address: stations_dict[station_id].station_address,
+								date: formatDate(stations_dict[station_id].election_number),
+								timestamp: new Date(timestamp * 1000).toLocaleString('ru-RU'),
+							}));
 						},
 					},
 					template: '#app-user'
