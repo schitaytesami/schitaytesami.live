@@ -497,13 +497,15 @@
 							</table>
 						</div>
 					</div>
-					
-					<div v-if="true" v-if="$root.user">
+
+					<div class="mt-3" v-if="true || $root.user">
 						<h3 class="text-center lead">Дополнительно</h3>
-						<div class="row no-gutters text-center"><app-access-button :station_id="station.id" :user_id="$root.user.id" /></div>
+						<div class="row no-gutters text-center">
+							<app-access-button :station_id="station.id" :user_id="$root.user.id" />
+						</div>
 					</div>
 
-					<hr />
+					<hr/>
 					<p>* предварительный результат</p>
 				</div>
 			</div>
@@ -595,22 +597,22 @@
 								<th scope="col">Регион</th>
 								<th scope="col">УИК</th>
 								<th scope="col">Ссылка</th>
-								<th scope="col">Добавлено</th>
 							</thead>
 							<tbody>
 								<tr v-for="bookmark in bookmarks">
 									<td>{{ bookmark.date }}</td>
-									<td>{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
+									<td class="w-50">{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
 									<td>{{ bookmark.station_number }}</td>
-									<td><a :href="bookmark.url">Перейти</a></td>
-									<td>{{ bookmark.timestamp }}</td>
+									<td class="w-25">
+										<a :title="'Добавлено ' + bookmark.timestamp" :href="bookmark.url">Перейти</a>
+									</td>
 								</tr>
 	 						</tbody>
 						</table>
 						<h6 class="text-center" v-if="bookmarks.length < 1">Вы ещё не добавили закладки.</h6>
 					</div>
 				</div>
-				<hr v-if="tnumbnails" />
+				<hr v-if="thumbnails" />
 			</template>
 
 			<div class="row">
@@ -620,23 +622,32 @@
 					</div>
 				</div>
 			</div>
-			
-			<div class="row mb-2 justify-content-center">
+
+			<div class="row mb-2 justify-content-center" v-if="station_access.length > 0">
 				<div class="col-lg-10">
 					<h5 class="text-center">Доступ</h5>
 					<table class="table table-sm">
 						<thead>
-							<th scope="col">Имя</th>
-							<th scope="col">Участок</th>
-							<th scope="col">Разрешен</th>
-							<th scope="col">Добавлено</th>
+							<th scope="col">Дата голосования</th>
+							<th scope="col">Регион</th>
+							<th scope="col">УИК</th>
+							<th scope="col">Статус</th>
 						</thead>
 						<tbody>
-							<tr v-for="sa in $root.stats.station_access">
-								<td>{{ sa.user_id }}</td>
-								<td>{{ sa.station_id }}</td>
-								<td>{{ sa.granted }}</td>
-								<td>{{ sa.timestamp }}</td>
+							<tr v-for="sa in station_access">
+								<td>{{ sa.date }}</td>
+								<td class="w-50">{{ sa.station_address.substring(0, sa.station_address.indexOf(',')) }}</td>
+								<td>
+									<router-link :to="{ name: 'station', params: { id: sa.station_id_full }}">
+										{{ sa.station_number }}
+									</router-link>
+								</td>
+								<td class="w-25">
+									<app-access-button
+										:title="sa.timestamp"
+										:station_id="sa.station_id"
+										:user_id="user.id"/>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -809,7 +820,11 @@
   </script>
 
 	<script type="text/x-template" id="app-access-button">
-		<button class="btn btn-sm" :class="{  'btn-success' : granted, 'btn-light' : !granted }"  :disabled="granted" @click="submit">{{ granted ? "Разрешён доступ" : is_admin ? "Дать доступ" : "Запросить доступ" }}</button>
+		<button
+			class="btn btn-sm" :class="{ 'btn-success': granted, 'btn-light': !granted }"
+			:disabled="granted !== -1"
+			@click="submit"
+		>{{ get_text() }}</button>
 	</script>
 
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
@@ -871,12 +886,11 @@
 						self.$root.showError = true;
 					});
 				};
-				
+
 				const sendAccess = (self, user_id, station_id) => {
-					return fetch(`/access/user/${user_id}/station/${station_id}`, {
-						method: 'post',
+					return fetch(`/user/${user_id}/access/station/${station_id}`, {
+						method: 'POST',
 						headers: {'Content-type': 'application/json'},
-						body: JSON.stringify(events),
 					})
 					.then(res => {
 						//self.submitted = true;
@@ -1214,6 +1228,23 @@
                 }))
                 .sort((a, b) => b.timestamp - a.timestamp);
 						},
+						station_access() {
+							const { station_access, stations_dict } = this.$root.stats;
+							if (!station_access) return [];
+
+							const user_station_access = station_access
+								.filter(x => x.user_id === this.user.id)
+								.sort((a, b) => a - b);
+
+							return user_station_access.map(({ station_id, timestamp }) => ({
+								station_id,
+								station_id_full: stations_dict[station_id].station_id,
+								station_number: stations_dict[station_id].station_number,
+								station_address: stations_dict[station_id].station_address,
+								date: formatDate(stations_dict[station_id].election_number),
+								timestamp: new Date(timestamp * 1000).toLocaleString('ru-RU'),
+							}));
+						},
 					},
 					template: '#app-user'
 				};
@@ -1315,16 +1346,73 @@
 				  name: 'access-button',
 				  props: ['station_id', 'user_id'],
 				  data() {
-					return {
-					  granted: (this.$root.stats.station_access.find(x => x.station_id == this.station_id && x.user_id == this.user_id) || {granted : false}).granted,
-					  is_admin: this.$root.user && this.$root.user.is_admin(),
-					}
+						return {
+							granted: -2,
+						};
+				  },
+				  computed: {
+				  	// When the component is mounted probably there is no this.$root.stats.station_access
+				  	station_access() {
+				  		return this.$root.stats.station_access;
+				  	},
 				  },
 				  methods: {
-					submit() {
-						sendAccess(this, this.user_id, this.station_id);
-						this.granted = true;
-					},
+						submit() {
+							this.granted = -2;
+
+							sendAccess(this, this.user_id, this.station_id)
+								.then(() => {
+									this.granted = 0;
+								});
+						},
+						// It could be an external function which holds more cases.
+						// But currently, it uses only here.
+						get_text() {
+							switch (this.granted) {
+								case 1:
+									return 'Доступ разрешен';
+								case 0:
+									return 'Доступ запрошен';
+								case -1:
+									return 'Запросить доступ';
+								default:
+									return 'Загрузка...';
+							}
+						},
+						set_state() {
+							if (this.station_access == null) {
+				  			this.granted = -2;
+				  			return;
+				  		}
+
+				  		const user_access =	this.station_access
+				  			.find(x => x.station_id === this.station_id &&
+				  				x.user_id === this.user_id
+				  			);
+
+				  		if (!user_access) {
+				  			this.granted = -1;
+				  			return;
+				  		}
+
+				  		if (user_access && !user_access.granted) {
+				  			this.granted = 0;
+				  			return;
+				  		}
+
+				  		this.granted = 1;
+						}
+				  },
+				  watch: {
+				  	// the watcher is good for async op like getting $root.stats
+				  	// we use this if stats is NOT loaded
+				  	station_access() {
+				  		this.set_state();
+				  	},
+				  },
+				  // we use this if stats is loaded
+				  mounted() {
+				  	this.set_state();
 				  },
 				  template: '#app-access-button',
 				};
@@ -1418,7 +1506,7 @@
 										stats.stations_dict_station_id[station.station_id] = station;
 									});
 
-                  stats.events_dict = stats.events.reduce((acc, event) => {
+                  stats.events_dict = stats.bookmarks.reduce((acc, event) => {
                     const station = stats.stations_dict[event.station_id];
 
                     return {
