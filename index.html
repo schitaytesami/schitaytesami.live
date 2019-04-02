@@ -597,15 +597,15 @@
 								<th scope="col">Регион</th>
 								<th scope="col">УИК</th>
 								<th scope="col">Ссылка</th>
-								<th scope="col">Добавлено</th>
 							</thead>
 							<tbody>
 								<tr v-for="bookmark in bookmarks">
 									<td>{{ bookmark.date }}</td>
-									<td>{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
+									<td class="w-50">{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
 									<td>{{ bookmark.station_number }}</td>
-									<td><a :href="bookmark.url">Перейти</a></td>
-									<td>{{ bookmark.timestamp }}</td>
+									<td class="w-25">
+										<a :title="'Добавлено ' + bookmark.timestamp" :href="bookmark.url">Перейти</a>
+									</td>
 								</tr>
 	 						</tbody>
 						</table>
@@ -636,13 +636,13 @@
 						<tbody>
 							<tr v-for="sa in station_access">
 								<td>{{ sa.date }}</td>
-								<td>{{ sa.station_address.substring(0, sa.station_address.indexOf(',')) }}</td>
+								<td class="w-50">{{ sa.station_address.substring(0, sa.station_address.indexOf(',')) }}</td>
 								<td>
 									<router-link :to="{ name: 'station', params: { id: sa.station_id_full }}">
 										{{ sa.station_number }}
 									</router-link>
 								</td>
-								<td>
+								<td class="w-25">
 									<app-access-button
 										:title="sa.timestamp"
 										:station_id="sa.station_id"
