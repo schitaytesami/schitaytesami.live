@@ -202,12 +202,12 @@ def stats_get():
 				'ON u2.id = u1.id;'
 
 		).dicts()),
-		station_access = list(StationAccess.raw(
+		station_access = [dict(user_id = s.user_id, station_id = s.station_id, timestamp = s.timestamp, granted = 1 if s.granted else 0)  for s in StationAccess.raw(
 			'SELECT a.user_id, a.station_id, MAX(a.granted) as granted, MAX(a.timestamp) as timestamp '
 			'FROM StationAccess a '
 			'GROUP BY a.user_id, a.station_id '
 			'ORDER BY granted ASC, timestamp DESC'
-		).dicts()),
+		)],
 		task_selector_options = by_election(stations)
 
 	), ensure_ascii = False, indent = 2), status = 200, mimetype = 'application/json')
