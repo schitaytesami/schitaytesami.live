@@ -500,7 +500,9 @@
 
 					<div class="mt-3" v-if="true || $root.user">
 						<h3 class="text-center lead">Дополнительно</h3>
-						<div class="row no-gutters text-center"><app-access-button :station_id="station.id" :user_id="$root.user.id" /></div>
+						<div class="row no-gutters text-center">
+							<app-access-button :station_id="station.id" :user_id="$root.user.id" />
+						</div>
 					</div>
 
 					<hr/>
@@ -809,7 +811,11 @@
   </script>
 
 	<script type="text/x-template" id="app-access-button">
-		<button class="btn btn-sm" :class="{  'btn-success' : granted, 'btn-light' : !granted }"  :disabled="granted" @click="submit">{{ granted ? "Разрешён доступ" : is_admin ? "Дать доступ" : "Запросить доступ" }}</button>
+		<button
+			class="btn btn-sm" :class="{ 'btn-success': granted, 'btn-light': !granted }"
+			:disabled="granted !== -1"
+			@click="submit"
+		>{{ get_text() }}</button>
 	</script>
 
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
@@ -873,10 +879,9 @@
 				};
 
 				const sendAccess = (self, user_id, station_id) => {
-					return fetch(`/access/user/${user_id}/station/${station_id}`, {
-						method: 'post',
+					return fetch(`/user/${user_id}/access/station/${station_id}`, {
+						method: 'POST',
 						headers: {'Content-type': 'application/json'},
-						body: JSON.stringify(events),
 					})
 					.then(res => {
 						//self.submitted = true;
@@ -1315,16 +1320,73 @@
 				  name: 'access-button',
 				  props: ['station_id', 'user_id'],
 				  data() {
-					return {
-					  granted: (this.$root.stats.station_access.find(x => x.station_id == this.station_id && x.user_id == this.user_id) || {granted : false}).granted,
-					  is_admin: this.$root.user && this.$root.user.is_admin(),
-					}
+						return {
+							granted: -2,
+						};
+				  },
+				  computed: {
+				  	// When the component is mounted probably there is no this.$root.stats.station_access
+				  	station_access() {
+				  		return this.$root.stats.station_access;
+				  	},
 				  },
 				  methods: {
-					submit() {
-						sendAccess(this, this.user_id, this.station_id);
-						this.granted = true;
-					},
+						submit() {
+							this.granted = -2;
+
+							sendAccess(this, this.user_id, this.station_id)
+								.then(() => {
+									this.granted = 0;
+								});
+						},
+						// It could be an external function which holds more cases.
+						// But currently, it uses only here.
+						get_text() {
+							switch (this.granted) {
+								case 1:
+									return 'Доступ разрешен';
+								case 0:
+									return 'Доступ запрошен';
+								case -1:
+									return 'Запросить доступ';
+								default:
+									return 'Загрузка...';
+							}
+						},
+						set_state() {
+							if (this.station_access == null) {
+				  			this.granted = -2;
+				  			return;
+				  		}
+
+				  		const user_access =	this.station_access
+				  			.find(x => x.station_id === this.station_id &&
+				  				x.user_id === this.user_id
+				  			);
+
+				  		if (!user_access) {
+				  			this.granted = -1;
+				  			return;
+				  		}
+
+				  		if (user_access && !user_access.granted) {
+				  			this.granted = 0;
+				  			return;
+				  		}
+
+				  		this.granted = 1;
+						}
+				  },
+				  watch: {
+				  	// the watcher is good for async op like getting $root.stats
+				  	// we use this if stats is NOT loaded
+				  	station_access() {
+				  		this.set_state();
+				  	},
+				  },
+				  // we use this if stats is loaded
+				  mounted() {
+				  	this.set_state();
 				  },
 				  template: '#app-access-button',
 				};
@@ -1418,7 +1480,7 @@
 										stats.stations_dict_station_id[station.station_id] = station;
 									});
 
-                  stats.events_dict = stats.events.reduce((acc, event) => {
+                  stats.events_dict = stats.bookmarks.reduce((acc, event) => {
                     const station = stats.stations_dict[event.station_id];
 
                     return {
