@@ -174,7 +174,8 @@ def stats_get():
 			'INNER JOIN Event ev ON ev.clip_id == c.id AND ev.type == "vote" '
 			'WHERE c.task == "vote"'
 		).fetchone()[0],
-		events = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station_id if ev.station is not None else ev.clip.station_id if ev.clip is not None else None) for ev in Event.select().where(Event.type == 'bookmark').prefetch(Clip)],
+		bookmarks = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station_id if ev.station is not None else ev.clip.station_id if ev.clip is not None else None) for ev in Event.select().where(Event.type == 'bookmark').prefetch(Clip)],
+		notes = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station_id if ev.station is not None else ev.clip.station_id if ev.clip is not None else None) for ev in Event.select().where(Event.type == 'note').prefetch(Clip)],		
 		users = list(User.raw(
 			'SELECT u1.id, u1.display, u1.num_votes, u1.num_seconds, u1.num_stations, u1.num_notes, u1.clips, u1.num_clips, u2.bookmarks FROM '
 				'(SELECT u.id,'  
