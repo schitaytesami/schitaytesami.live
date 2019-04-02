@@ -498,12 +498,12 @@
 						</div>
 					</div>
 
-					<div v-if="true" v-if="$root.user">
+					<div class="mt-3" v-if="true || $root.user">
 						<h3 class="text-center lead">Дополнительно</h3>
 						<div class="row no-gutters text-center"><app-access-button :station_id="station.id" :user_id="$root.user.id" /></div>
 					</div>
 
-					<hr />
+					<hr/>
 					<p>* предварительный результат</p>
 				</div>
 			</div>
