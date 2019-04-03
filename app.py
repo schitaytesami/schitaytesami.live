@@ -53,12 +53,17 @@ class User(pw.Model):
 		if debug_user_registration_email_file_path is not None:
 			open(debug_user_registration_email_file_path, 'w').write(payload)
 		else:
-			urllib.request.Request(endpoint, headers = headers, data = payload.encode('utf-8')).urlopen()
+			import requests; requests.post(endpoint, headers = headers, data = payload.encode('utf-8'))
+			#urllib.request.Request(endpoint, headers = headers, data = payload.encode('utf-8')).urlopen()
 
 	@staticmethod
 	def normalize_email(email):
 		splitted = email.split('@')
 		return splitted[0].split('+')[0].replace('.', '') + '@' + (splitted[1] if len(splitted) >= 2 else '')
+
+	@staticmethod
+	def generate_display(nicknames, lo = 100, hi = 1000):
+		return random.choice(nicknames) + '_' + str(random.randint(lo, hi))
 
 class Station(pw.Model):
 	id = pw.PrimaryKeyField()
@@ -251,13 +256,12 @@ def events_post(clip_id, user):
 
 def user_post():
 	settings = json.load(open(user_registration_conf))
-	display = random.choice(settings['nicknames']) + '_' + str(random.randint(100, 1000))
 
 	email = flask.request.data.decode('utf-8')
 	email_normalized = User.normalize_email(email)
 
 	if User.get_or_none(User.email_normalized == email_normalized) is None:
-		user = User.create(email = email, email_normalized = email_normalized, display = display)
+		user = User.create(email = email, email_normalized = email_normalized, display = User.generate_display(settings['nicknames']))
 		user_token = user.generate_token()
 		user.hash_password()
 		user.save()
@@ -331,6 +335,14 @@ def setup(db_path):
 	db.create_tables([User, Station, Clip, Event, StationAccess])
 	print('Database created:', db_path)
 
+def adduser(email, admin, db_path):
+	db = init_db(db_path)
+	settings = json.loads(open(user_registration_conf, 'r').read())
+	user = User.create(email = email, email_normalized = User.normalize_email(email), display = User.generate_display(settings['nicknames']), role = 'admin' if admin else '', )
+	print('{website_http_location}/#login/{user_token}'.format(website_http_location = settings['website_http_location'], user_token = user.generate_token()))
+	user.hash_password()
+	user.save()
+
 def config(environment, root, hostname, website_http_location, resolvers, debug_user_registration_email_file_path, email_authorization_bearer_token):
 	conf = jinja2.Template(open(nginx_conf + '.j2').read()).render(environment = environment, root = os.path.abspath(root), hostname = hostname, resolvers = resolvers)
 	open(nginx_conf, 'w').write(conf)
@@ -356,6 +368,12 @@ if __name__ == '__main__':
 	cmd.add_argument('--log_sql', action = 'store_true')
 	cmd.add_argument('--gunicorn_args', nargs = argparse.REMAINDER, default = [])
 	cmd.set_defaults(func = serve)
+
+	cmd = subparsers.add_parser('adduser')
+	cmd.add_argument('--db_path', default = 'app.db')
+	cmd.add_argument('--email', default = '{}@testuser.com'.format(random.randint(10, 100)))
+	cmd.add_argument('--admin', action = 'store_true')
+	cmd.set_defaults(func = adduser)
 
 	cmd = subparsers.add_parser('import')
 	cmd.add_argument('--db_path', default = 'app.db')
