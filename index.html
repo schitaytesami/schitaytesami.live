@@ -611,39 +611,40 @@
 						<h6 class="text-center" v-if="bookmarks.length == 0">Вы ещё не добавили закладки.</h6>
 					</div>
 				</div>
+			
+				<div class="row mb-2 justify-content-center">
+					<div class="col-lg-10">
+						<h5 class="text-center">Доступ</h5>
+						<table class="table table-sm" v-if="station_access.length > 0">
+							<thead>
+								<th scope="col">Дата голосования</th>
+								<th scope="col">Регион</th>
+								<th scope="col">УИК</th>
+								<th scope="col">Статус</th>
+							</thead>
+							<tbody>
+								<tr v-for="sa in station_access">
+									<td>{{ sa.date }}</td>
+									<td class="w-50">{{ sa.station_address.substring(0, sa.station_address.indexOf(',')) }}</td>
+									<td>
+										<router-link :to="{ name: 'station', params: { id: sa.station_id_full }}">
+											{{ sa.station_number }}
+										</router-link>
+									</td>
+									<td class="w-25">
+										<app-access-button
+											:title="sa.timestamp"
+											:station_id="sa.station_id"
+											:user_id="user.id"/>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<h6 class="text-center" v-if="station_access.length == 0">У вас нет запросов на полный доступ к видео.</h6>
+					</div>
+				</div>
 			</template>
 
-			<div class="row mb-2 justify-content-center">
-				<div class="col-lg-10">
-					<h5 class="text-center">Доступ</h5>
-					<table class="table table-sm" v-if="station_access.length > 0">
-						<thead>
-							<th scope="col">Дата голосования</th>
-							<th scope="col">Регион</th>
-							<th scope="col">УИК</th>
-							<th scope="col">Статус</th>
-						</thead>
-						<tbody>
-							<tr v-for="sa in station_access">
-								<td>{{ sa.date }}</td>
-								<td class="w-50">{{ sa.station_address.substring(0, sa.station_address.indexOf(',')) }}</td>
-								<td>
-									<router-link :to="{ name: 'station', params: { id: sa.station_id_full }}">
-										{{ sa.station_number }}
-									</router-link>
-								</td>
-								<td class="w-25">
-									<app-access-button
-										:title="sa.timestamp"
-										:station_id="sa.station_id"
-										:user_id="user.id"/>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-					<h6 class="text-center" v-if="station_access.length == 0">У вас нет запросов на полный доступ к видео.</h6>
-				</div>
-			</div>
 			
 			<div class="row">
 				<div class="col">
