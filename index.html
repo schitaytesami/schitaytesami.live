@@ -587,11 +587,10 @@
 			</div>
 
 			<template v-if="$root.user && $route.params.display === $root.user.display">
-				<hr>
 				<div class="row mb-2 justify-content-center">
 					<div class="col-lg-10">
 						<h5 class="text-center">Закладки</h5>
-						<table class="table table-sm">
+						<table class="table table-sm" v-if="bookmarks.length > 0">
 							<thead>
 								<th scope="col">Дата голосования</th>
 								<th scope="col">Регион</th>
@@ -609,24 +608,15 @@
 								</tr>
 	 						</tbody>
 						</table>
-						<h6 class="text-center" v-if="bookmarks.length < 1">Вы ещё не добавили закладки.</h6>
+						<h6 class="text-center" v-if="bookmarks.length == 0">Вы ещё не добавили закладки.</h6>
 					</div>
 				</div>
-				<hr v-if="thumbnails" />
 			</template>
 
-			<div class="row">
-				<div class="col">
-					<div>
-						<router-link :to="{name: 'station', params: { id: thumb.id } }" v-for="thumb in thumbnails"><img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" /></router-link>
-					</div>
-				</div>
-			</div>
-
-			<div class="row mb-2 justify-content-center" v-if="station_access.length > 0">
+			<div class="row mb-2 justify-content-center">
 				<div class="col-lg-10">
 					<h5 class="text-center">Доступ</h5>
-					<table class="table table-sm">
+					<table class="table table-sm" v-if="station_access.length > 0">
 						<thead>
 							<th scope="col">Дата голосования</th>
 							<th scope="col">Регион</th>
@@ -651,6 +641,15 @@
 							</tr>
 						</tbody>
 					</table>
+					<h6 class="text-center" v-if="station_access.length == 0">У вас нет запросов на полный доступ к видео.</h6>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col">
+					<div>
+						<router-link :to="{name: 'station', params: { id: thumb.id } }" v-for="thumb in thumbnails"><img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" /></router-link>
+					</div>
 				</div>
 			</div>
 		</div>
