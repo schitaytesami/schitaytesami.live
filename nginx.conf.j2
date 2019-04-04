@@ -89,6 +89,10 @@ http {
 			allow all;
 		}
 
+		location /robots.txt {
+			allow all;
+		}
+
 		location = /index.html {
 			{% if environment == 'production' %}
 				expires 1h;
