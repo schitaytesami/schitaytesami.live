@@ -410,6 +410,33 @@
 			</div>
 		</div>
 	</script>
+	
+	<script type="text/x-template" id="app-notes">
+		<div class="row">
+				<div class="col-md-12" id="notes-body">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Дата голосования</th>
+								<th>Регион</th>
+								<th>УИК</th>
+								<th>Время</th>
+								<th>Пометка</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="note in notes">
+								<td>{{ note.date }}</td>
+								<td>{{ note.region }}</td>
+								<td><router-link :to="{name: 'station', params: { id: note.station_id } }">{{ note.station_number }}</router-link></td>
+								<td>{{ note.timestamp }}</td>
+								<td>{{ note.value }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+	</script>
 
 	<script type="text/x-template" id="app-results">
 		<div class="row">
@@ -1123,6 +1150,29 @@
 					},
 					template: '#app-results',
 				};
+				
+				const appNotes = {
+					props: {
+						events: {
+							type: Array,
+							required: true,
+						},
+					},
+					computed: {
+						notes() {
+							return this.events.map(note => ({
+								...note,
+								date : '',
+								region : '',
+								station_id : '',
+								timestamp : 0,
+								value : ''
+							}))
+							.sort((a, b) => b.timestamp - a.timestamp);
+						},
+					},
+					template: '#app-notes',
+				};
 
 				const appStation = {
 					turnoutOrder: ['final', '10h', '12h', '15h', '18h'],
@@ -1218,15 +1268,15 @@
 						bookmarks() {
 							if (!this.user.bookmarks) return [];
 
-              return this.user.bookmarks
-                .split(',')
-                .map(id => this.$root.stats.events_dict[id])
-                .map(bookmark => ({
-                	...bookmark,
-                	date: formatDate(bookmark.election_number),
-                	timestamp: new Date(bookmark.timestamp).toLocaleString('ru-RU'),
-                }))
-                .sort((a, b) => b.timestamp - a.timestamp);
+						        return this.user.bookmarks
+						  	.split(',')
+							.map(id => this.$root.stats.events_dict[id])
+							.map(bookmark => ({
+								...bookmark,
+								date: formatDate(bookmark.election_number),
+								timestamp: new Date(bookmark.timestamp).toLocaleString('ru-RU'),
+							}))
+							.sort((a, b) => b.timestamp - a.timestamp);
 						},
 						station_access() {
 							const { station_access, stations_dict } = this.$root.stats;
