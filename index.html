@@ -889,6 +889,8 @@
 					const date = String(dateNumber);
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
+				
+				const formatTimestamp = timestamp => new Date(timestamp).toLocaleString('ru-RU');
 
 				const formatThumbnailTitle = (station, clip) =>
 				{
@@ -1176,10 +1178,10 @@
 						notes() {
 							return this.events.map(note => ({
 								...note,
-								date : '',
-								region : '',
+								date : formatDate(note.election_number),
+								region : note.station_address.substring(0, note.station_address.indexOf(',')),
 								station_id : '',
-								timestamp : 0,
+								timestamp : formatTimestamp(note.timestamp),
 								value : ''
 							}))
 							.sort((a, b) => b.timestamp - a.timestamp);
@@ -1288,7 +1290,7 @@
 							.map(bookmark => ({
 								...bookmark,
 								date: formatDate(bookmark.election_number),
-								timestamp: new Date(bookmark.timestamp).toLocaleString('ru-RU'),
+								timestamp: formatTimestamp(bookmark.timestamp),
 							}))
 							.sort((a, b) => b.timestamp - a.timestamp);
 						},
@@ -1306,7 +1308,7 @@
 								station_number: stations_dict[station_id].station_number,
 								station_address: stations_dict[station_id].station_address,
 								date: formatDate(stations_dict[station_id].election_number),
-								timestamp: new Date(timestamp * 1000).toLocaleString('ru-RU'),
+								timestamp: formatTimestamp(timestamp),
 							}));
 						},
 					},
