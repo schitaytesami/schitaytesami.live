@@ -604,8 +604,8 @@
 								<td>{{ user.num_stations }}</td>
 							</tr>
 							<tr>
-								<th scope="row">Время</th>
-								<td>{{ (user.num_seconds / 60).toFixed(0) }}</td>
+								<th scope="row">Просмотрено минут</th>
+								<td>{{ user.num_seconds !== undefined ? (user.num_seconds / 60).toFixed(0) : '' }}</td>
 							</tr>
 							<tr>
 								<th scope="row">Сегменты</th>
