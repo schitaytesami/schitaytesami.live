@@ -1205,7 +1205,7 @@
 						official() { return this.station.turnout ? this.getTurnout(this.station.turnout.official) : [];	},
 						estimate() { return this.station.turnout ? this.getTurnout(this.station.turnout.estimate) : [];	},
 						clipsIds() { return this.station.clips ? this.station.clips.split(',').map(Number) : []; },
-						notes() { return [] },
+						notes() { return (this.$root.stats.events || []).filter(e => e.type == 'note' && e.station_id == this.$root.stats.stations_dict_station_id[this.$route.params.id].id); },
 						segments() {
 							const pieces = [
 								this.clipsIds.slice(0, this.clipsIds.length / 2),
