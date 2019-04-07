@@ -1524,7 +1524,7 @@
 					],
 				});
 
-		        Vue.component('app-selection', appSelection);
+		        	Vue.component('app-selection', appSelection);
 				Vue.component('app-bookmark-button', appBookmarkButton);
 				Vue.component('app-access-button', appAccessButton);
 
@@ -1576,20 +1576,20 @@
 										stats.stations_dict_station_id[station.station_id] = station;
 									});
 
-                  stats.events_dict = stats.bookmarks.reduce((acc, event) => {
-                    const station = stats.stations_dict[event.station_id];
+									  stats.events_dict = stats.bookmarks.reduce((acc, event) => {
+									    const station = stats.stations_dict[event.station_id];
 
-                    return {
-                      ...acc,
-                      [event.id]: {
-                        election_number: station.election_number,
-                        station_address: station.station_address,
-                        station_number: station.station_number,
-                        url: event.value,
-                        timestamp: event.timestamp * 1000,
-                      },
-                    };
-                  }, {});
+									    return {
+									      ...acc,
+									      [event.id]: {
+										election_number: station.election_number,
+										station_address: station.station_address,
+										station_number: station.station_number,
+										url: event.value,
+										timestamp: event.timestamp * 1000,
+									      },
+									    };
+									  }, {});
 
 									this.stats = { ...this.stats, ...stats };
 								});
