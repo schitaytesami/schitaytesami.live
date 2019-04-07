@@ -1205,6 +1205,7 @@
 						official() { return this.station.turnout ? this.getTurnout(this.station.turnout.official) : [];	},
 						estimate() { return this.station.turnout ? this.getTurnout(this.station.turnout.estimate) : [];	},
 						clipsIds() { return this.station.clips ? this.station.clips.split(',').map(Number) : []; },
+						notes() { return [] },
 						segments() {
 							const pieces = [
 								this.clipsIds.slice(0, this.clipsIds.length / 2),
