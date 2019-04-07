@@ -649,7 +649,8 @@
 				<div class="row mb-2 justify-content-center">
 					<div class="col-lg-10">
 						<h5 class="text-center">Пометки</h5>
-						<app-notes :events="notes" />
+						<app-notes :events="notes" v-if="notes.length > 0" />
+						<h6 class="text-center" v-if="notes.length == 0">Вы ещё не добавили пометки.</h6>
 					</div>
 				</div>
 			
