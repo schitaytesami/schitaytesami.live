@@ -528,13 +528,14 @@
 					<div class="mt-3">
 						<h3 class="text-center lead">Пометки</h3>
 						<div class="row no-gutters text-center">
-							<app-notes :events="notes" />
+							<app-notes :events="notes" v-if="notes.length > 0" />
+							<h6 class="text-center" v-if="notes.length == 0">Нет открытых пометок.</h6>
 						</div>					
 					</div>
 
 					<div class="mt-3" v-if="true || $root.user">
 						<h3 class="text-center lead">Дополнительно</h3>
-						<div class="row no-gutters text-center">
+						<div class="row no-gutters">
 							<app-access-button :station_id="station.id" :user_id="$root.user.id" />
 						</div>
 					</div>
