@@ -905,6 +905,8 @@
 					const clips = amountOfClips > 0 ? `, Сегментов: ${amountOfClips}.` : '';
 					return `${address} ${station.station_number}${clips}`;
 				};
+				
+				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
 				const makeError = err => {
 					const status = err.status ? `${err.status}: ` : '';
@@ -1178,13 +1180,11 @@
 						notes() {
 							return this.events.map(note => ({
 								...note,
-								date : formatDate(note.election_number),
 								region : note.station_address.substring(0, note.station_address.indexOf(',')),
-								station_id : '',
+								date : formatDate(note.election_number),
 								timestamp : formatTimestamp(note.timestamp),
-								value : ''
 							}))
-							.sort((a, b) => b.timestamp - a.timestamp);
+							.sort(sorterNewFirst);
 						},
 					},
 					template: '#app-notes',
@@ -1282,9 +1282,7 @@
 							);
 						},
 						bookmarks() {
-							if (!this.user.bookmarks) return [];
-
-						        return this.user.bookmarks
+							return (!this.user.bookmarks) ? [] : this.user.bookmarks
 						  	.split(',')
 							.map(id => this.$root.stats.events_dict[id])
 							.map(bookmark => ({
@@ -1292,7 +1290,12 @@
 								date: formatDate(bookmark.election_number),
 								timestamp: formatTimestamp(bookmark.timestamp),
 							}))
-							.sort((a, b) => b.timestamp - a.timestamp);
+							.sort(sorterNewFirst);
+						},
+						notes() {
+							return (!this.user.notes) ? [] : this.user.notes
+						  	.split(',')
+							.map(id => this.$root.stats.events_dict[id]);
 						},
 						station_access() {
 							const { station_access, stations_dict } = this.$root.stats;
