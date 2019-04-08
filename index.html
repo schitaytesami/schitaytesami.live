@@ -455,13 +455,13 @@
 						</thead>
 						<tbody>
 							<tr v-for="station in stations" :key="station.id">
-								<td>{{ station.date }}</td>
-								<td>{{ station.region }}</td>
+								<td>{{ formatElectionDate(station.election_number) }}</td>
+								<td>{{ formatRegionName(station.station_address) }}</td>
 								<td><router-link :to="{name: 'station', params: { id: station.station_id } }">{{ station.station_number }}</router-link></td>
-								<td>{{ station.official }}</td>
-								<td style="border-right: 2px solid black">{{ station.estimate }}</td>
-								<td class="text-muted">{{ station.progress }}</td>
-								<td class="text-muted text-truncate">{{ station.comment }}</td>
+								<td>{{ station.turnout.official.final }}</td>
+								<td style="border-right: 2px solid black">{{ station.turnout.estimate.final }}</td>
+								<td class="text-muted">{{ formatPercent(station.turnout.progress) }}</td>
+								<td class="text-muted text-truncate">{{ station.turnout.comment }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -565,17 +565,17 @@
 						</thead>
 						<tbody>
 							<tr
-								v-for="user in users"
+								v-for="(user, index) in users"
 								:key="user.id"
 								:class="{ 'bg-success': $root.user && $root.user.id === user.id }"
 							>
-								<td class="text-muted">{{ user.i }}</td>
+								<td class="text-muted">{{ index + 1 }}</td>
 								<td>
 									<router-link :to="{ name: 'user', params: { display: user.display } }">{{ user.display }}</router-link>
 								</td>
 								<td>{{ user.num_votes }}</td>
 								<td>{{ user.num_stations }}</td>
-								<td>{{ user.num_minutes }}</td>
+								<td>{{ formatMinutes(user.num_seconds) }}</td>
 								<td>{{ user.num_clips }}</td>
 								<td>{{ user.num_notes }}</td>
 							</tr>
@@ -887,6 +887,10 @@
 					return `${hours}:${minutes}`;
 				};
 
+				const formatPercent = fraction => `${(fraction * 100).toFixed(0)}%`;
+
+				const formatMinutes = seconds => (seconds / 60).toFixed(0);
+
 				const formatElectionDate = election_number => {
 					const date = String(election_number);
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
@@ -1157,18 +1161,9 @@
 				};
 
 				const appResults = {
+					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatPercent : formatPercent},
 					computed: {
-						stations() {
-							return (this.$root.stats.stations || []).map(station => ({
-								...station,
-								date: formatElectionDate(station.election_number),
-								region: formatRegionName(station.station_address),
-								official: station.turnout.official.final,
-								estimate: station.turnout.estimate.final,
-								progress: `${(station.turnout.progress * 100).toFixed(0)}%`,
-								comment: station.turnout.comment,
-							}));
-						},
+						stations() { return (this.$root.stats.stations || []); },
 					},
 					template: '#app-results',
 				};
@@ -1182,7 +1177,7 @@
 						},
 					},
 					computed: {
-						notes() {return this.events.sort(sorterNewFirst) };
+						notes() {return this.events.sort(sorterNewFirst); }
 					},
 					template: '#app-notes',
 				};
@@ -1242,14 +1237,9 @@
 					template: '#app-station',
 				};
 				const appUsers = {
+					methods : {formatMinutes : formatMinutes},
 					computed: {
-						users() {
-							return (this.$root.stats.users || []).map((user, i) => ({
-								...user,
-								i: i + 1,
-								num_minutes: (user.num_seconds / 60).toFixed(0),
-							}));
-						},
+						users() { return (this.$root.stats.users || []); },
 					},
 					template: '#app-users',
 				};
