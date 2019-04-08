@@ -1174,6 +1174,7 @@
 				};
 				
 				const appNotes = {
+					methods: {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp},
 					props: {
 						events: {
 							type: Array,
@@ -1181,15 +1182,7 @@
 						},
 					},
 					computed: {
-						notes() {
-							return this.events.map(note => ({
-								...note,
-								region : formatRegionName(note.station_address),
-								date : formatElectionDate(note.election_number),
-								timestamp : formatTimestamp(note.timestamp),
-							}))
-							.sort(sorterNewFirst);
-						},
+						notes() {return this.events.sort(sorterNewFirst) };
 					},
 					template: '#app-notes',
 				};
