@@ -1255,6 +1255,7 @@
 				};
 				const appUser = {
 					name: 'app-user',
+					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp},
 					computed: {
 						user() {
 							return this.$root.stats.users ? this.$root.stats.users.find(u => u.display === this.$route.params.display) : {};
