@@ -189,8 +189,8 @@
 					<p>Следите за нашими новостями в <a href="https://twitter.com/schitaytesami">Твиттере</a> или <router-link :to="{ name: 'about' }">свяжитесь с нами</router-link>.</p>
 				</blockquote>
 				<ul class="bg-light">
-					<li>Зарегистрировано: <span v-if="showStats"><span>{{ stats.num_users }}</span> пользователей</span><span v-else>загрузка...</span></li>
-					<li>Всего видео в системе: <span v-if="showStats"><span>{{ stats.num_stations }}</span> избирательных участков (<span>{{ stats.num_hours }}</span> часов)</span><span v-else>загрузка...</span></li>
+					<li>Зарегистрировано: <span v-if="showStats"><span>{{ stats.users.length }}</span> пользователей</span><span v-else>загрузка...</span></li>
+					<li>Всего видео в системе: <span v-if="showStats"><span>{{ stats.stations.length }}</span> избирательных участков (<span>{{ stats.num_hours }}</span> часов)</span><span v-else>загрузка...</span></li>
 					<li>Полностью размечено: <span v-if="showStats"><span>{{ stats.num_stations_labeled }}</span> избирательных участков (<span>{{ stats.num_hours_labeled }}</span> часов)</span><span v-else>загрузка...</span></li>
 				</ul>
 				<router-link :to="{ name: 'task' }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>

@@ -162,13 +162,7 @@ def stats_get():
 		
 		stations = [dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, turnout = station_turnout[station.id], clips = ','.join(str(clip.id) for clip in station.clips)) for station in stations],
 		clips = [dict(id = clip.id, thumbnail = clip.thumbnail, video = clip.video, station_id = clip.station_id, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, turnout = clip_turnout[clip.id]) for clip in clips],
-		num_users = User.select().count(),
 		num_stations_labeled = sum(1 for turnout in station_turnout.values() if turnout['estimate'].get('final') is not None),
-		num_stations = Station._meta.database.execute_sql(
-			'SELECT IFNULL(COUNT(DISTINCT c.station_id), 0) '
-			'FROM Clip c '
-			'WHERE c.task == "vote"'
-		).fetchone()[0],
 		num_seconds = Clip._meta.database.execute_sql(
 			'SELECT IFNULL(SUM(IFNULL(c.clip_interval_end, 0) - IFNULL(c.clip_interval_start, 0)), 0)'
 			'FROM Clip c '
