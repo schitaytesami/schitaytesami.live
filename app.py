@@ -45,6 +45,7 @@ class User(pw.Model):
 		parsed = json.loads(base64.b64decode(user_token + '===').decode('ascii'))
 		self.id, self.display, self.role, self.password = map(parsed.get, ['id', 'display', 'role', 'password'])
 
+	@property
 	def is_admin(self):
 		return 'admin' in self.role
 
@@ -115,7 +116,7 @@ def user_must_be_active(admin = False, fail = True):
 				user_stub = User()
 				user_stub.parse_token(flask.request.cookies['user_token'])
 				user = User.get_or_none(User.id == user_stub.id)
-				if user is None or not user_stub.check_password(user) or (admin and not user.is_admin()):
+				if user is None or not user_stub.check_password(user) or (admin and not user.is_admin):
 					raise Exception()
 			except:
 				user = None
@@ -211,7 +212,7 @@ def stats_get():
 @user_must_be_active()
 def task_get(task_type, election_number, region_number, station_number, user, active_set = 20):
 	clip = None
-	if not (user is None or not (user.is_admin() or ('task/' + task_type) in user.role)):
+	if user is not None: #if not (user is None or not (user.is_admin or ('task/' + task_type) in user.role)):
 		filter_sql, filter_sql_args = '', []
 		for k, v in dict(election_number = election_number, region_number = region_number, station_number = station_number).items():
 			if v is not None and int(v) >= 0:
@@ -234,8 +235,8 @@ def task_get(task_type, election_number, region_number, station_number, user, ac
 
 @user_must_be_active()
 def user_access_station_post(user_id, station_id, user):
-	if user.is_admin() or user_id == user.id:
-		StationAccess.create(station_id = station_id, user_id = user_id, granted = user.is_admin()).save()
+	if user.is_admin or user_id == user.id:
+		StationAccess.create(station_id = station_id, user_id = user_id, granted = user.is_admin).save()
 		return flask.jsonify(success = True)
 	return flask.jsonify(success = False)
 

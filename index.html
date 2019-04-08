@@ -425,11 +425,11 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="note in notes">
-								<td>{{ note.date }}</td>
+							<tr v-for="note in events">
+								<!--<td>{{ note.date }}</td>
 								<td>{{ note.region }}</td>
 								<td><router-link :to="{name: 'station', params: { id: note.station_id } }">{{ note.station_number }}</router-link></td>
-								<td>{{ note.timestamp }}</td>
+								<td>{{ note.timestamp }}</td>-->
 								<td>{{ note.value }}</td>
 							</tr>
 						</tbody>
@@ -635,7 +635,7 @@
 							<tbody>
 								<tr v-for="bookmark in bookmarks">
 									<td>{{ bookmark.date }}</td>
-									<td class="w-50">{{ bookmark.station_address.substring(0, bookmark.station_address.indexOf(',')) }}</td>
+									<td class="w-50">{{ formatRegionName(bookmark.station_address) }}</td>
 									<td>{{ bookmark.station_number }}</td>
 									<td class="w-25">
 										<a :title="'Добавлено ' + bookmark.timestamp" :href="bookmark.url">Перейти</a>
@@ -668,7 +668,7 @@
 							<tbody>
 								<tr v-for="sa in station_access">
 									<td>{{ sa.date }}</td>
-									<td class="w-50">{{ sa.station_address.substring(0, sa.station_address.indexOf(',')) }}</td>
+									<td class="w-50">{{ formatRegionName(sa.station_address) }}</td>
 									<td>
 										<router-link :to="{ name: 'station', params: { id: sa.station_id_full }}">
 											{{ sa.station_number }}
@@ -892,7 +892,7 @@
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
 				
-				const formatTimestamp = timestamp => new Date(timestamp).toLocaleString('ru-RU');
+				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
 				
 				const formatRegionName = station_address => station_address.split(',')[0];
 
@@ -1184,7 +1184,7 @@
 						notes() {
 							return this.events.map(note => ({
 								...note,
-								region : note.station_address.substring(0, note.station_address.indexOf(',')),
+								region : formatRegionName(note.station_address),
 								date : formatDate(note.election_number),
 								timestamp : formatTimestamp(note.timestamp),
 							}))
@@ -1289,7 +1289,7 @@
 						bookmarks() {
 							return (!this.user.bookmarks) ? [] : this.user.bookmarks
 						  	.split(',')
-							.map(id => this.$root.stats.events_dict[id])
+							.map(id => this.$root.stats.bookmarks_dict[id])
 							.map(bookmark => ({
 								...bookmark,
 								date: formatDate(bookmark.election_number),
@@ -1300,7 +1300,7 @@
 						notes() {
 							return (!this.user.notes) ? [] : this.user.notes
 						  	.split(',')
-							.map(id => this.$root.stats.events_dict[id]);
+							.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
 							const { station_access, stations_dict } = this.$root.stats;
@@ -1580,20 +1580,16 @@
 										stats.stations_dict_station_id[station.station_id] = station;
 									});
 
-									  stats.events_dict = stats.bookmarks.reduce((acc, event) => {
-									    const station = stats.stations_dict[event.station_id];
+									  stats.bookmarks_dict = stats.bookmarks.reduce((acc, event) => ({
+									      [event.id]: {...stats.stations_dict[event.station_id], ...event},
+									      ...acc
+									  }), {});
 
-									    return {
+									  stats.notes_dict = stats.notes.reduce((acc, event) => ({
+									      [event.id]: {...stats.stations_dict[event.station_id], ...event},
 									      ...acc,
-									      [event.id]: {
-										election_number: station.election_number,
-										station_address: station.station_address,
-										station_number: station.station_number,
-										url: event.value,
-										timestamp: event.timestamp * 1000,
-									      },
-									    };
-									  }, {});
+									  }), {});
+
 
 									this.stats = { ...this.stats, ...stats };
 								});
