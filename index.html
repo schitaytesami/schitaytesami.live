@@ -899,19 +899,7 @@
 				
 				const formatRegionName = station_address => station_address.split(',')[0];
 
-				const formatThumbnailTitle = (station, clip) =>
-				{
-					const address = `${formatRegionName(station.station_address)}, УИК`;
-					const timeStart = formatTime(clip.clip_interval_start, station.timezone_offset);
-					const timeEnd = formatTime(clip.clip_interval_end, station.timezone_offset);
-					return `${address} ${station.station_number} ${timeStart}-${timeEnd}`;
-				};
-
-				const formatStationThumnail = (station, amountOfClips) => {
-					const address = `${formatRegionName(station.station_address)}, УИК`;
-					const clips = amountOfClips > 0 ? `, Сегментов: ${amountOfClips}.` : '';
-					return `${address} ${station.station_number}${clips}`;
-				};
+				const formatThumbnailTitle = (station, clip) => `${formatRegionName(station.station_address)}, УИК`} ${station.station_number}` + (typeof(clip) == 'number' ? `, Сегментов: ${clip}.` : ` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
 				
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
@@ -1237,7 +1225,7 @@
 							return Object.keys(clipsByStation).map(id => ({
 									id : this.$root.stats.stations_dict[id].station_id,
 									src: clipsByStation[id][0].thumbnail,
-									title: formatStationThumnail(this.$root.stats.stations_dict[id], clipsByStation[id].length)
+									title: formatThumbnailTitle(this.$root.stats.stations_dict[id], clipsByStation[id].length)
 								})
 							);
 						},
