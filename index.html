@@ -428,7 +428,7 @@
 							<tr v-for="note in notes.sort(sorter)">
 								<td>{{ formatElectionDate(note.election_number) }}</td>
 								<td>{{ formatRegionName(note.station_address) }}</td>
-								<td><router-link :to="{name: 'station', params: { id: note.station_id } }">{{ note.station_number }}</router-link></td>
+								<td><router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(note.station_id) } }">{{ note.station_number }}</router-link></td>
 								<td>{{ formatTimestamp(note.timestamp) }}</td>
 								<td>{{ note.value }}</td>
 							</tr>
@@ -667,16 +667,16 @@
 							</thead>
 							<tbody>
 								<tr v-for="sa in station_access">
-									<td>{{ sa.date }}</td>
+									<td>{{ formatElectionDate(sa.election_number) }}</td>
 									<td class="w-50">{{ formatRegionName(sa.station_address) }}</td>
 									<td>
-										<router-link :to="{ name: 'station', params: { id: sa.station_id_full }}">
+										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(sa) }}">
 											{{ sa.station_number }}
 										</router-link>
 									</td>
 									<td class="w-25">
 										<app-access-button
-											:title="sa.timestamp"
+											:title="formatTimestamp(sa.timestamp)"
 											:station_id="sa.station_id"
 											:user_id="user.id"/>
 									</td>
@@ -1259,20 +1259,12 @@
 							.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
-							const { station_access, stations_dict } = this.$root.stats;
-							if (!station_access) return [];
-
-							const user_station_access = station_access
+							return (this.$root.stats.station_access || [])
 								.filter(x => x.user_id === this.user.id)
-								.sort((a, b) => a - b);
-
-							return user_station_access.map(({ station_id, timestamp }) => ({
-								station_id,
-								station_id_full: stations_dict[station_id].station_id,
-								station_number: stations_dict[station_id].station_number,
-								station_address: stations_dict[station_id].station_address,
-								date: formatElectionDate(stations_dict[station_id].election_number),
-								timestamp: formatTimestamp(timestamp),
+								.sort(sorterNewFirst)
+								.map(station_access => ({
+									...station_access,
+									...this.$root.stats.stations_dict[station_access.station_id]
 							}));
 						},
 					},
@@ -1562,6 +1554,8 @@
 									      [event.id]: {...stats.stations_dict[event.station_id], ...event},
 									      ...acc,
 									  }), {});
+
+									  stats.formatStationIdFull = station_id => stats.stations_dict[station_id].station_id;
 
 
 									this.stats = { ...this.stats, ...stats };
