@@ -505,25 +505,30 @@
 						</tbody>
 					</table>
 					<h3 class="text-center lead">Явка по ускоренным сегментам</h3>
-					<div class="row no-gutters">
-						<div class="col"  v-for="segment in segments">
-							<table class="table-bordered table-striped w-100">
-								<thead>
-									<tr><th>Интервал</th><th>Явка, видеоподсчет</th></tr>
-								</thead>
-								<tbody>
-									<tr v-for="data in segment" :key="data.id">
-										<td>
-											<a href="#" @click.prevent="show(data.interval_full, data.video)">{{ data.interval }}</a>
-										</td>
-										<td :class="{ 'text-muted': !data.estimate && data.average }">
-											{{ data.estimate || data.average || '' }}
-										</td>
-									</tr>
-								</tbody>
-							</table>
+					<figure>
+						<div class="row no-gutters">
+							<div class="col"  v-for="segment in segments">
+								<table class="table-bordered table-striped w-100">
+									<thead>
+										<tr><th>Интервал</th><th>Явка, видеоподсчет</th></tr>
+									</thead>
+									<tbody>
+										<tr v-for="data in segment" :key="data.id">
+											<td>
+												<a href="#" @click.prevent="show(data.interval_full, data.video)">{{ data.interval }}</a>
+											</td>
+											<td :class="{ 'text-muted': !data.estimate && data.average }">
+												{{ data.estimate || data.average || '' }}
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
 						</div>
-					</div>
+						<figcaption>
+							<p class="text-muted" style="float:right">* предварительный результат</p>
+						</figcaption>
+					</figure>
 					
 					<div class="mt-3">
 						<h3 class="text-center lead">Пометки</h3>
@@ -540,8 +545,6 @@
 						</div>
 					</div>
 
-					<hr/>
-					<p>* предварительный результат</p>
 				</div>
 			</div>
 		</div>
