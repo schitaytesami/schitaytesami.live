@@ -1331,12 +1331,10 @@
 					watch: {
 						/* reset the subselects not only visually but also in data */
 						election_number() {
-							this.region_number =
-								this.getList([this.election_number])[0][1];
+							this.region_number = this.getList([this.election_number])[0][1];
 						},
 						region_number() {
-							this.station_number =
-								this.getList([this.election_number, this.region_number])[0][1];
+							this.station_number = this.getList([this.election_number, this.region_number])[0][1];
 						},
 					},
 					template: '#app-selection',
