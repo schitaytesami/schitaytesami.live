@@ -479,7 +479,7 @@
 					<div><a :href="video_url">Прямая ссылка на это видео</a></div>
 				</div>
 			</div>
-			<div class="col-md-8 offset-md-2">
+			<div class="col-md-12">
 				<div>
 					<div v-if="full_video">
 						<h3 class="text-center lead">Просмотр полного видео</h3>
@@ -623,7 +623,7 @@
 
 			<template v-if="$root.user && $route.params.display === $root.user.display">
 				<div class="row mb-2 justify-content-center">
-					<div class="col-lg-10">
+					<div class="col-lg-12">
 						<h5 class="text-center">Закладки</h5>
 						<table class="table table-sm" v-if="bookmarks.length > 0">
 							<thead>
@@ -648,7 +648,7 @@
 				</div>
 				
 				<div class="row mb-2 justify-content-center">
-					<div class="col-lg-10">
+					<div class="col-lg-12">
 						<h5 class="text-center">Пометки</h5>
 						<app-notes :notes="notes" v-if="notes.length > 0" />
 						<h6 class="text-center" v-if="notes.length == 0">Вы ещё не добавили пометки.</h6>
@@ -656,7 +656,7 @@
 				</div>
 			
 				<div class="row mb-2 justify-content-center">
-					<div class="col-lg-10">
+					<div class="col-lg-12">
 						<h5 class="text-center">Доступ</h5>
 						<table class="table table-sm" v-if="station_access.length > 0">
 							<thead>
