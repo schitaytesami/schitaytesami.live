@@ -426,10 +426,10 @@
 						</thead>
 						<tbody>
 							<tr v-for="note in events">
-								<!--<td>{{ note.date }}</td>
-								<td>{{ note.region }}</td>
+								<td>{{ formatElectionDate(note.election_number) }}</td>
+								<td>{{ formatRegionName(note.station_address) }}</td>
 								<td><router-link :to="{name: 'station', params: { id: note.station_id } }">{{ note.station_number }}</router-link></td>
-								<td>{{ note.timestamp }}</td>-->
+								<td>{{ note.timestamp }}</td>
 								<td>{{ note.value }}</td>
 							</tr>
 						</tbody>
@@ -634,11 +634,11 @@
 							</thead>
 							<tbody>
 								<tr v-for="bookmark in bookmarks">
-									<td>{{ bookmark.date }}</td>
+									<td>{{ formatElectionDate(bookmark.election_number) }}</td>
 									<td class="w-50">{{ formatRegionName(bookmark.station_address) }}</td>
 									<td>{{ bookmark.station_number }}</td>
 									<td class="w-25">
-										<a :title="'Добавлено ' + bookmark.timestamp" :href="bookmark.url">Перейти</a>
+										<a :title="'Добавлено ' + bookmark.timestamp" :href="bookmark.value">Перейти</a>
 									</td>
 								</tr>
 	 						</tbody>
@@ -887,8 +887,8 @@
 					return `${hours}:${minutes}`;
 				};
 
-				const formatDate = dateNumber => {
-					const date = String(dateNumber);
+				const formatElectionDate = election_number => {
+					const date = String(election_number);
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
 				
@@ -1161,7 +1161,7 @@
 						stations() {
 							return (this.$root.stats.stations || []).map(station => ({
 								...station,
-								date: formatDate(station.election_number),
+								date: formatElectionDate(station.election_number),
 								region: formatRegionName(station.station_address),
 								official: station.turnout.official.final,
 								estimate: station.turnout.estimate.final,
@@ -1185,7 +1185,7 @@
 							return this.events.map(note => ({
 								...note,
 								region : formatRegionName(note.station_address),
-								date : formatDate(note.election_number),
+								date : formatElectionDate(note.election_number),
 								timestamp : formatTimestamp(note.timestamp),
 							}))
 							.sort(sorterNewFirst);
@@ -1220,7 +1220,7 @@
 								piece.map((data, idx) => {
 									const clip = this.$root.stats.clips_dict[data];
 									const interval = `${formatTime(clip.clip_interval_start, this.station.timezone_offset)} - ${formatTime(clip.clip_interval_end, this.station.timezone_offset)}`;
-									const interval_full = formatDate(this.station.election_number) + ', ' + interval;
+									const interval_full = formatElectionDate(this.station.election_number) + ', ' + interval;
 
 									if (i === 0 && idx === 0) this.$nextTick(() => this.show(interval_full, clip.video));
 
@@ -1292,7 +1292,7 @@
 							.map(id => this.$root.stats.bookmarks_dict[id])
 							.map(bookmark => ({
 								...bookmark,
-								date: formatDate(bookmark.election_number),
+								date: formatElectionDate(bookmark.election_number),
 								timestamp: formatTimestamp(bookmark.timestamp),
 							}))
 							.sort(sorterNewFirst);
@@ -1315,7 +1315,7 @@
 								station_id_full: stations_dict[station_id].station_id,
 								station_number: stations_dict[station_id].station_number,
 								station_address: stations_dict[station_id].station_address,
-								date: formatDate(stations_dict[station_id].election_number),
+								date: formatElectionDate(stations_dict[station_id].election_number),
 								timestamp: formatTimestamp(timestamp),
 							}));
 						},
@@ -1528,9 +1528,10 @@
 					],
 				});
 
-		        	Vue.component('app-selection', appSelection);
+		        Vue.component('app-selection', appSelection);
 				Vue.component('app-bookmark-button', appBookmarkButton);
 				Vue.component('app-access-button', appAccessButton);
+				Vue.component('app-notes', appNotes);
 
 				const app = new Vue({
 					el: '#app',
@@ -1544,7 +1545,7 @@
 					methods: {
 						interval : clip => {
 							const { station, clip_interval_start, clip_interval_end } = clip;
-							return `${formatDate(station.election_number)}, ${formatTime(
+							return `${formatElectionDate(station.election_number)}, ${formatTime(
 								clip_interval_start,
 								station.timezone_offset
 							)} - ${formatTime(clip_interval_end, station.timezone_offset)}`;
