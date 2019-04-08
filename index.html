@@ -427,7 +427,7 @@
 							<td>{{ formatElectionDate(note.election_number) }}</td>
 							<td>{{ formatRegionName(note.station_address) }}</td>
 							<td><router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(note.station_id) } }">{{ note.station_number }}</router-link></td>
-							<td title="Добавлено {{ formatTimestamp(note.timestamp) }}">{{ note.value }}</td>
+							<td :title="'Добавлено ' + formatTimestamp(note.timestamp)">{{ note.value }}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -637,7 +637,7 @@
 									<td class="w-50">{{ formatRegionName(bookmark.station_address) }}</td>
 									<td>{{ bookmark.station_number }}</td>
 									<td class="w-25">
-										<a :title="'Добавлено ' + bookmark.timestamp" :href="bookmark.value">Перейти</a>
+										<a :title="'Добавлено ' + formatTimestamp(bookmark.timestamp)" :href="bookmark.value">Перейти</a>
 									</td>
 								</tr>
 	 						</tbody>
