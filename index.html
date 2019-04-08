@@ -425,7 +425,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="note in events">
+							<tr v-for="note in events.sort(sorter)">
 								<td>{{ formatElectionDate(note.election_number) }}</td>
 								<td>{{ formatRegionName(note.station_address) }}</td>
 								<td><router-link :to="{name: 'station', params: { id: note.station_id } }">{{ note.station_number }}</router-link></td>
@@ -1166,15 +1166,12 @@
 				};
 				
 				const appNotes = {
-					methods: {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp},
+					methods: {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp, sorter : sorterNewFirst},
 					props: {
 						events: {
 							type: Array,
 							required: true,
 						},
-					},
-					computed: {
-						notes() {return this.events.sort(sorterNewFirst); }
 					},
 					template: '#app-notes',
 				};
