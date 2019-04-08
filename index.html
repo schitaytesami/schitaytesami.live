@@ -420,8 +420,7 @@
 								<th>Дата голосования</th>
 								<th>Регион</th>
 								<th>УИК</th>
-								<th>Время</th>
-								<th>Пометка</th>
+								<th>Комментарий</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -429,8 +428,7 @@
 								<td>{{ formatElectionDate(note.election_number) }}</td>
 								<td>{{ formatRegionName(note.station_address) }}</td>
 								<td><router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(note.station_id) } }">{{ note.station_number }}</router-link></td>
-								<td>{{ formatTimestamp(note.timestamp) }}</td>
-								<td>{{ note.value }}</td>
+								<td title="Добавлено {{ formatTimestamp(note.timestamp) }}">{{ note.value }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -450,7 +448,7 @@
 								<th>Явка, официальная</th>
 								<th style="border-right: 2px solid black">Явка, видеоподсчет</th>
 								<th class="text-muted">Прогресс</th>
-								<th class="text-muted">Пометки</th>
+								<th class="text-muted">Комментарии</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -531,7 +529,7 @@
 					</figure>
 					
 					<div class="mt-3">
-						<h3 class="text-center lead">Пометки</h3>
+						<h3 class="text-center lead">Комментарии</h3>
 						<div class="row no-gutters text-center">
 							<app-notes :notes="notes" v-if="notes.length > 0" />
 							<h6 class="text-center" v-if="notes.length == 0">Нет открытых пометок.</h6>
@@ -652,9 +650,9 @@
 				
 				<div class="row mb-2 justify-content-center">
 					<div class="col-lg-12">
-						<h5 class="text-center">Пометки</h5>
+						<h5 class="text-center">Комментарии</h5>
 						<app-notes :notes="notes" v-if="notes.length > 0" />
-						<h6 class="text-center" v-if="notes.length == 0">Вы ещё не добавили пометки.</h6>
+						<h6 class="text-center" v-if="notes.length == 0">Вы ещё не добавили комментариев.</h6>
 					</div>
 				</div>
 			

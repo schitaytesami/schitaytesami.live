@@ -1,6 +1,5 @@
 import os
 import sys
-import math
 import base64
 import itertools
 import random
@@ -128,9 +127,9 @@ def user_must_be_active(admin = False, fail = True):
 
 def estimate_clip(clip):
 	group_key = lambda ev: ev.creator_id
-	num_votes = [len(list(g)) for k, g in itertools.groupby(sorted(filter(lambda ev: ev.type == 'vote', clip.events), key = group_key), group_key)]
+	num_votes = [len(list(g)) for k, g in itertools.groupby(sorted(filter(lambda ev: ev.type == 'vote', clip.events), key = group_key), key = group_key)]
 	estimate = ([json.loads(ev.value) for ev in clip.events if ev.type == 'turnout_estimate'] + [None])[0]
-	return dict(final = estimate, average = int(math.ceil(sum(num_votes) / float(len(num_votes)))) if len(num_votes) > 0 else None, completed = len(num_votes) >= incomplete_task_threshold['vote'] )
+	return dict(final = estimate, average = int(sum(num_votes) / float(len(num_votes))) if len(num_votes) > 0 else None, completed = len(num_votes) >= incomplete_task_threshold['vote'] )
 
 def estimate_station(station, clip_turnout):
 	clip_turnout_ = [clip_turnout[clip.id] for clip in station.clips]
