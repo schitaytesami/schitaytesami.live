@@ -893,17 +893,19 @@
 				};
 				
 				const formatTimestamp = timestamp => new Date(timestamp).toLocaleString('ru-RU');
+				
+				const formatRegionName = station_address => station_address.split(',')[0];
 
 				const formatThumbnailTitle = (station, clip) =>
 				{
-					const address = `${station.station_address.split(',')[0]}, УИК`;
+					const address = `${formatRegionName(station.station_address)}, УИК`;
 					const timeStart = formatTime(clip.clip_interval_start, station.timezone_offset);
 					const timeEnd = formatTime(clip.clip_interval_end, station.timezone_offset);
 					return `${address} ${station.station_number} ${timeStart}-${timeEnd}`;
 				};
 
 				const formatStationThumnail = (station, amountOfClips) => {
-					const address = `${station.station_address.split(',')[0]}, УИК`;
+					const address = `${formatRegionName(station.station_address)}, УИК`;
 					const clips = amountOfClips > 0 ? `, Сегментов: ${amountOfClips}.` : '';
 					return `${address} ${station.station_number}${clips}`;
 				};
@@ -1160,7 +1162,7 @@
 							return (this.$root.stats.stations || []).map(station => ({
 								...station,
 								date: formatDate(station.election_number),
-								region: station.station_address.split(',')[0],
+								region: formatRegionName(station.station_address),
 								official: station.turnout.official.final,
 								estimate: station.turnout.estimate.final,
 								progress: `${(station.turnout.progress * 100).toFixed(0)}%`,
