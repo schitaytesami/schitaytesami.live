@@ -412,27 +412,25 @@
 	</script>
 	
 	<script type="text/x-template" id="app-notes">
-		<div class="row">
-				<div class="col-md-12" id="notes-body">
-					<table class="table table-striped">
-						<thead>
-							<tr>
-								<th>Дата голосования</th>
-								<th>Регион</th>
-								<th>УИК</th>
-								<th>Комментарий</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="note in notes.sort(sorter)">
-								<td>{{ formatElectionDate(note.election_number) }}</td>
-								<td>{{ formatRegionName(note.station_address) }}</td>
-								<td><router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(note.station_id) } }">{{ note.station_number }}</router-link></td>
-								<td title="Добавлено {{ formatTimestamp(note.timestamp) }}">{{ note.value }}</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
+			<div class="col-md-12" id="notes-body">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Дата голосования</th>
+							<th>Регион</th>
+							<th>УИК</th>
+							<th>Комментарий</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="note in notes.sort(sorter)">
+							<td>{{ formatElectionDate(note.election_number) }}</td>
+							<td>{{ formatRegionName(note.station_address) }}</td>
+							<td><router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(note.station_id) } }">{{ note.station_number }}</router-link></td>
+							<td title="Добавлено {{ formatTimestamp(note.timestamp) }}">{{ note.value }}</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 	</script>
 
