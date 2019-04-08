@@ -160,7 +160,7 @@
 					<ul class="nav nav-pills w-100 navbar-dark">
 						<li class="nav-pill"><router-link class="navbar-brand" :to="{ name: 'index' }">Считайте Сами</router-link></li>
 						<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'task' }">Участвовать</router-link></li>
-						<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'results' }">Результаты</router-link></li>
+						<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'stations' }">Результаты</router-link></li>
 						<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'users' }">Рейтинг участников</router-link></li>
 						<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'about' }">О проекте</router-link></li>
 						<li class="nav-pill navbar-nav">
@@ -438,9 +438,9 @@
 			</div>
 	</script>
 
-	<script type="text/x-template" id="app-results">
+	<script type="text/x-template" id="app-stations">
 		<div class="row">
-				<div class="col-md-12" id="results-body">
+				<div class="col-md-12" id="stations-body">
 					<table class="table table-striped">
 						<thead>
 							<tr>
@@ -454,7 +454,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="station in stations" :key="station.id">
+							<tr v-for="station in $root.stats.stations" :key="station.id">
 								<td>{{ formatElectionDate(station.election_number) }}</td>
 								<td>{{ formatRegionName(station.station_address) }}</td>
 								<td><router-link :to="{name: 'station', params: { id: station.station_id } }">{{ station.station_number }}</router-link></td>
@@ -565,7 +565,7 @@
 						</thead>
 						<tbody>
 							<tr
-								v-for="(user, index) in users"
+								v-for="(user, index) in $root.stats.users"
 								:key="user.id"
 								:class="{ 'bg-success': $root.user && $root.user.id === user.id }"
 							>
@@ -1160,12 +1160,9 @@
 					template: '#app-task-vote',
 				};
 
-				const appResults = {
+				const appStations = {
 					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatPercent : formatPercent},
-					computed: {
-						stations() { return (this.$root.stats.stations || []); },
-					},
-					template: '#app-results',
+					template: '#app-stations',
 				};
 				
 				const appNotes = {
@@ -1238,9 +1235,6 @@
 				};
 				const appUsers = {
 					methods : {formatMinutes : formatMinutes},
-					computed: {
-						users() { return (this.$root.stats.users || []); },
-					},
 					template: '#app-users',
 				};
 				const appUser = {
@@ -1490,7 +1484,7 @@
 							name: 'task-proc',
 							component: appTaskProc
 						},
-						{ path: '/stations', name: 'results', component: appResults },
+						{ path: '/stations', name: 'stations', component: appStations },
 						{ path: '/stations/:id/:full_video?', name: 'station', component: appStation },
 						{ path: '/users', name: 'users', component: appUsers },
 						{ path: '/user/:display', name: 'user', component: appUser },
