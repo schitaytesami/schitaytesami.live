@@ -1200,9 +1200,10 @@
 							const chunk = Math.ceil(this.clipsIds.length / num_columns);
 							const chunks = Array(num_columns).fill().map((_, k) => this.clipsIds.slice(k * chunk, (k + 1) * chunk));
 
-							return chunks.map((piece, i) =>
-								piece.map((data, idx) => {
-									const clip = this.$root.stats.clips_dict[data];
+							return chunks.map((chunk, i) =>
+								chunk.map((clip_id, idx) => 
+								{
+									const clip = this.$root.stats.clips_dict[clip_id];
 									const interval = `${formatTime(clip.clip_interval_start, this.station.timezone_offset)} - ${formatTime(clip.clip_interval_end, this.station.timezone_offset)}`;
 									const interval_full = formatElectionDate(this.station.election_number) + ', ' + interval;
 
@@ -1219,6 +1220,11 @@
 								})
 							);
 						},
+						tasks() {
+							const clips = !this.clipsIds ? [] : this.clipsIds.map(clip_id => this.$root.stats.clips_dict[clip_id]);
+							const camera_ids = Array.from(Set(clips.map(c => c.camera_id))).sort();
+							
+						}
 					},
 					methods: {
 						getTurnout(obj) {
