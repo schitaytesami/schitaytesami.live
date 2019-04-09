@@ -272,22 +272,23 @@
 	<script type="text/x-template" id="app-task">
 		<div class="row">
 			<div class="col-md-6 offset-md-3">
-				<div class="bg-warning mb-3" v-if="!$root.user">
-					<h1 class="lead text-center">Для начала работы введите адрес эл. почты и зарегистрируйтесь</h1>
-					<div class="container">
-						<div class="row pl-2 pr-2">
-							<div class="form-group col pl-0">
-								<input type="text" class="form-control user_email" v-model="email" placeholder="Эл. почта" />
-							</div>
-							<div class="ml-auto">
-								<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
+				<div class="mb-3" :class="{ 'bg-warning': !registered, 'bg-success': registered }" v-if="!$root.user">
+					<template v-if="!registered">
+						<h1 class="lead text-center">Для начала работы введите адрес эл. почты и зарегистрируйтесь</h1>
+						<div class="container">
+							<div class="row pl-2 pr-2">
+								<div class="form-group col pl-0">
+									<input type="text" class="form-control user_email" v-model="email" placeholder="Эл. почта" />
+								</div>
+								<div class="ml-auto">
+									<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
+								</div>
 							</div>
 						</div>
-					</div>
-					<div v-if="registered">
-						<p class="bg-success text-center">Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
-					</div>
+					</template>
+					<p class="text-center text-light" v-else>Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
 				</div>
+
 				<h3 class="text-center lead">Подсчёт явки</h3>
 				<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
 				<template v-if="$root.user">
@@ -410,28 +411,26 @@
 			</div>
 		</div>
 	</script>
-	
+
 	<script type="text/x-template" id="app-notes">
-			<div class="col-md-12" id="notes-body">
-				<table class="table table-striped">
-					<thead>
-						<tr>
-							<th>Дата голосования</th>
-							<th>Регион</th>
-							<th>УИК</th>
-							<th>Комментарий</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr v-for="note in notes.sort(sorter)">
-							<td>{{ formatElectionDate(note.election_number) }}</td>
-							<td>{{ formatRegionName(note.station_address) }}</td>
-							<td><router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(note.station_id) } }">{{ note.station_number }}</router-link></td>
-							<td :title="'Добавлено ' + formatTimestamp(note.timestamp)">{{ note.value }}</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
+		<table class="table table-sm">
+			<thead>
+				<tr>
+					<th>Дата голосования</th>
+					<th>Регион</th>
+					<th>УИК</th>
+					<th>Комментарий</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="note in notes.sort(sorter)">
+					<td>{{ formatElectionDate(note.election_number) }}</td>
+					<td>{{ formatRegionName(note.station_address) }}</td>
+					<td><router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(note.station_id) } }">{{ note.station_number }}</router-link></td>
+					<td class="w-50" :title="'Добавлено ' + formatTimestamp(note.timestamp)">{{ note.value }}</td>
+				</tr>
+			</tbody>
+		</table>
 	</script>
 
 	<script type="text/x-template" id="app-stations">
@@ -485,7 +484,7 @@
 					</div>
 
 					<h3 class="text-center lead">Явка по официальным интервалам</h3>
-					<table class="table-bordered table-striped w-100">
+					<table class="table-bordered table-striped w-100 mb-3">
 						<tbody>
 							<tr>
 								<th></th><th>Окончательная</th><th>8:00-10:00</th><th>10:00-12:00</th><th>12:00-15:00</th><th>15:00-18:00</th>
@@ -500,6 +499,7 @@
 							</tr>
 						</tbody>
 					</table>
+
 					<h3 class="text-center lead">Явка по ускоренным сегментам</h3>
 					<figure>
 						<div class="row no-gutters">
@@ -522,22 +522,24 @@
 							</div>
 						</div>
 						<figcaption>
-							<p class="text-muted" style="float:right">* предварительный результат</p>
+							<p class="text-muted text-right">* предварительный результат</p>
 						</figcaption>
 					</figure>
-					
-					<div class="mt-3">
-						<h3 class="text-center lead">Комментарии</h3>
-						<div class="row no-gutters text-center">
+
+					<div class="row no-gutters mt-3">
+						<div class="col">
+							<h3 class="text-center lead">Комментарии</h3>
 							<app-notes :notes="notes" v-if="notes.length > 0" />
 							<h6 class="text-center" v-if="notes.length == 0">Нет открытых пометок.</h6>
-						</div>					
+						</div>
 					</div>
 
-					<div class="mt-3" v-if="true || $root.user">
+					<div class="mt-3" v-if="$root.user">
 						<h3 class="text-center lead">Дополнительно</h3>
-						<div class="row no-gutters">
-							<app-access-button :station_id="station.id" :user_id="$root.user.id" />
+						<div class="row no-gutters mb-2">
+							<div class="col text-center">
+								<app-access-button :station_id="station.id" :user_id="$root.user.id" />
+							</div>
 						</div>
 					</div>
 
@@ -592,7 +594,7 @@
 					<h4 class="text-center lead">@<span>{{ user.display }}</span></h4>
 				</div>
 
-				<div class="col-lg-6 offset-lg-1">
+				<div class="col-lg-4">
 					<table class="table table-sm table-borderless">
 						<tbody>
 							<tr>
@@ -634,9 +636,13 @@
 							<tbody>
 								<tr v-for="bookmark in bookmarks">
 									<td>{{ formatElectionDate(bookmark.election_number) }}</td>
-									<td class="w-50">{{ formatRegionName(bookmark.station_address) }}</td>
-									<td>{{ bookmark.station_number }}</td>
-									<td class="w-25">
+									<td>{{ formatRegionName(bookmark.station_address) }}</td>
+									<td>
+										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(bookmark.station_id) }}">
+											{{ bookmark.station_number }}
+										</router-link>
+									</td>
+									<td class="w-50">
 										<a :title="'Добавлено ' + formatTimestamp(bookmark.timestamp)" :href="bookmark.value">Перейти</a>
 									</td>
 								</tr>
@@ -645,7 +651,7 @@
 						<h6 class="text-center" v-if="bookmarks.length == 0">Вы ещё не добавили закладки.</h6>
 					</div>
 				</div>
-				
+
 				<div class="row mb-2 justify-content-center">
 					<div class="col-lg-12">
 						<h5 class="text-center">Комментарии</h5>
@@ -653,7 +659,7 @@
 						<h6 class="text-center" v-if="notes.length == 0">Вы ещё не добавили комментариев.</h6>
 					</div>
 				</div>
-			
+
 				<div class="row mb-2 justify-content-center">
 					<div class="col-lg-12">
 						<h5 class="text-center">Доступ</h5>
@@ -667,16 +673,16 @@
 							<tbody>
 								<tr v-for="sa in station_access">
 									<td>{{ formatElectionDate(sa.election_number) }}</td>
-									<td class="w-50">{{ formatRegionName(sa.station_address) }}</td>
+									<td>{{ formatRegionName(sa.station_address) }}</td>
 									<td>
-										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(sa) }}">
+										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(sa.id) }}">
 											{{ sa.station_number }}
 										</router-link>
 									</td>
-									<td class="w-25">
+									<td class="w-50">
 										<app-access-button
 											:title="formatTimestamp(sa.timestamp)"
-											:station_id="sa.station_id"
+											:station_id="sa.id"
 											:user_id="user.id"/>
 									</td>
 								</tr>
@@ -687,11 +693,13 @@
 				</div>
 			</template>
 
-			
+
 			<div class="row">
 				<div class="col">
 					<div>
-						<router-link :to="{name: 'station', params: { id: thumb.id } }" v-for="thumb in thumbnails"><img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" /></router-link>
+						<router-link :to="{name: 'station', params: { id: thumb.id } }" v-for="thumb in thumbnails">
+							<img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" />
+						</router-link>
 					</div>
 				</div>
 			</div>
@@ -894,13 +902,17 @@
 					const date = String(election_number);
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
-				
+
 				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
-				
+
 				const formatRegionName = station_address => station_address.split(',')[0];
 
-				const formatThumbnailTitle = (station, clip) => `${formatRegionName(station.station_address)}, УИК`} ${station.station_number}` + (typeof(clip) == 'number' ? `, Сегментов: ${clip}.` : ` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
-				
+				const formatThumbnailTitle = (station, clip) =>
+					`${formatRegionName(station.station_address)}, УИК ${station.station_number}`+
+					(typeof(clip) === 'number' ?
+						`, Сегментов: ${clip}.` :
+						` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
+
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
 				const makeError = err => {
@@ -980,7 +992,7 @@
 
 				const appIndex = {
 					computed: {
-						showStats() { return this.$root.stats.num_stations && !this.$root.showError; },
+						showStats() { return this.$root.stats.stations && !this.$root.showError; },
 						stats() {
 							return {
 								...this.$root.stats,
@@ -1162,7 +1174,25 @@
 						official() { return this.station.turnout ? this.getTurnout(this.station.turnout.official) : [];	},
 						estimate() { return this.station.turnout ? this.getTurnout(this.station.turnout.estimate) : [];	},
 						clipsIds() { return this.station.clips ? this.station.clips.split(',').map(Number) : []; },
-						notes() { return (this.$root.stats.notes || []).filter(e => e.station_id == this.$root.stats.stations_dict_station_id[this.$route.params.id].id).map(e => ({...this.$root.stats.stations_dict[e.station_id], ...e})); },
+						notes() {
+							if (!this.$root.user) return [];
+
+							const user = (this.$root.stats.users || []).find(u => u.id === this.$root.user.id);
+							const user_access = (this.$root.stats.station_access || [])
+								.find(x => x.station_id === this.station.id && x.user_id === user.id) || {};
+
+							if (user_access.granted === 1)
+								return (this.$root.stats.notes || [])
+									.filter(note => note.station_id === this.station.id)
+									.map(note => this.$root.stats.notes_dict[note.id])
+
+							const user_notes = !user ? [] : user.notes
+								.split(',')
+								.map(id => this.$root.stats.notes_dict[id])
+								.filter(note => note.station_id === this.station.id);
+
+							return user_notes;
+						},
 						segments() {
 							const pieces = [
 								this.clipsIds.slice(0, this.clipsIds.length / 2),
@@ -1233,17 +1263,12 @@
 							return (!this.user.bookmarks) ? [] : this.user.bookmarks
 						  	.split(',')
 							.map(id => this.$root.stats.bookmarks_dict[id])
-							.map(bookmark => ({
-								...bookmark,
-								date: formatElectionDate(bookmark.election_number),
-								timestamp: formatTimestamp(bookmark.timestamp),
-							}))
 							.sort(sorterNewFirst);
 						},
 						notes() {
 							return (!this.user.notes) ? [] : this.user.notes
 						  	.split(',')
-							.map(id => this.$root.stats.notes_dict[id]);
+								.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
 							return (this.$root.stats.station_access || [])
@@ -1365,8 +1390,6 @@
 				  },
 				  methods: {
 						submit() {
-							this.granted = -2;
-
 							sendAccess(this, this.user_id, this.station_id)
 								.then(() => {
 									this.granted = 0;
@@ -1433,7 +1456,7 @@
 					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatPercent : formatPercent},
 					template: '#app-stations',
 				};
-				
+
 				const appNotes = {
 					methods: {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp, sorter : sorterNewFirst},
 					props: ['notes'],
