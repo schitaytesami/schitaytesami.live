@@ -912,6 +912,8 @@
 					(typeof(clip) === 'number' ?
 						`, Сегментов: ${clip}.` :
 						` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
+				
+				const formatClipTask = clip_task => ({full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов'})[clip_task] || clip_task;
 
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
