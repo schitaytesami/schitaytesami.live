@@ -36,11 +36,6 @@ sudo systemctl start schitaytesami.gunicorn.service
 sudo systemctl restart schitaytesami.nginx.service
 sudo systemctl restart schitaytesami.gunicorn.service
 
-# create directories
-cd /var/www/sami/schitaytesami.live
-mkdir -p var/cache/nginx
-mkdir -p var/log
-
 # validate config
 sudo /usr/sbin/nginx -t -p . -c nginx.conf
 ```
@@ -49,6 +44,12 @@ sudo /usr/sbin/nginx -t -p . -c nginx.conf
 ```shell
 # init app.db
 python3 app.py setup
+
+# add user
+python3 app.py adduser
+
+# add admin
+python3 app.py adduser --admin
 
 # import clips
 python3 app.py import --clips_path https://proverim.webcam/speedup/clips.json --gold 5
