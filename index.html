@@ -671,7 +671,7 @@
 									<td>{{ formatElectionDate(sa.election_number) }}</td>
 									<td class="w-50">{{ formatRegionName(sa.station_address) }}</td>
 									<td>
-										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(sa) }}">
+										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(sa.id) }}">
 											{{ sa.station_number }}
 										</router-link>
 									</td>
