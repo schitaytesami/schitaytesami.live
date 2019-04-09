@@ -1367,8 +1367,6 @@
 				  },
 				  methods: {
 						submit() {
-							this.granted = -2;
-
 							sendAccess(this, this.user_id, this.station_id)
 								.then(() => {
 									this.granted = 0;
@@ -1435,7 +1433,7 @@
 					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatPercent : formatPercent},
 					template: '#app-stations',
 				};
-				
+
 				const appNotes = {
 					methods: {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp, sorter : sorterNewFirst},
 					props: ['notes'],
