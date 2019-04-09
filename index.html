@@ -1220,10 +1220,10 @@
 								})
 							);
 						},
-						tasks() {
+						clips() {
 							const clips = !this.clipsIds ? [] : this.clipsIds.map(clip_id => this.$root.stats.clips_dict[clip_id]);
 							const camera_ids = Array.from(Set(clips.map(c => c.camera_id))).sort();
-							
+							return [];
 						}
 					},
 					methods: {
