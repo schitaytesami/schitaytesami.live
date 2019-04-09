@@ -1241,11 +1241,6 @@
 							return (!this.user.bookmarks) ? [] : this.user.bookmarks
 						  	.split(',')
 							.map(id => this.$root.stats.bookmarks_dict[id])
-							.map(bookmark => ({
-								...bookmark,
-								date: formatElectionDate(bookmark.election_number),
-								timestamp: formatTimestamp(bookmark.timestamp),
-							}))
 							.sort(sorterNewFirst);
 						},
 						notes() {
