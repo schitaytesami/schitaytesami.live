@@ -1194,12 +1194,11 @@
 							return user_notes;
 						},
 						segments() {
-							const pieces = [
-								this.clipsIds.slice(0, this.clipsIds.length / 2),
-								this.clipsIds.slice(this.clipsIds.length / 2),
-							];
+							const num_columns = 4;
+							const chunk = Math.ceil(this.clipsIds.length / num_columns);
+							const chunks = Array(num_columns).fill().map((_, k) => this.clipsIds.slice(k * chunk, (k + 1) * chunk));
 
-							return pieces.map((piece, i) =>
+							return chunks.map((piece, i) =>
 								piece.map((data, idx) => {
 									const clip = this.$root.stats.clips_dict[data];
 									const interval = `${formatTime(clip.clip_interval_start, this.station.timezone_offset)} - ${formatTime(clip.clip_interval_end, this.station.timezone_offset)}`;
