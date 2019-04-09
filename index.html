@@ -484,11 +484,11 @@
 							</tr>
 							<tr>
 								<th>Явка, официальная</th>
-								<td v-for="d in official">{{ d }}</td>
+								<td v-for="d in getTurnout('official')">{{ d }}</td>
 							</tr>
 							<tr>
 								<th>Явка, видеоподсчет</th>
-								<td v-for="d in estimate">{{ d }}</td>
+								<td v-for="d in getTurnout('estimate')">{{ d }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -1165,9 +1165,7 @@
 					},
 					computed: {
 						station() { return this.$root.stats.stations_dict_station_id ? this.$root.stats.stations_dict_station_id[this.$route.params.id] : {}; },
-						official() { return this.station.turnout ? this.getTurnout(this.station.turnout.official) : [];	},
-						estimate() { return this.station.turnout ? this.getTurnout(this.station.turnout.estimate) : [];	},
-						clipsIds() { return this.station.clips ? this.station.clips.split(',').map(Number) : []; },
+						clips() { return this.station.clips ? this.station.clips.split(',').map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]) : []; },
 						notes() {
 							if (!this.$root.user) return [];
 
@@ -1189,39 +1187,35 @@
 						},
 						segments() {
 							const num_columns = 4;
-							const chunk = Math.ceil(this.clipsIds.length / num_columns);
-							const chunks = Array(num_columns).fill().map((_, k) => this.clipsIds.slice(k * chunk, (k + 1) * chunk));
+							const chunk = Math.ceil(this.clips.length / num_columns);
+							const chunks = Array(num_columns).fill().map((_, k) => this.clips.slice(k * chunk, (k + 1) * chunk));
 
-							return chunks.map((chunk, i) =>
-								chunk.map((clip_id, idx) => 
-								{
-									const clip = this.$root.stats.clips_dict[clip_id];
-									const interval = `${formatTime(clip.clip_interval_start, this.station.timezone_offset)} - ${formatTime(clip.clip_interval_end, this.station.timezone_offset)}`;
-									const interval_full = formatElectionDate(this.station.election_number) + ', ' + interval;
+							return chunks.map((chunk, i) =>	chunk.map((clip, idx) => {
+								const interval = `${formatTime(clip.clip_interval_start, this.station.timezone_offset)} - ${formatTime(clip.clip_interval_end, this.station.timezone_offset)}`;
+								const interval_full = formatElectionDate(this.station.election_number) + ', ' + interval;
 
-									if (i === 0 && idx === 0) this.$nextTick(() => this.show(interval_full, clip.video));
+								if (i === 0 && idx === 0) this.$nextTick(() => this.show(interval_full, clip.video));
 
-									return {
-										id: idx,
-										interval : interval,
-										interval_full : interval_full,
-										video: clip.video,
-										estimate: clip.turnout.estimate,
-										average: clip.turnout.average ? `${clip.turnout.average}*` : '',
-									};
-								})
-							);
+								return {
+									id: idx,
+									interval : interval,
+									interval_full : interval_full,
+									video: clip.video,
+									estimate: clip.turnout.estimate,
+									average: clip.turnout.average ? `${clip.turnout.average}*` : '',
+								};
+							}));
 						},
 						clips() {
-							const clips = !this.clipsIds ? [] : this.clipsIds.map(clip_id => this.$root.stats.clips_dict[clip_id]);
-							const camera_ids = Array.from(Set(clips.map(c => c.camera_id))).sort();
+							const camera_ids = Array.from(Set(this.clips.map(c => c.camera_id))).sort();
 							return [];
 						}
 					},
 					methods: {
-						getTurnout(obj) {
+						getTurnout(name) {
+							const obj = this.station.turnout[name];
 							const orderList = this.$options.turnoutOrder;
-							return Object.keys(obj).reduce((acc, cur) => (orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]), acc), []);
+							return !obj ? [] : Object.keys(obj).reduce((acc, cur) => (orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]), acc), []);
 						},
 						show(interval, video_url) {
 							this.interval = interval;
@@ -1302,15 +1296,9 @@
 						};
 					},
 					computed: {
-						election_list() {
-							return this.filter(this.options, 'election');
-						},
-						region_list() {
-							return this.filter(this.getList([this.election_number]), 'region');
-						},
-						station_list() {
-							return this.filter(this.getList([this.election_number, this.region_number]), 'station');
-						}
+						election_list() { return this.filter(this.options, 'election');	},
+						region_list() {	return this.filter(this.getList([this.election_number]), 'region'); },
+						station_list() { return this.filter(this.getList([this.election_number, this.region_number]), 'station'); }
 					},
 					methods: {
 						filter(list, value) {
