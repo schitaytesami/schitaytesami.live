@@ -636,7 +636,11 @@
 								<tr v-for="bookmark in bookmarks">
 									<td>{{ formatElectionDate(bookmark.election_number) }}</td>
 									<td>{{ formatRegionName(bookmark.station_address) }}</td>
-									<td>{{ bookmark.station_number }}</td>
+									<td>
+										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(bookmark.station_id) }}">
+											{{ bookmark.station_number }}
+										</router-link>
+									</td>
 									<td class="w-50">
 										<a :title="'Добавлено ' + formatTimestamp(bookmark.timestamp)" :href="bookmark.value">Перейти</a>
 									</td>
