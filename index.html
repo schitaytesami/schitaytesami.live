@@ -272,22 +272,23 @@
 	<script type="text/x-template" id="app-task">
 		<div class="row">
 			<div class="col-md-6 offset-md-3">
-				<div class="bg-warning mb-3" v-if="!$root.user">
-					<h1 class="lead text-center">Для начала работы введите адрес эл. почты и зарегистрируйтесь</h1>
-					<div class="container">
-						<div class="row pl-2 pr-2">
-							<div class="form-group col pl-0">
-								<input type="text" class="form-control user_email" v-model="email" placeholder="Эл. почта" />
-							</div>
-							<div class="ml-auto">
-								<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
+				<div class="mb-3" :class="{ 'bg-warning': !registered, 'bg-success': registered }" v-if="!$root.user">
+					<template v-if="!registered">
+						<h1 class="lead text-center">Для начала работы введите адрес эл. почты и зарегистрируйтесь</h1>
+						<div class="container">
+							<div class="row pl-2 pr-2">
+								<div class="form-group col pl-0">
+									<input type="text" class="form-control user_email" v-model="email" placeholder="Эл. почта" />
+								</div>
+								<div class="ml-auto">
+									<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
+								</div>
 							</div>
 						</div>
-					</div>
-					<div v-if="registered">
-						<p class="bg-success text-center">Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
-					</div>
+					</template>
+					<p class="text-center text-light" v-else>Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
 				</div>
+
 				<h3 class="text-center lead">Подсчёт явки</h3>
 				<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
 				<template v-if="$root.user">
