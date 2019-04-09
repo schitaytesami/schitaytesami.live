@@ -1186,7 +1186,7 @@
 									.filter(note => note.station_id === this.station.id)
 									.map(note => this.$root.stats.notes_dict[note.id])
 
-							const user_notes = !user ? [] : user.notes
+							const user_notes = (!user || !user.notes) ? [] : user.notes
 								.split(',')
 								.map(id => this.$root.stats.notes_dict[id])
 								.filter(note => note.station_id === this.station.id);
