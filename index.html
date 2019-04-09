@@ -476,13 +476,6 @@
 			</div>
 			<div class="col-md-12">
 				<div>
-					<div v-if="full_video">
-						<h3 class="text-center lead">Просмотр полного видео</h3>
-						<div class="text-center">
-							<button v-for="(url, index) in full_video" class="btn btn-primary mr-2" @click="show('', url)">Камера {{1 + index}}</button>
-						</div>
-					</div>
-
 					<h3 class="text-center lead">Явка по официальным интервалам</h3>
 					<table class="table-bordered table-striped w-100 mb-3">
 						<tbody>
@@ -1172,7 +1165,6 @@
 					},
 					computed: {
 						station() { return this.$root.stats.stations_dict_station_id ? this.$root.stats.stations_dict_station_id[this.$route.params.id] : {}; },
-						full_video() { return this.$route.params.full_video ? btoa(this.$route.params.full_video).split(';') : null; },
 						official() { return this.station.turnout ? this.getTurnout(this.station.turnout.official) : [];	},
 						estimate() { return this.station.turnout ? this.getTurnout(this.station.turnout.estimate) : [];	},
 						clipsIds() { return this.station.clips ? this.station.clips.split(',').map(Number) : []; },
@@ -1486,7 +1478,7 @@
 							component: appTaskProc
 						},
 						{ path: '/stations', name: 'stations', component: appStations },
-						{ path: '/stations/:id/:full_video?', name: 'station', component: appStation },
+						{ path: '/stations/:id', name: 'station', component: appStation },
 						{ path: '/users', name: 'users', component: appUsers },
 						{ path: '/user/:display', name: 'user', component: appUser },
 						{ path: '/about', name: 'about', component: { template: '#app-about' } },
