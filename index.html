@@ -988,7 +988,7 @@
 
 				const appIndex = {
 					computed: {
-						showStats() { return this.$root.stats.num_stations && !this.$root.showError; },
+						showStats() { return this.$root.stats.stations && !this.$root.showError; },
 						stats() {
 							return {
 								...this.$root.stats,
