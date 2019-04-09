@@ -689,11 +689,13 @@
 				</div>
 			</template>
 
-			
+
 			<div class="row">
 				<div class="col">
 					<div>
-						<router-link :to="{name: 'station', params: { id: thumb.id } }" v-for="thumb in thumbnails"><img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" /></router-link>
+						<router-link :to="{name: 'station', params: { id: thumb.id } }" v-for="thumb in thumbnails">
+							<img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" />
+						</router-link>
 					</div>
 				</div>
 			</div>
@@ -896,13 +898,17 @@
 					const date = String(election_number);
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
-				
+
 				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
-				
+
 				const formatRegionName = station_address => station_address.split(',')[0];
 
-				const formatThumbnailTitle = (station, clip) => `${formatRegionName(station.station_address)}, УИК`} ${station.station_number}` + (typeof(clip) == 'number' ? `, Сегментов: ${clip}.` : ` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
-				
+				const formatThumbnailTitle = (station, clip) =>
+					`${formatRegionName(station.station_address)}, УИК} ${station.station_number}`+
+					(typeof(clip) === 'number' ?
+						`, Сегментов: ${clip}.` :
+						` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
+
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
 				const makeError = err => {
@@ -1245,7 +1251,7 @@
 						notes() {
 							return (!this.user.notes) ? [] : this.user.notes
 						  	.split(',')
-							.map(id => this.$root.stats.notes_dict[id]);
+								.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
 							return (this.$root.stats.station_access || [])
