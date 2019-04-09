@@ -1173,7 +1173,25 @@
 						official() { return this.station.turnout ? this.getTurnout(this.station.turnout.official) : [];	},
 						estimate() { return this.station.turnout ? this.getTurnout(this.station.turnout.estimate) : [];	},
 						clipsIds() { return this.station.clips ? this.station.clips.split(',').map(Number) : []; },
-						notes() { return (this.$root.stats.notes || []).filter(e => e.station_id == this.$root.stats.stations_dict_station_id[this.$route.params.id].id).map(e => ({...this.$root.stats.stations_dict[e.station_id], ...e})); },
+						notes() {
+							if (!this.$root.user) return [];
+
+							const user = (this.$root.stats.users || []).find(u => u.id === this.$root.user.id);
+							const user_access = (this.$root.stats.station_access || [])
+								.find(x => x.station_id === this.station.id && x.user_id === user.id) || {};
+
+							if (user_access.granted === 1)
+								return (this.$root.stats.notes || [])
+									.filter(note => note.station_id === this.station.id)
+									.map(note => this.$root.stats.notes_dict[note.id])
+
+							const user_notes = !user ? [] : user.notes
+								.split(',')
+								.map(id => this.$root.stats.notes_dict[id])
+								.filter(note => note.station_id === this.station.id);
+
+							return user_notes;
+						},
 						segments() {
 							const pieces = [
 								this.clipsIds.slice(0, this.clipsIds.length / 2),
