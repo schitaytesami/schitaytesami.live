@@ -514,12 +514,12 @@
 										<tr><th>Интервал</th><th>Явка, видеоподсчет</th></tr>
 									</thead>
 									<tbody>
-										<tr v-for="data in segment" :key="data.id">
+										<tr v-for="(clip_station, i) in segment" :key="i">
 											<td>
-												<a href="#" @click.prevent="show(data.interval_full, data.video)">{{ data.interval }}</a>
+												<a href="#" @click.prevent="show(formatClipInterval(clip_station.clip, clip_station.station)[1], clip_station.clip.video)">{{ formatClipInterval(clip_station.clip, clip_station.station)[0] }}</a>
 											</td>
-											<td :class="{ 'text-muted': !data.estimate && data.average }">
-												{{ data.estimate || data.average || '' }}
+											<td :class="{ 'text-muted': !clip_station.clip.turnout.estimate && clip_station.clip.turnout.average }">
+												{{ clip_station.clip.turnout.estimate || (clip_station.clip.turnout.average && (clip_station.clip.turnout.average + '*')) || '' }}
 											</td>
 										</tr>
 									</tbody>
@@ -1204,14 +1204,7 @@
 								const [interval, interval_full] = formatClipInterval(clip, this.station);
 								if (i === 0 && idx === 0)
 									this.$nextTick(() => this.show(interval_full, clip.video));
-								return {
-									id: idx,
-									interval : interval,
-									interval_full : interval_full,
-									video: clip.video,
-									estimate: clip.turnout.estimate,
-									average: clip.turnout.average ? `${clip.turnout.average}*` : '',
-								};
+								return {clip : clip, station : this.station};
 							}));
 						},
 						tasks() {
@@ -1223,6 +1216,7 @@
 					},
 					methods: {
 						formatClipTask : clip_task => ({full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов'})[clip_task] || clip_task,
+						formatClipInterval : formatClipInterval,
 						getTurnout(name) {
 							const obj = this.station.turnout[name];
 							const orderList = this.$options.turnoutOrder;
