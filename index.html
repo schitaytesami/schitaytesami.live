@@ -897,6 +897,12 @@
 				};
 
 				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
+				
+				const formatClipInterval = (clip, station) => {
+					const interval = `${formatTime(clip.clip_interval_start, station.timezone_offset)} - ${formatTime(clip.clip_interval_end, station.timezone_offset)}`;
+					const interval_full = formatElectionDate(station.election_number) + ', ' + interval;
+					return [interval, interval_full];
+				};
 
 				const formatRegionName = station_address => station_address.split(',')[0];
 
@@ -1189,11 +1195,9 @@
 							const chunks = Array(num_columns).fill().map((_, k) => this.clips.slice(k * chunk, (k + 1) * chunk));
 
 							return chunks.map((chunk, i) =>	chunk.map((clip, idx) => {
-								const interval = `${formatTime(clip.clip_interval_start, this.station.timezone_offset)} - ${formatTime(clip.clip_interval_end, this.station.timezone_offset)}`;
-								const interval_full = formatElectionDate(this.station.election_number) + ', ' + interval;
-
-								if (i === 0 && idx === 0) this.$nextTick(() => this.show(interval_full, clip.video));
-
+								const [interval, interval_full] = formatClipInterval(clip, this.station);
+								if (i === 0 && idx === 0)
+									this.$nextTick(() => this.show(interval_full, clip.video));
 								return {
 									id: idx,
 									interval : interval,
@@ -1205,8 +1209,10 @@
 							}));
 						},
 						tasks() {
-							const camera_ids = Array.from(Set(this.clips.map(c => c.camera_id))).sort();
-							return [];
+							const clips = this.clips;
+							const camera_ids = Array.from(Set(clips.map(c => c.camera_id))).sort();
+							const task_types = Array.from(Set(clips.map(c => c.task))).sort();
+							return task_types.map(task_type => camera_ids.map(camera_id => [camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)]));
 						}
 					},
 					methods: {
