@@ -191,13 +191,13 @@
 					<p>Следите за нашими новостями в <a href="https://twitter.com/schitaytesami">Твиттере</a> или <router-link :to="{ name: 'about' }">свяжитесь с нами</router-link>.</p>
 				</blockquote>
 				<ul class="bg-light">
-					<li>Зарегистрировано: <span v-if="showStats"><span>{{ stats.users.length }}</span> пользователей</span><span v-else>загрузка...</span></li>
-					<li>Всего видео в системе: <span v-if="showStats"><span>{{ stats.stations.length }}</span> избирательных участков (<span>{{ stats.num_hours }}</span> часов)</span><span v-else>загрузка...</span></li>
-					<li>Полностью размечено: <span v-if="showStats"><span>{{ stats.num_stations_labeled }}</span> избирательных участков (<span>{{ stats.num_hours_labeled }}</span> часов)</span><span v-else>загрузка...</span></li>
+					<li>Зарегистрировано: <span v-if="showStats"><span>{{ $root.stats.users.length }}</span> пользователей</span><span v-else>загрузка...</span></li>
+					<li>Всего видео в системе: <span v-if="showStats"><span>{{ $root.stats.stations.length }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds) }}</span> часов)</span><span v-else>загрузка...</span></li>
+					<li>Полностью размечено: <span v-if="showStats"><span>{{ $root.stats.num_stations_labeled }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds_labeled) }}</span> часов)</span><span v-else>загрузка...</span></li>
 				</ul>
 				<router-link :to="{ name: 'task' }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
 				<div v-if="showStats">
-					<img class="thumbnail" width="120" height="80" :src="thumb.src" :title="thumb.title" :key="thumb.id" v-for="thumb in thumbnails" />
+					<img class="thumbnail" width="120" height="80" :src="clip_station.clip.thumbnail" :title="formatThumbnailTitle(clip_station.station, clip_station.clip)" :key="i" v-for="(clip_station, i) in thumbnails" />
 				</div>
 			</div>
 		</div>
@@ -902,6 +902,8 @@
 				const formatPercent = fraction => `${(fraction * 100).toFixed(0)}%`;
 
 				const formatMinutes = seconds => (seconds / 60).toFixed(0);
+				
+				const formatHours = seconds => seconds ? (seconds / 3600).toFixed(0) : 0;
 
 				const formatElectionDate = election_number => {
 					const date = String(election_number);
@@ -1002,25 +1004,17 @@
 				};
 
 				const appIndex = {
+					methods : {formatHours : formatHours, formatThumbnailTitle : formatThumbnailTitle},
 					computed: {
 						showStats() { return this.$root.stats.stations && !this.$root.showError; },
-						stats() {
-							return {
-								...this.$root.stats,
-								num_hours : this.$root.stats.num_seconds ? (this.$root.stats.num_seconds / 3600).toFixed(0) : 0,
-								num_hours_labeled : this.$root.stats.num_seconds_labeled ? (this.$root.stats.num_seconds_labeled / 3600).toFixed(0): 0
-							}
-						},
 						thumbnails() {
-							const clips = this.$root.stats.clips;
-							const thumbs = [];
-							for (let i = 0; i < Math.min(clips.length, 5); i += 1) {
-								const idx = Math.floor(Math.random() * clips.length);
+							return Array(Math.min(this.$root.stats.clips.length, 5)).fill().map((_, i) =>
+							{
+								const idx = Math.floor(Math.random() * this.$root.stats.clips.length);
 								const clip = this.$root.stats.clips_dict[idx];
 								const station = this.$root.stats.stations_dict[clip.station_id];
-								thumbs.push({ id: i, src: clip.thumbnail, title : formatThumbnailTitle(station, clip) });
-							}
-							return thumbs;
+								return {clip : clip, station : station};
+							});
 						},
 					},
 					template: '#app-index',
