@@ -301,12 +301,22 @@
 						slot-scope="{ election_number, region_number, station_number }"
 						:to="{ name: 'task-vote', params: { election_number, region_number, station_number }}"
 						><h5 class="mb-0">Начать работу</h5></router-link>
-				</app-selection>
+					</app-selection>
 				</template>
 				<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
 				<p>Это задание более близко к реальному наблюдению на участке и требует изучения процедуры подсчёта голосов избирательной комиссии, изложенной в нашей инструкции. Мы попросим вас просмотреть <strong>3-4-часовые</strong> фрагменты и отметить, как избирательная комиссия выполнила требования закона о выборах.</p>
-				<p class="text-center text-danger">Задание пока недоступно. В разработке.</p>
-				<router-link :to="{ name: 'task-proc' }" class="btn btn-primary mb-2 mt-2 w-100" v-if="false && $root.user"><h3>Начать работу</h3></router-link>
+				<template v-if="$root.user">
+					<app-selection
+						:options="$root.stats.task_selector_options"
+						v-if="$root.stats.task_selector_options"
+					>
+					<router-link
+						class="btn btn-primary mb-2 mt-2 w-100"
+						slot-scope="{ election_number, region_number, station_number }"
+						:to="{ name: 'task-proc', params: { election_number, region_number, station_number }}"
+						><h5 class="mb-0">Начать работу</h5></router-link>
+					</app-selection>
+				</template>
 			</div>
 		</div>
 	</script>
