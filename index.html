@@ -1212,7 +1212,7 @@
 							const clips = this.clips;
 							const camera_ids = Array.from(Set(clips.map(c => c.camera_id))).sort();
 							const task_types = Array.from(Set(clips.map(c => c.task))).sort();
-							return task_types.map(task_type => camera_ids.map(camera_id => [camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)]));
+							return task_types.map(task_type => [task_type, camera_ids.map(camera_id => [camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)])]);
 						}
 					},
 					methods: {
