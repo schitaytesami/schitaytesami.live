@@ -545,11 +545,20 @@
 							<div class="col text-center">
 								<app-access-button :station_id="station.id" :user_id="$root.user.id" />
 							</div>
+						</div>	
+						<div class="row no-gutters mb-2">
 							<div class="col text-center">
 								<table class="table-bordered table-striped w-100">
-									<template v-for="task_clips in tasks">
-										<tr v-for="task_cameras[1][0]">
-											<td>{{ task_cameras[0] }}</td>
+									<thead>
+										<tr>
+											<th>Тип задания</th>
+											<th v-for="(camera_id, i) in tasks.camera_ids" :title="camera_id">Интервал (камера #{{ i + 1 }})</th>
+										</tr>
+									</thead>
+									<template v-for="t in tasks.tasks">
+										<tr v-for="clip in t[1][0][1]">
+											<td>{{ formatClipTask(t[0]) }}</td>
+											<td>{{ clip.clip_interval_start }} - {{ clip.clip_interval_end }}</td>
 										</tr>
 									</template>
 								</table>
@@ -1218,15 +1227,17 @@
 						},
 						tasks() {
 							const clips = this.clips;
-							const camera_ids = Array.from(Set(clips.map(c => c.camera_id))).sort();
-							const task_types = Array.from(Set(clips.map(c => c.task))).sort();
-							return task_types.map(task_type => [task_type, camera_ids.map(camera_id => [camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)])]);
+							const camera_ids = Array.from(new Set(clips.map(c => c.camera_id))).sort();
+							const task_types = Array.from(new Set(clips.map(c => c.task))).sort();
+							return {camera_ids : camera_ids, tasks: task_types.map(task_type => [task_type, camera_ids.map(camera_id => [camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)])])};
 						}
 					},
 					methods: {
 						formatClipTask : clip_task => ({full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов'})[clip_task] || clip_task,
 						formatClipInterval : formatClipInterval,
 						getTurnout(name) {
+							if(!this.station.turnout)
+								return {};
 							const obj = this.station.turnout[name];
 							const orderList = this.$options.turnoutOrder;
 							return !obj ? [] : Object.keys(obj).reduce((acc, cur) => (orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]), acc), []);
