@@ -545,6 +545,15 @@
 							<div class="col text-center">
 								<app-access-button :station_id="station.id" :user_id="$root.user.id" />
 							</div>
+							<div class="col text-center">
+								<table class="table-bordered table-striped w-100">
+									<template v-for="task_clips in tasks">
+										<tr v-for="task_cameras[1][0]">
+											<td>{{ task_cameras[0] }}</td>
+										</tr>
+									</template>
+								</table>
+							</div>
 						</div>
 					</div>
 
