@@ -514,12 +514,12 @@
 										<tr><th>Интервал</th><th>Явка, видеоподсчет</th></tr>
 									</thead>
 									<tbody>
-										<tr v-for="(clip_station, i) in segment" :key="i">
+										<tr v-for="(clip, i) in segment" :key="i">
 											<td>
-												<a href="#" @click.prevent="show(formatClipInterval(clip_station.clip, clip_station.station)[1], clip_station.clip.video)">{{ formatClipInterval(clip_station.clip, clip_station.station)[0] }}</a>
+												<a href="#" @click.prevent="showClip(clip)">{{ formatClipInterval(clip, station)[0] }}</a>
 											</td>
-											<td :class="{ 'text-muted': !clip_station.clip.turnout.estimate && clip_station.clip.turnout.average }">
-												{{ clip_station.clip.turnout.estimate || (clip_station.clip.turnout.average && (clip_station.clip.turnout.average + '*')) || '' }}
+											<td :class="{ 'text-muted': !clip.turnout.estimate && clip.turnout.average }">
+												{{ clip.turnout.estimate || (clip.turnout.average && (clip.turnout.average + '*')) || '' }}
 											</td>
 										</tr>
 									</tbody>
@@ -556,9 +556,13 @@
 										</tr>
 									</thead>
 									<template v-for="t in tasks.tasks">
-										<tr v-for="clip in t[1][0][1]">
-											<td>{{ formatClipTask(t[0]) }}</td>
-											<td>{{ clip.clip_interval_start }} - {{ clip.clip_interval_end }}</td>
+										<tr v-for="(_, i) in Array(t.max_num_clips).fill()">
+											<td>{{ formatClipTask(t.task) }}</td>
+											<td v-for="camera_id in tasks.camera_ids">
+												<a href="#" v-if="(t.clips[camera_id] || {})[i]" @click.prevent="showClip(t.clips[camera_id][i])">
+												{{ formatClipInterval(t.clips[camera_id][i], station)[0] }}
+												</a>
+											</td>
 										</tr>
 									</template>
 								</table>
@@ -1221,15 +1225,25 @@
 							return chunks.map((chunk, i) =>	chunk.map((clip, idx) => {
 								const [interval, interval_full] = formatClipInterval(clip, this.station);
 								if (i === 0 && idx === 0)
-									this.$nextTick(() => this.show(interval_full, clip.video));
-								return {clip : clip, station : this.station};
+									this.$nextTick(() => this.showClip(clip));
+								return clip;
 							}));
 						},
 						tasks() {
 							const clips = this.clips;
 							const camera_ids = Array.from(new Set(clips.map(c => c.camera_id))).sort();
 							const task_types = Array.from(new Set(clips.map(c => c.task))).sort();
-							return {camera_ids : camera_ids, tasks: task_types.map(task_type => [task_type, camera_ids.map(camera_id => [camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)])])};
+							const fromEntries = arr => Object.assign({}, ...Array.from(arr, ([k, v]) => ({[k]: v}) ));
+							return {camera_ids : camera_ids, tasks: task_types.map(task_type => 
+							{
+								const camera_id2clips = camera_ids.map(camera_id => [camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)]);
+								return {
+									task : task_type,
+									max_num_clips : Math.max(...camera_id2clips.map(c => c[1].length)),
+									clips : fromEntries(camera_id2clips)
+									
+								}
+							})};
 						}
 					},
 					methods: {
@@ -1242,9 +1256,9 @@
 							const orderList = this.$options.turnoutOrder;
 							return !obj ? [] : Object.keys(obj).reduce((acc, cur) => (orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]), acc), []);
 						},
-						show(interval, video_url) {
-							this.interval = interval;
-							this.video_url = video_url;
+						showClip(clip) {
+							this.interval = formatClipInterval(clip, this.station)[1];
+							this.video_url = clip.video;
 						},
 					},
 					template: '#app-station',
@@ -1286,7 +1300,7 @@
 						notes() {
 							return (!this.user.notes) ? [] : this.user.notes
 						  	.split(',')
-								.map(id => this.$root.stats.notes_dict[id]);
+							.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
 							return (this.$root.stats.station_access || [])
