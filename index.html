@@ -1218,16 +1218,10 @@
 							return user_notes;
 						},
 						segments() {
+							this.$nextTick(() => this.showClip(this.clips[0][0]));
 							const num_columns = 4;
 							const chunk = Math.ceil(this.clips.length / num_columns);
-							const chunks = Array(num_columns).fill().map((_, k) => this.clips.slice(k * chunk, (k + 1) * chunk));
-
-							return chunks.map((chunk, i) =>	chunk.map((clip, idx) => {
-								const [interval, interval_full] = formatClipInterval(clip, this.station);
-								if (i === 0 && idx === 0)
-									this.$nextTick(() => this.showClip(clip));
-								return clip;
-							}));
+							return Array(num_columns).fill().map((_, k) => this.clips.slice(k * chunk, (k + 1) * chunk));
 						},
 						tasks() {
 							const clips = this.clips;
