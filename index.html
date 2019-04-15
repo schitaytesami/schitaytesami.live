@@ -223,7 +223,7 @@
 				<div class="col-md-5">
 					<div v-if="clip" class="mb-2">
 						<h3>УИК <span>{{ clip.station.station_number }}</span><span class="float-right">{{ $root.interval(clip) }}</span></h3>
-						<h6><span>{{ clip.station.station_address }}</span><span class="float-right">UTC+<span>{{ $root.timezoneOffset(clip.station) }}</span></span></h6>
+						<h6><span>{{ clip.station.station_address }}</span><span class="float-right">UTC+<span>{{ formatTimezoneOffset(clip.station.timezone_offset) }}</span></span></h6>
 						<video class="w-100" controls="controls" preload="auto" :src="videoUrl(0)" ref="player0" />
 						<strong>Камера 1: скорость {{ playbackRate0.toFixed(1) }}x</strong>
 						<div class="btn-group btn-group-sm">
@@ -357,7 +357,7 @@
 				<div class="col-md-5">
 					<div v-if="clip">
 						<h3>УИК <span>{{ clip.station.station_number }}</span> <app-bookmark-button :clip="clip"/> <span class="float-right">{{ $root.interval(clip) }}</span></h3>
-						<h6><span>{{ clip.station.station_address }}</span><span class="float-right">UTC+<span>{{ $root.timezoneOffset(clip.station) }}</span></span></h6>
+						<h6><span>{{ clip.station.station_address }}</span><span class="float-right">UTC+<span>{{ formatTimezoneOffset(clip.station.timezone_offset) }}</span></span></h6>
 						<div style="position:relative">
 							<video class="w-100" controls="controls" preload="auto" :src="clip.video" @ended="completed = true" ref="player" @play.once="$refs['instruction-video'].remove()"></video>
 
@@ -479,12 +479,7 @@
 	<script type="text/x-template" id="app-station">
 		<div class="row" id="station">
 			<div class="col-md-6 offset-md-3">
-				<div>
-					<h3>УИК <span>{{ station.station_number }}</span><span class="float-right">{{ interval }}</span></h3>
-					<h6><span>{{ station.station_address }}</span><span class="float-right">UTC+<span>{{ $root.timezoneOffset(station) }}</span></span></h6>
-					<video class="app-station__video--js w-100" controls="controls" preload="auto" ref="player" :src="video_url"></video>
-					<div><a :href="video_url">Прямая ссылка на это видео</a></div>
-				</div>
+				<app-clip-player :clip="clip" />
 			</div>
 			<div class="col-md-12">
 				<div>
@@ -572,6 +567,15 @@
 
 				</div>
 			</div>
+		</div>
+	</script>
+	
+	<script type="text/x-template" id="app-clip-player">
+		<div>
+			<h3>УИК <span>{{ station.station_number }}</span><span class="float-right">{{ formatClipInterval(clip, station)[0] }}</span></h3>
+			<h6><span>{{ station.station_address }}</span><span class="float-right">UTC+<span>{{ formatTimezoneOffset(station.timezone_offset) }}</span></span></h6>
+			<video class="app-station__video--js w-100" controls="controls" preload="auto" ref="player" :src="clip.video"></video>
+			<div><a :href="clip.video">Прямая ссылка на это видео</a></div>
 		</div>
 	</script>
 
@@ -948,6 +952,8 @@
 						`, Сегментов: ${clip}.` :
 						` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
 				
+				const formatTimezoneOffset  = timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', ''),
+				
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
 				const makeError = err => {
@@ -1101,6 +1107,7 @@
 						resultText() {return taskSubmitResultsText(this);}
 					},
 					methods : {
+						formatTimezoneOffset : formatTimezoneOffset,
 						videoUrl(idx) {
 							return this.clip ? this.clip.video.split(';')[idx] : null;
 						},
@@ -1147,6 +1154,7 @@
 						resultText() { return taskSubmitResultsText(this); },
 					},
 					methods: {
+						formatTimezoneOffset : formatTimezoneOffset,
 						formatEventTime(offset) {
 							const minutes = Math.floor(offset / 60);
 							let seconds = Math.floor(offset % 60);
@@ -1184,6 +1192,16 @@
 						nextTask(this, 'vote', this.$route.params);
 					},
 					template: '#app-task-vote',
+				};
+				
+				const appClipPlayer = {
+					props : ['clip'],
+					name : 'app-clip-player',
+					template : '#app-clip-player',
+					computed : {
+						station() { return ((this.$root.stats. || {})stations_dict || {})[this.clip.station_id]; }
+					},
+					methods : { formatTimezoneOffset : formatTimezoneOffset }
 				};
 
 				const appStation = {
@@ -1520,10 +1538,11 @@
 					],
 				});
 
-		        Vue.component('app-selection', appSelection);
+		        	Vue.component('app-selection', appSelection);
 				Vue.component('app-bookmark-button', appBookmarkButton);
 				Vue.component('app-access-button', appAccessButton);
 				Vue.component('app-notes', appNotes);
+				Vue.component('app-clip-player', appClipPlayer);
 
 				const app = new Vue({
 					el: '#app',
@@ -1542,8 +1561,6 @@
 								station.timezone_offset
 							)} - ${formatTime(clip_interval_end, station.timezone_offset)}`;
 						},
-
-						timezoneOffset : station => (station.timezone_offset / 60.0).toFixed(1).replace('.0', ''),
 
 						showInstructionText : showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
 
