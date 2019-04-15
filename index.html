@@ -364,7 +364,7 @@
 				</div>
 
 				<div class="col-md-4">
-					<h3 class="mb-0"><button class="btn btn-info w-100" @click.prevent="showInstruction = !showInstruction">{{ $root.showInstructionText(showInstruction) }}</button></h3>
+					<h3 class="mb-0"><button class="btn btn-info w-100" @click.prevent="showInstruction = !showInstruction">{{ formatInstructionToggleText(showInstruction) }}</button></h3>
 					<h6>&nbsp;</h6>
 					<div v-if="clip">
 						<div class="btn-group-vertical w-100">
@@ -937,6 +937,8 @@
 
 				const formatRegionName = station_address => station_address.split(',')[0];
 
+				const formatInstructionToggleText = showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲';
+
 				const formatThumbnailTitle = (station, clip) =>
 					`${formatRegionName(station.station_address)}, УИК ${station.station_number}`+
 					(typeof(clip) === 'number' ?
@@ -1098,6 +1100,9 @@
 					},
 					methods : {
 						formatTimezoneOffset : formatTimezoneOffset,
+						formatInstructionToggleText : formatInstructionToggleText,
+
+
 						videoUrl(idx) {
 							return this.clip ? this.clip.video.split(';')[idx] : null;
 						},
@@ -1139,6 +1144,8 @@
 					},
 					methods: {
 						formatTimezoneOffset : formatTimezoneOffset,
+						formatInstructionToggleText : formatInstructionToggleText,
+
 						formatEventTime(offset) {
 							const minutes = Math.floor(offset / 60);
 							let seconds = Math.floor(offset % 60);
@@ -1560,8 +1567,6 @@
 								station.timezone_offset
 							)} - ${formatTime(clip_interval_end, station.timezone_offset)}`;
 						},
-
-						showInstructionText : showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
 
 						erroHandler(err) {
 							this.showError = true;
