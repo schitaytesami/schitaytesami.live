@@ -576,6 +576,11 @@
 			<h6><span>{{ station.station_address }}</span><span class="float-right">UTC+<span>{{ formatTimezoneOffset(station.timezone_offset) }}</span></span></h6>
 			<video class="app-station__video--js w-100" controls="controls" preload="auto" ref="player" :src="clip.video"></video>
 			<div><a :href="clip.video">Прямая ссылка на это видео</a></div>
+			<strong>Скорость {{ playbackRate.toFixed(1) }}x</strong>
+			<div class="btn-group btn-group-sm">
+				<button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(-0.5)">Медленнее</button>
+			   	<button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(+0.5)">Быстрее</button>
+			</div>
 		</div>
 	</script>
 
@@ -1198,10 +1203,20 @@
 					props : ['clip', 'verbose'],
 					name : 'app-clip-player',
 					template : '#app-clip-player',
+					data() { 
+						return {playbackRate : 1.0};
+					},
 					computed : {
 						station() { return ((this.$root.stats. || {})stations_dict || {})[this.clip.station_id]; }
+						playbackRate() { return this.$refs.player.playbackRate; }
 					},
-					methods : { formatTimezoneOffset : formatTimezoneOffset }
+					methods : {
+						formatTimezoneOffset : formatTimezoneOffset, 
+						
+						setPlaybackRate(delta) {
+							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
+						},
+					}
 				};
 
 				const appStation = {
