@@ -1230,6 +1230,9 @@
 						};
 					},
 					computed: {
+						
+						clip() {return this.clips[0]; }, // FIXME: remove this
+						
 						station() { return this.$root.stats.stations_dict_station_id ? this.$root.stats.stations_dict_station_id[this.$route.params.id] : {}; },
 						clips() { return this.station.clips ? this.station.clips.split(',').map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]) : []; },
 						notes() {
@@ -1252,7 +1255,7 @@
 							return user_notes;
 						},
 						segments() {
-							this.$nextTick(() => this.showClip(this.clips[0][0]));
+							this.$nextTick(() => this.showClip(this.clips[0]));
 							const num_columns = 4;
 							const chunk = Math.ceil(this.clips.length / num_columns);
 							return Array(num_columns).fill().map((_, k) => this.clips.slice(k * chunk, (k + 1) * chunk));
