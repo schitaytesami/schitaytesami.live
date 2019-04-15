@@ -957,7 +957,7 @@
 						`, Сегментов: ${clip}.` :
 						` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
 				
-				const formatTimezoneOffset  = timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', ''),
+				const formatTimezoneOffset = timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', '');
 				
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
@@ -1207,7 +1207,7 @@
 						return {playbackRate : 1.0};
 					},
 					computed : {
-						station() { return ((this.$root.stats. || {})stations_dict || {})[this.clip.station_id]; }
+						station() { return ((this.$root.stats || {}).stations_dict || {})[this.clip.station_id]; },
 						playbackRate() { return this.$refs.player.playbackRate; }
 					},
 					methods : {
