@@ -559,7 +559,7 @@
 	
 	<script type="text/x-template" id="app-clip-player">
 		<div>
-			<h3>УИК <span>{{ station.station_number }}</span><span class="float-right">{{ formatClipInterval(clip, station)[0] }}</span></h3>
+			<h3 :title="station.station_address">УИК <span>{{ station.station_number }}</span><span class="float-right">{{ formatClipInterval(clip, station)[0] }}</span></h3>
 			<h6><span>{{ station.station_address }}</span><span class="float-right">UTC+<span>{{ formatTimezoneOffset(station.timezone_offset) }}</span></span></h6>
 			<video class="app-station__video--js w-100" controls="controls" preload="auto" ref="player" :src="clip.video"></video>
 			<strong>Скорость {{ playbackRate.toFixed(1) }}x</strong>
