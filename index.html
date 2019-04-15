@@ -1208,7 +1208,6 @@
 					},
 					computed : {
 						station() { return ((this.$root.stats || {}).stations_dict || {})[this.clip.station_id]; },
-						playbackRate() { return this.$refs.player.playbackRate; }
 					},
 					methods : {
 						formatTimezoneOffset : formatTimezoneOffset, 
@@ -1216,6 +1215,7 @@
 						
 						setPlaybackRate(delta) {
 							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
+							this.playbackRate = this.$refs.player.playbackRate;
 						},
 					}
 				};
