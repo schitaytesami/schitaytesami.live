@@ -227,21 +227,8 @@
 						<video class="w-100" controls="controls" preload="auto" :src="videoUrl(0)" ref="player0" />
 						<strong>Камера 1: скорость {{ playbackRate0.toFixed(1) }}x</strong>
 						<div class="btn-group btn-group-sm">
-							<button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(0, -0.5)">Медленнее</button>
-						    <button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(0, +0.5)">Быстрее</button>
-						</div>
-					</div>
-				</div>
-
-				<div class="col-md-5">
-					<div v-if="clip">
-						<h3 class="mb-0"><button class="btn btn-info w-100" @click.prevent="showInstruction = !showInstruction">{{ $root.showInstructionText(showInstruction) }}</button></h3>
-						<h6>&nbsp;</h6>
-						<video class="w-100" controls="controls" preload="auto" :src="videoUrl(1)" ref="player1" />
-						<strong>Камера 2: скорость {{ playbackRate1.toFixed(1) }}x</strong>
-						<div class="btn-group btn-group-sm">
-							<button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(1, -0.5)">Медленнее</button>
-						    <button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(1, +0.5)">Быстрее</button>
+							<button type="button" class="btn btn-secondary">Медленнее</button>
+						    	<button type="button" class="btn btn-secondary">Быстрее</button>
 						</div>
 					</div>
 				</div>
@@ -1102,8 +1089,7 @@
 							failed : false,
 							submitted : false,
 							completed : false,
-							playbackRate0 : 1.0,
-							playbackRate1 : 1.0
+							playbackRate0 : 1.0
 						};
 					},
 					computed : {
@@ -1114,12 +1100,6 @@
 						formatTimezoneOffset : formatTimezoneOffset,
 						videoUrl(idx) {
 							return this.clip ? this.clip.video.split(';')[idx] : null;
-						},
-
-						setPlaybackRate(idx, delta) {
-							const player = idx == 0 ? this.$refs.player0 : this.$refs.player1;
-							player.playbackRate = Math.max(player.playbackRate + delta, 0.5);
-							this['playbackRate' + idx] = player.playbackRate;
 						},
 
 						submitResults() {
