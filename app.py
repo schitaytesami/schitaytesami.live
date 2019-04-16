@@ -224,7 +224,7 @@ def task_get(task_type, election_number, region_number, station_number, user, ac
 			*([user.id, task_type] + filter_sql_args + [incomplete_task_threshold[task_type], active_set])
 		)) or [None]
 		clip = random.choice(incomplete_tasks[:active_set])
-	return flask.Response(response = json.dumps(dict(id = clip.id, task = clip.task, thumbnail = clip.thumbnail, video = clip.video, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, csrf = clip.csrf, station = dict(station_number = clip.station.station_number, station_address = clip.station.station_address, timezone_offset = clip.station.timezone_offset, election_number = clip.station.election_number)) if clip is not None else None, ensure_ascii = False), status = 200, mimetype = 'application/json')
+	return flask.Response(response = json.dumps(dict(id = clip.id, task = clip.task, thumbnail = clip.thumbnail, video = clip.video, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, csrf = clip.csrf, station = dict(id = clip.station_id, station_number = clip.station.station_number, station_address = clip.station.station_address, timezone_offset = clip.station.timezone_offset, election_number = clip.station.election_number)) if clip is not None else None, ensure_ascii = False), status = 200, mimetype = 'application/json')
 
 @user_must_be_active()
 def user_access_station_post(user_id, station_id, user):
