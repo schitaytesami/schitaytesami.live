@@ -1519,6 +1519,7 @@
 							this.showError = true;
 							this.errorMessage = err.message;
 						},
+
 						fetchStats() {
 							return fetch('/stats')
 								.then(res => {
@@ -1579,7 +1580,6 @@
 
 							return true;
 						},
-
 						sendEvents(self, events) {
 							return fetch(`/events/${self.clip.id}?csrf=${self.clip.csrf}`, {
 								method: 'post',
@@ -1614,7 +1614,6 @@
 								self.$root.showError = true;
 							});
 						},
-
 						nextTask(self, task, { election_number, region_number, station_number }) {
 							if (!self.user) return Promise.resolve();
 
