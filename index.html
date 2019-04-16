@@ -973,61 +973,6 @@
 					const message = err.statusText || 'Что-то пошло не так';
 					return new Error(`${status}${message}`);
 				};
-
-				const sendEvents = (self, events) => {
-					return fetch(`/events/${self.clip.id}?csrf=${self.clip.csrf}`, {
-						method: 'post',
-						headers: {'Content-type': 'application/json'},
-						body: JSON.stringify(events),
-					})
-					.then(res => {
-						self.submitted = true;
-						if (!res.ok) throw makeError(res);
-						self.failed = false;
-						return res;
-					})
-					.catch(() => {
-						self.failed = true;
-						self.$root.showError = true;
-					});
-				};
-
-				const sendAccess = (self, user_id, station_id) => {
-					return fetch(`/user/${user_id}/access/station/${station_id}`, {
-						method: 'POST',
-						headers: {'Content-type': 'application/json'},
-					})
-					.then(res => {
-						//self.submitted = true;
-						if (!res.ok) throw makeError(res);
-						//self.failed = false;
-						return res;
-					})
-					.catch(() => {
-						//self.failed = true;
-						self.$root.showError = true;
-					});
-				};
-
-				const nextTask = (self, task, { election_number, region_number, station_number }) => {
-					if (!self.user) return Promise.resolve();
-
-					return fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`)
-						.then(res => {
-							if (!res.ok) throw makeError(res);
-							return res.json();
-						})
-						.then(task => {
-							self.clip = task;
-							self.events = [];
-							self.submitted = false;
-							self.completed = false;
-							self.failed = false;
-						})
-						.catch(err => self.$emit('error', err));
-				};
-
-
 				const appIndex = {
 					methods : {formatHours : formatHours, formatThumbnailTitle : formatThumbnailTitle},
 					computed: {
@@ -1130,9 +1075,9 @@
 							//}
 							//TODO: take 'vote' or 'proc' from route params
 							if (!this.submitted && (this.failed || this.completed))
-								sendEvents(this, this.events);
+								this.$root.sendEvents(this, this.events);
 							else
-								nextTask(this, 'vote', this.$route.params);
+								this.$root.nextTask(this, 'vote', this.$route.params);
 						},
 						addEvent(offset, type, value = '') {
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
@@ -1156,7 +1101,7 @@
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
-						nextTask(this, 'vote', this.$route.params);
+						this.$root.nextTask(this, 'vote', this.$route.params);
 					},
 					template: '#app-task-vote',
 				};
@@ -1422,7 +1367,7 @@
 				  },
 				  methods: {
 					submit() {
-					  sendEvents(this, [{ type: 'bookmark', offset: 0, value: window.location.href, clip: this.clip.id }]);
+					  this.$root.sendEvents(this, [{ type: 'bookmark', offset: 0, value: window.location.href, clip: this.clip.id }]);
 					},
 				  },
 				  template: '#app-bookmark-button',
@@ -1444,7 +1389,7 @@
 				  },
 				  methods: {
 						submit() {
-							sendAccess(this, this.user_id, this.station_id)
+							this.$root.sendAccess(this, this.user_id, this.station_id)
 								.then(() => {
 									this.granted = 0;
 								});
@@ -1633,6 +1578,59 @@
 								throw makeError(res); //this.$emit('error', err)
 
 							return true;
+						},
+
+						sendEvents(self, events) {
+							return fetch(`/events/${self.clip.id}?csrf=${self.clip.csrf}`, {
+								method: 'post',
+								headers: {'Content-type': 'application/json'},
+								body: JSON.stringify(events),
+							})
+							.then(res => {
+								self.submitted = true;
+								if (!res.ok) throw makeError(res);
+								self.failed = false;
+								return res;
+							})
+							.catch(() => {
+								self.failed = true;
+								self.$root.showError = true;
+							});
+						},
+
+						sendAccess(self, user_id, station_id) {
+							return fetch(`/user/${user_id}/access/station/${station_id}`, {
+								method: 'POST',
+								headers: {'Content-type': 'application/json'},
+							})
+							.then(res => {
+								//self.submitted = true;
+								if (!res.ok) throw makeError(res);
+								//self.failed = false;
+								return res;
+							})
+							.catch(() => {
+								//self.failed = true;
+								self.$root.showError = true;
+							});
+						},
+
+						nextTask(self, task, { election_number, region_number, station_number }) {
+							if (!self.user) return Promise.resolve();
+
+							return fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`)
+								.then(res => {
+									if (!res.ok) throw makeError(res);
+									return res.json();
+								})
+								.then(task => {
+									self.clip = task;
+									self.events = [];
+									self.submitted = false;
+									self.completed = false;
+									self.failed = false;
+								})
+								.catch(err => self.$emit('error', err));
 						}
 					},
 					components: {
