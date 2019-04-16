@@ -351,7 +351,7 @@
 						>
 							<div class="h-100 d-flex flex-column justify-content-center">
 								<h2>{{ resultText.message }}</h2>
-								<div><button class="btn btn-success" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ resultText.button }}</button></div>
+								<div><button class="btn btn-success" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button></div>
 							</div>
 						</div>
 
@@ -1040,21 +1040,6 @@
 				};
 
 
-				const taskSubmitResultsText = (self) => {
-					let message = 'Разметка этого видео закончена. Спасибо!';
-					let button = 'Отправить результаты';
-
-					if (self.submitted)
-						button = 'Перейти к разметке следующего видео';
-
-					if (self.failed) {
-						message = 'При отправке результатов возникла ошибка!';
-						button = 'Отправить результаты снова';
-					}
-
-					return { message, button };
-				};
-
 				const appIndex = {
 					methods : {formatHours : formatHours, formatThumbnailTitle : formatThumbnailTitle},
 					computed: {
@@ -1065,7 +1050,7 @@
 								const idx = Math.floor(Math.random() * this.$root.stats.clips.length);
 								const clip = this.$root.stats.clips_dict[idx];
 								const station = this.$root.stats.stations_dict[clip.station_id];
-								return {clip : clip, station : station};
+								return { clip, station };
 							});
 						},
 					},
@@ -1120,18 +1105,32 @@
 					},
 					computed: {
 						user() {return this.$root.user;	},
-						resultText() { return taskSubmitResultsText(this); },
 					},
 					methods: {
 						formatTimezoneOffset : formatTimezoneOffset,
 						formatInstructionToggleText : formatInstructionToggleText,
+						formatTaskSubmitResultsButtonText : (submitted, failed) => {
+							let message = 'Разметка этого видео закончена. Спасибо!';
+							let button = 'Отправить результаты';
 
+							if (submitted)
+								button = 'Перейти к разметке следующего видео';
+
+							if (failed) {
+								message = 'При отправке результатов возникла ошибка!';
+								button = 'Отправить результаты снова';
+							}
+
+							return { message, button };
+						},
 						formatEventTime(offset) {
 							const minutes = Math.floor(offset / 60);
 							let seconds = Math.floor(offset % 60);
 							if (seconds < 10) seconds = `0${seconds}`;
 							return `${minutes}:${seconds}`;
 						},
+
+
 						submitResults() {
 							//if (!this.submitted) {
 							//	const events = [];
