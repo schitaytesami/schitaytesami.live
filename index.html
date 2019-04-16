@@ -1079,19 +1079,7 @@
 						}
 					},
 					methods	: {
-						register() {
-							fetch('/user', {
-								method: 'post',
-								headers: { 'Content-type': 'text/plain' },
-								body: this.email,
-							})
-							.then(res => {
-								if (!res.ok) throw makeError(res);
-								this.registered = true;
-								this.email = '';
-							})
-							.catch(err => this.$emit('error', err));
-						}
+						register() { $root.register(this); }
 					},
 					template: '#app-task',
 				};
@@ -1677,6 +1665,19 @@
 							this.$router.push({ name: 'index' });
 							window.location.reload();
 						},
+						register(this) {
+							fetch('/user', {
+								method: 'post',
+								headers: { 'Content-type': 'text/plain' },
+								body: this.email,
+							})
+							.then(res => {
+								if (!res.ok) throw makeError(res);
+								this.registered = true;
+								this.email = '';
+							})
+							.catch(err => this.$emit('error', err));
+						}
 					},
 					components: {
 						'app-navigation-menu': {
