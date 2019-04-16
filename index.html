@@ -371,9 +371,36 @@
 						</div>
 
 					</app-clip-player>
+
+					<table class="table table-striped mt-2" style="table-layout:fixed">
+						<thead>
+							<tr>
+								<th class="text-left p-0 border-bottom-0" style="width:20%">
+									<h3>ОТМЕТКИ</h3>
+									<h6>&nbsp;</h6>
+								</th>
+								<th class="p-0 border-bottom-0"><h2>&nbsp;</h2><h6>&nbsp;</h6></th>
+								<th class="text-right p-0 border-bottom-0" style="width:15%">
+									<h2><span id="num_events">{{ events.length }}</span></h2>
+									<h6>&nbsp;</h6>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<template v-for="event in events" v-if="false">
+								<tr>
+									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
+									<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
+									<td class="text-right pr-0">
+										<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
+									</td>
+								</tr>
+							</template>
+						</tbody>
+					</table>
 				</div>
 
-				<div class="col-md-4">
+				<div class="col-md-7">
 					<h3 class="mb-0"><button class="btn btn-info w-100" @click.prevent="showInstruction = !showInstruction">{{ formatInstructionToggleText(showInstruction) }}</button></h3>
 					<h6>&nbsp;</h6>
 					<div v-if="clip">
@@ -387,35 +414,6 @@
 							</div>
 						</div>
 					</div>
-				</div>
-
-				<div class="col-md-3 ml-auto pr-4" v-if="clip">
-					<table class="table table-striped" style="table-layout:fixed">
-						<thead>
-							<tr>
-								<th class="text-left p-0 border-top-0" style="width:20%">
-									<h3>ОТМЕТКИ</h3>
-									<h6>&nbsp;</h6>
-								</th>
-								<th class="p-0 border-top-0"><h2>&nbsp;</h2><h6>&nbsp;</h6></th>
-								<th class="text-right p-0 border-top-0" style="width:15%">
-									<h2><span id="num_events">{{ events.length }}</span></h2>
-									<h6>&nbsp;</h6>
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<template v-for="event in events">
-								<tr>
-									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
-									<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
-									<td class="text-right pr-0">
-										<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
-									</td>
-								</tr>
-							</template>
-						</tbody>
-					</table>
 				</div>
 			</div>
 		</div>
