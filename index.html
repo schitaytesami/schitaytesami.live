@@ -342,7 +342,38 @@
 
 			<div class="row mt-3">
 				<div class="col-md-5">
-					<div v-if="clip">
+
+					<app-clip-player
+						:verbose="true"
+						:clip="clip"
+						:started.sync="started"
+						:completed.sync="completed"
+						ref="player"
+						v-if="clip"
+					>
+						<div
+							class="instruction_video w-100 text-center bg-light"
+							slot="intro"
+							v-if="!started"
+						>
+							<p>Средняя продолжительность видео приблизительно 3-4 минуты.</p>
+							<p>Пожалуйста, сделайте работу до конца. <strong>Спасибо!</strong></p>
+						</div>
+
+						<div
+							class="events_submit w-100 h-100 text-center bg-light"
+							slot="end"
+							v-if="completed"
+						>
+							<div class="h-100 d-flex flex-column justify-content-center">
+								<h2>{{ resultText.message }}</h2>
+								<div><button class="btn btn-success" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ resultText.button }}</button></div>
+							</div>
+						</div>
+
+					</app-clip-player>
+
+					<div v-if="false">
 						<h3>УИК <span>{{ clip.station.station_number }}</span> <app-bookmark-button :clip="clip"/> <span class="float-right">{{ $root.interval(clip) }}</span></h3>
 						<h6><span>{{ clip.station.station_address }}</span><span class="float-right">UTC+<span>{{ formatTimezoneOffset(clip.station.timezone_offset) }}</span></span></h6>
 						<div style="position:relative">
@@ -361,6 +392,7 @@
 							</div>
 						</div>
 					</div>
+
 				</div>
 
 				<div class="col-md-4">
@@ -575,12 +607,36 @@
 				</span>
 			</h6>
 
-			<video class="app-station__video--js w-100" controls="controls" preload="auto" ref="player" :src="clip.video"></video>
+			<div class="position-relative">
+				<video
+					class="app-station__video--js w-100"
+					controls="controls"
+					preload="auto"
+					ref="player"
+					:src="clip.video"
+					@timeupdate="currentTime = $event.target.currentTime"
+					@play.once="$emit('update:started', true)"
+					@ended="$emit('update:completed', true)"
+				></video>
+
+				<slot name="intro"></slot>
+				<slot name="end"></slot>
+			</div>
+
 			<strong>Скорость {{ playbackRate.toFixed(1) }}x</strong>
 			<div class="btn-group btn-group-sm">
-				<button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(-0.5)">Медленнее</button>
-			   	<button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(+0.5)">Быстрее</button>
+				<button
+					type="button"
+					class="btn btn-secondary"
+					@click.prevent="setPlaybackRate(-0.5)"
+				>Медленнее</button>
+				<button
+					type="button"
+					class="btn btn-secondary"
+					@click.prevent="setPlaybackRate(+0.5)"
+				>Быстрее</button>
 			</div>
+
 		</div>
 	</script>
 
@@ -1147,9 +1203,10 @@
 							clip: null,
 							events: [],
 							note: '',
-							submitted: false,
+							started: false,
 							completed: false,
-							failed: false
+							submitted: false,
+							failed: false,
 						};
 					},
 					computed: {
@@ -1200,20 +1257,49 @@
 				};
 
 				const appClipPlayer = {
-					props : ['clip', 'verbose'],
+					props: {
+						clip: {
+							type: Object,
+							required: true,
+						},
+						verbose: {
+							type: Boolean,
+							required: true,
+						},
+						started: {
+							type: Boolean,
+							required: false,
+						},
+						completed: {
+							type: Boolean,
+							required: false,
+						},
+					},
 					name : 'app-clip-player',
 					template : '#app-clip-player',
 					data() {
-						return { playbackRate : 1.0 };
+						return {
+							playbackRate : 1.0,
+							currentTime: 0,
+						};
 					},
-					computed : {
-						station() { return ((this.$root.stats || {}).stations_dict || {})[this.clip.station_id]; },
+					computed: {
+						station() {
+							if (this.clip.station) return this.clip.station;
+
+							if (this.$root.stats && this.$root.stats.stations_dict)
+								return this.$root.stats.stations_dict[this.clip.station_id];
+
+							return {};
+						},
 					},
 					methods : {
 						formatTimezoneOffset : formatTimezoneOffset,
 						formatClipInterval : formatClipInterval,
 						formatRegionName : formatRegionName,
-
+						pause() {
+							this.$refs.player.pause();
+						},
 						setPlaybackRate(delta) {
 							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
 							this.playbackRate = this.$refs.player.playbackRate;
