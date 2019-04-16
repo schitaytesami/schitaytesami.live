@@ -207,15 +207,6 @@
 		<div>
 			<div class="row instruction" v-if="showInstruction">
 				<div class="col-md-6 offset-md-3">
-					<ol>
-						<li>Перед просмотром внимательно прочитайте Анкету (она представляет собой отчет, который будет затем автоматически обрабатываться). Анкета содержит вопросы о выполнении процедур, которые прописаны в законе. При чтении Анкеты вы должны определить, понятен ли вам вопрос. Вопросы составлены так, что положительный ответ на вопрос – это и есть требование закона.</li>
-						<li>Перед просмотром заполните верхнюю часть Анкеты.</li>
-						<li>Ответы в анкету можно вписывать как во время просмотра (с приостановкой просмотра!), так и после просмотра. <br />Ответы можно давать в любой последовательности, но последовательность вопросов соответствует предусмотренной законом последовательности подсчета голосов.</li>
-						<li>Ответы вы даёте путем нажатия на одну из кнопок «Да», «Нет», «Не могу ответить». Вы должны нажать на одну из кнопок обязательно. Положительный ответ означает то, что предусмотренная законом процедура, в основном, была выполнена. <br/>Ответ «Нет» давайте только в том случае, если нарушение очевидно. Сомнения должны трактоваться в пользу УИК.</li>
-						<li>Вы можете написать комментарий к любому вопросу Анкеты. Если ответ на вопрос отрицательный, то впишите в поле «Комментарий» примерный интервал времени (по показаниям в левом верхнем углу видеозаписи) времени, когда было допущено нарушение. Другие записи в поле «Комментарий» также допустимы.</li>
-						<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи. </li>
-						<li>14-я строка Анкеты заполняется текстом в произвольной форме по желанию исследователя. (например, Вы заметили вброс бюллетеней перед или во время сортировки бюллетеней). При этом обязательно указывается время нарушения.</li>
-					</ol>
 				</div>
 			</div>
 
@@ -321,6 +312,16 @@
 							<dd>Фрагменты видео, не досмотренные до конца, не учитываются и не участвуют в дальнейшей обработке.</dd>
 						</dl>
 					</div>
+					
+					<!--<ol>
+						<li>Перед просмотром внимательно прочитайте Анкету (она представляет собой отчет, который будет затем автоматически обрабатываться). Анкета содержит вопросы о выполнении процедур, которые прописаны в законе. При чтении Анкеты вы должны определить, понятен ли вам вопрос. Вопросы составлены так, что положительный ответ на вопрос – это и есть требование закона.</li>
+						<li>Перед просмотром заполните верхнюю часть Анкеты.</li>
+						<li>Ответы в анкету можно вписывать как во время просмотра (с приостановкой просмотра!), так и после просмотра. <br />Ответы можно давать в любой последовательности, но последовательность вопросов соответствует предусмотренной законом последовательности подсчета голосов.</li>
+						<li>Ответы вы даёте путем нажатия на одну из кнопок «Да», «Нет», «Не могу ответить». Вы должны нажать на одну из кнопок обязательно. Положительный ответ означает то, что предусмотренная законом процедура, в основном, была выполнена. <br/>Ответ «Нет» давайте только в том случае, если нарушение очевидно. Сомнения должны трактоваться в пользу УИК.</li>
+						<li>Вы можете написать комментарий к любому вопросу Анкеты. Если ответ на вопрос отрицательный, то впишите в поле «Комментарий» примерный интервал времени (по показаниям в левом верхнем углу видеозаписи) времени, когда было допущено нарушение. Другие записи в поле «Комментарий» также допустимы.</li>
+						<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи. </li>
+						<li>14-я строка Анкеты заполняется текстом в произвольной форме по желанию исследователя. (например, Вы заметили вброс бюллетеней перед или во время сортировки бюллетеней). При этом обязательно указывается время нарушения.</li>
+					</ol>-->
 				</div>
 			</div>
 
@@ -1087,8 +1088,8 @@
 					template: '#app-task',
 				};
 
-				const appTaskProc = {
-					name: 'app-task-proc',
+				const appTaskBase = {
+					name: 'app-task-vote',
 					data() {
 						return {
 							questions : [
@@ -1107,49 +1108,6 @@
 								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Оцените качество аудиозаписи (хорошо ли различимо оглашение данных, не было ли помех для аудиозаписи)' },
 								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Замеченные нарушения, не отраженные выше' },
 							],
-							showInstruction: !this.$root.user,
-							clip : null,
-							failed : false,
-							submitted : false,
-							completed : false,
-							playbackRate0 : 1.0
-						};
-					},
-					computed : {
-						user() { return this.$root.user; },
-						resultText() {return taskSubmitResultsText(this);}
-					},
-					methods : {
-						formatTimezoneOffset : formatTimezoneOffset,
-						formatInstructionToggleText : formatInstructionToggleText,
-
-
-						videoUrl(idx) {
-							return this.clip ? this.clip.video.split(';')[idx] : null;
-						},
-
-						submitResults() {
-							if (!this.submitted) {
-								const events = [];
-								//for(var question_id in this.questions) {
-								//	this.events.push({ offset: 0, clip: this.clip.id, type : question_id, value : JSON.stringify(this.questions[question_id]) });
-								//}
-								sendEvents(this, events);
-								return;
-							}
-							nextTask(this, 'vote', this.$route.params);
-						}
-					},
-					created() {
-						nextTask(this, 'vote', this.$route.params);
-					},
-					template: '#app-task-proc',
-				};
-
-				const appTaskVote = {
-					name: 'app-task-vote',
-					data() {
-						return {
 							showInstruction: false,
 							clip: null,
 							events: [],
@@ -1175,6 +1133,15 @@
 							return `${minutes}:${seconds}`;
 						},
 						submitResults() {
+							//if (!this.submitted) {
+							//	const events = [];
+							//	//for(var question_id in this.questions) {
+							//	//	this.events.push({ offset: 0, clip: this.clip.id, type : question_id, value : JSON.stringify(this.questions[question_id]) });
+							//	//}
+							//	sendEvents(this, events);
+							//	return;
+							//}
+							//TODO: take 'vote' or 'proc' from route params
 							if (!this.submitted && (this.failed || this.completed))
 								sendEvents(this, this.events);
 							else
@@ -1571,12 +1538,12 @@
 						{
 							path: '/task/vote/election/:election_number/region/:region_number/station/:station_number',
 							name: 'task-vote',
-							component: appTaskVote
+							component: appTaskBase
 						},
 						{
 							path: '/task/proc/election/:election_number/region/:region_number/station/:station_number',
 							name: 'task-proc',
-							component: appTaskProc
+							component: appTaskBase
 						},
 						{ path: '/stations', name: 'stations', component: appStations },
 						{ path: '/stations/:id', name: 'station', component: appStation },
