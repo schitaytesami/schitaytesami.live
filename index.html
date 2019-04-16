@@ -254,7 +254,7 @@
 									<input type="text" class="form-control user_email" v-model="email" placeholder="Эл. почта" />
 								</div>
 								<div class="ml-auto">
-									<button class="btn btn-primary" @click.prevent="registered = $root.register(email)">Зарегистрироваться</button>
+									<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
 								</div>
 							</div>
 						</div>
@@ -1078,6 +1078,12 @@
 							registered: false,
 						}
 					},
+					methods : {
+						register()
+						{
+							(async () => { this.registered = $root.register(this.email); })();
+						}
+					}
 					template: '#app-task',
 				};
 
