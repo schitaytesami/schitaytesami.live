@@ -254,7 +254,7 @@
 									<input type="text" class="form-control user_email" v-model="email" placeholder="Эл. почта" />
 								</div>
 								<div class="ml-auto">
-									<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
+									<button class="btn btn-primary" @click.prevent="registered = $root.register(email)">Зарегистрироваться</button>
 								</div>
 							</div>
 						</div>
@@ -1078,9 +1078,6 @@
 							registered: false,
 						}
 					},
-					methods	: {
-						register() { $root.register(this); }
-					},
 					template: '#app-task',
 				};
 
@@ -1665,18 +1662,17 @@
 							this.$router.push({ name: 'index' });
 							window.location.reload();
 						},
-						register(this) {
-							fetch('/user', {
+						async register(email) {
+							const res = await fetch('/user', {
 								method: 'post',
 								headers: { 'Content-type': 'text/plain' },
-								body: this.email,
-							})
-							.then(res => {
-								if (!res.ok) throw makeError(res);
-								this.registered = true;
-								this.email = '';
-							})
-							.catch(err => this.$emit('error', err));
+								body: email,
+							});
+
+							if (!res.ok)
+								throw makeError(res); //this.$emit('error', err)
+
+							return true;
 						}
 					},
 					components: {
