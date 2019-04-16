@@ -342,7 +342,38 @@
 
 			<div class="row mt-3">
 				<div class="col-md-5">
-					<div v-if="clip">
+
+					<app-clip-player
+						:verbose="true"
+						:clip="clip"
+						:started.sync="started"
+						:completed.sync="completed"
+						ref="player"
+						v-if="clip"
+					>
+						<div
+							class="instruction_video w-100 text-center bg-light"
+							slot="intro"
+							v-if="!started"
+						>
+							<p>Средняя продолжительность видео приблизительно 3-4 минуты.</p>
+							<p>Пожалуйста, сделайте работу до конца. <strong>Спасибо!</strong></p>
+						</div>
+
+						<div
+							class="events_submit w-100 h-100 text-center bg-light"
+							slot="end"
+							v-if="completed"
+						>
+							<div class="h-100 d-flex flex-column justify-content-center">
+								<h2>{{ resultText.message }}</h2>
+								<div><button class="btn btn-success" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ resultText.button }}</button></div>
+							</div>
+						</div>
+
+					</app-clip-player>
+
+					<div v-if="false">
 						<h3>УИК <span>{{ clip.station.station_number }}</span> <app-bookmark-button :clip="clip"/> <span class="float-right">{{ $root.interval(clip) }}</span></h3>
 						<h6><span>{{ clip.station.station_address }}</span><span class="float-right">UTC+<span>{{ formatTimezoneOffset(clip.station.timezone_offset) }}</span></span></h6>
 						<div style="position:relative">
@@ -361,6 +392,7 @@
 							</div>
 						</div>
 					</div>
+
 				</div>
 
 				<div class="col-md-4">
@@ -466,7 +498,7 @@
 	<script type="text/x-template" id="app-station">
 		<div class="row" id="station">
 			<div class="col-md-6 offset-md-3">
-				<app-clip-player :clip="clip" :verbose="true" />
+				<app-clip-player :clip="current_clip" :verbose="true" v-if="current_clip" />
 			</div>
 			<div class="col-md-12">
 				<div>
@@ -490,19 +522,18 @@
 					<h3 class="text-center lead">Явка по ускоренным сегментам</h3>
 					<figure>
 						<div class="row no-gutters">
-							<div class="col"  v-for="segment in segments">
-								<table class="table-bordered table-striped w-100">
+							<div class="col" v-for="segment in segments">
+								<table class="table table-sm table-bordered table-striped w-100">
 									<thead>
-										<tr><th>Интервал</th><th>Явка, видеоподсчет</th></tr>
+										<tr><th scope="col">Интервал</th><th>Явка, видеоподсчет</th></tr>
 									</thead>
 									<tbody>
 										<tr v-for="(clip, i) in segment" :key="i">
 											<td>
-												<a href="#" @click.prevent="showClip(clip)">{{ formatClipInterval(clip, station)[0] }}</a>
+												<button class="btn btn-link btn-sm w-100 p-0 text-left" type="button" @click="current_clip = clip">{{ formatClipInterval(clip, station)[0] }}</button>
 											</td>
-											<td :class="{ 'text-muted': !clip.turnout.estimate && clip.turnout.average }">
-												{{ clip.turnout.estimate || (clip.turnout.average && (clip.turnout.average + '*')) || '' }}
-											</td>
+											<td :class="{ 'text-muted': !clip.turnout.estimate && clip.turnout.average }"
+												>{{ clip.turnout.estimate || (clip.turnout.average && (clip.turnout.average + '*')) || '' }}</td>
 										</tr>
 									</tbody>
 								</table>
@@ -527,10 +558,10 @@
 							<div class="col text-center">
 								<app-access-button :station_id="station.id" :user_id="$root.user.id" />
 							</div>
-						</div>	
+						</div>
 						<div class="row no-gutters mb-2">
 							<div class="col text-center">
-								<table class="table-bordered table-striped w-100">
+								<table class="table table-sm table-bordered table-striped w-100">
 									<thead>
 										<tr>
 											<th>Тип задания</th>
@@ -541,9 +572,12 @@
 										<tr v-for="(_, i) in Array(t.max_num_clips).fill()">
 											<td>{{ formatClipTask(t.task) }}</td>
 											<td v-for="camera_id in tasks.camera_ids">
-												<a href="#" v-if="(t.clips[camera_id] || {})[i]" @click.prevent="showClip(t.clips[camera_id][i])">
-												{{ formatClipInterval(t.clips[camera_id][i], station)[0] }}
-												</a>
+												<button
+													type="button"
+													class="btn btn-link btn-sm w-100 p-0"
+													@click="current_clip = t.clips[camera_id][i]"
+													>{{ formatClipInterval(t.clips[camera_id][i], station)[0] }}</button>
+												</button>
 											</td>
 										</tr>
 									</template>
@@ -556,17 +590,53 @@
 			</div>
 		</div>
 	</script>
-	
+
 	<script type="text/x-template" id="app-clip-player">
 		<div>
-			<h3 :title="station.station_address">УИК <span>{{ station.station_number }}</span><span class="float-right">{{ formatClipInterval(clip, station)[1] }}</span></h3>
-			<h6><span>{{ verbose ? station.station_address : formatRegionName(station.station_address) }}</span><span class="float-right" v-if="verbose">UTC+<span>{{ formatTimezoneOffset(station.timezone_offset) }}</span></span></h6>
-			<video class="app-station__video--js w-100" controls="controls" preload="auto" ref="player" :src="clip.video"></video>
+			<h3 :title="station.station_address"
+				>УИК <span
+				>{{ station.station_number }}</span><span class="float-right"
+				>{{ formatClipInterval(clip, station)[1] }}</span>
+			</h3>
+			<h6><span
+				>{{ verbose ? station.station_address : formatRegionName(station.station_address) }}</span><span
+					class="float-right"
+					v-if="verbose"
+				>UTC+<span
+					>{{ formatTimezoneOffset(station.timezone_offset) }}</span>
+				</span>
+			</h6>
+
+			<div class="position-relative">
+				<video
+					class="app-station__video--js w-100"
+					controls="controls"
+					preload="auto"
+					ref="player"
+					:src="clip.video"
+					@timeupdate="currentTime = $event.target.currentTime"
+					@play.once="$emit('update:started', true)"
+					@ended="$emit('update:completed', true)"
+				></video>
+
+				<slot name="intro"></slot>
+				<slot name="end"></slot>
+			</div>
+
 			<strong>Скорость {{ playbackRate.toFixed(1) }}x</strong>
 			<div class="btn-group btn-group-sm">
-				<button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(-0.5)">Медленнее</button>
-			   	<button type="button" class="btn btn-secondary" @click.prevent="setPlaybackRate(+0.5)">Быстрее</button>
+				<button
+					type="button"
+					class="btn btn-secondary"
+					@click.prevent="setPlaybackRate(-0.5)"
+				>Медленнее</button>
+				<button
+					type="button"
+					class="btn btn-secondary"
+					@click.prevent="setPlaybackRate(+0.5)"
+				>Быстрее</button>
 			</div>
+
 		</div>
 	</script>
 
@@ -919,7 +989,7 @@
 				const formatPercent = fraction => `${(fraction * 100).toFixed(0)}%`;
 
 				const formatMinutes = seconds => (seconds / 60).toFixed(0);
-				
+
 				const formatHours = seconds => seconds ? (seconds / 3600).toFixed(0) : 0;
 
 				const formatElectionDate = election_number => {
@@ -928,7 +998,7 @@
 				};
 
 				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
-				
+
 				const formatClipInterval = (clip, station) => {
 					const interval = `${formatTime(clip.clip_interval_start, station.timezone_offset)} - ${formatTime(clip.clip_interval_end, station.timezone_offset)}`;
 					const interval_full = formatElectionDate(station.election_number) + ', ' + interval;
@@ -944,9 +1014,9 @@
 					(typeof(clip) === 'number' ?
 						`, Сегментов: ${clip}.` :
 						` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
-				
+
 				const formatTimezoneOffset = timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', '');
-				
+
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
 				const makeError = err => {
@@ -1133,9 +1203,10 @@
 							clip: null,
 							events: [],
 							note: '',
-							submitted: false,
+							started: false,
 							completed: false,
-							failed: false
+							submitted: false,
+							failed: false,
 						};
 					},
 					computed: {
@@ -1184,27 +1255,56 @@
 					},
 					template: '#app-task-vote',
 				};
-				
+
 				const appClipPlayer = {
-					props : ['clip', 'verbose'],
+					props: {
+						clip: {
+							type: Object,
+							required: true,
+						},
+						verbose: {
+							type: Boolean,
+							required: true,
+						},
+						started: {
+							type: Boolean,
+							required: false,
+						},
+						completed: {
+							type: Boolean,
+							required: false,
+						},
+					},
 					name : 'app-clip-player',
 					template : '#app-clip-player',
-					data() { 
-						return {playbackRate : 1.0};
+					data() {
+						return {
+							playbackRate : 1.0,
+							currentTime: 0,
+						};
 					},
-					computed : {
-						station() { return ((this.$root.stats || {}).stations_dict || {})[this.clip.station_id]; },
+					computed: {
+						station() {
+							if (this.clip.station) return this.clip.station;
+
+							if (this.$root.stats && this.$root.stats.stations_dict)
+								return this.$root.stats.stations_dict[this.clip.station_id];
+
+							return {};
+						},
 					},
 					methods : {
-						formatTimezoneOffset : formatTimezoneOffset, 
+						formatTimezoneOffset : formatTimezoneOffset,
 						formatClipInterval : formatClipInterval,
 						formatRegionName : formatRegionName,
-						
+						pause() {
+							this.$refs.player.pause();
+						},
 						setPlaybackRate(delta) {
 							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
 							this.playbackRate = this.$refs.player.playbackRate;
 						},
-					}
+					},
 				};
 
 				const appStation = {
@@ -1212,16 +1312,24 @@
 					name: 'app-station',
 					data() {
 						return {
-							interval: '',
-							video_url : ''
+							current_clip: null,
 						};
 					},
 					computed: {
-						
-						clip() {return this.clips[0]; }, // FIXME: remove this
-						
-						station() { return this.$root.stats.stations_dict_station_id ? this.$root.stats.stations_dict_station_id[this.$route.params.id] : {}; },
-						clips() { return this.station.clips ? this.station.clips.split(',').map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]) : []; },
+						station() {
+							return this.$root.stats.stations_dict_station_id
+								? this.$root.stats.stations_dict_station_id[this.$route.params.id]
+								: {};
+						},
+						clips() {
+							if (this.station.clips) {
+								const clips = this.station.clips.split(',').map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]);
+								if (this.current_clip === null) this.current_clip = clips[0];
+								return clips;
+							}
+
+							return [];
+						},
 						notes() {
 							if (!this.$root.user) return [];
 
@@ -1242,7 +1350,6 @@
 							return user_notes;
 						},
 						segments() {
-							this.$nextTick(() => this.showClip(this.clips[0]));
 							const num_columns = 4;
 							const chunk = Math.ceil(this.clips.length / num_columns);
 							return Array(num_columns).fill().map((_, k) => this.clips.slice(k * chunk, (k + 1) * chunk));
@@ -1252,31 +1359,29 @@
 							const camera_ids = Array.from(new Set(clips.map(c => c.camera_id))).sort();
 							const task_types = Array.from(new Set(clips.map(c => c.task))).sort();
 							const fromEntries = arr => Object.assign({}, ...Array.from(arr, ([k, v]) => ({[k]: v}) ));
-							return {camera_ids : camera_ids, tasks: task_types.map(task_type => 
-							{
-								const camera_id2clips = camera_ids.map(camera_id => [camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)]);
-								return {
-									task : task_type,
-									max_num_clips : Math.max(...camera_id2clips.map(c => c[1].length)),
-									clips : fromEntries(camera_id2clips)
-									
-								}
-							})};
+							return {
+								camera_ids: camera_ids,
+								tasks: task_types.map(task_type => {
+									const camera_id2clips = camera_ids.map(camera_id =>
+										[camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)]);
+
+									return {
+										task : task_type,
+										max_num_clips : Math.max(...camera_id2clips.map(c => c[1].length)),
+										clips : fromEntries(camera_id2clips),
+									};
+								}),
+							};
 						}
 					},
 					methods: {
-						formatClipTask : clip_task => ({full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов'})[clip_task] || clip_task,
+						formatClipTask : clip_task => ({ full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов' })[clip_task] || clip_task,
 						formatClipInterval : formatClipInterval,
 						getTurnout(name) {
-							if(!this.station.turnout)
-								return {};
+							if (!this.station.turnout) return {};
 							const obj = this.station.turnout[name];
 							const orderList = this.$options.turnoutOrder;
 							return !obj ? [] : Object.keys(obj).reduce((acc, cur) => (orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]), acc), []);
-						},
-						showClip(clip) {
-							this.interval = formatClipInterval(clip, this.station)[1];
-							this.video_url = clip.video;
 						},
 					},
 					template: '#app-station',
@@ -1544,7 +1649,7 @@
 					],
 				});
 
-		        	Vue.component('app-selection', appSelection);
+				Vue.component('app-selection', appSelection);
 				Vue.component('app-bookmark-button', appBookmarkButton);
 				Vue.component('app-access-button', appAccessButton);
 				Vue.component('app-notes', appNotes);
