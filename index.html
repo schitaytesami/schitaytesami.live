@@ -572,7 +572,7 @@
 	<script type="text/x-template" id="app-clip-player">
 		<div>
 			<h3 :title="station.station_address">
-				<router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(station.station_id) } }">УИК {{ station.station_number }}</router-link>
+				<router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(station.id) } }">УИК {{ station.station_number }}</router-link>
 				<span class="float-right">{{ formatClipInterval(clip, station)[1] }}</span>
 			</h3>
 			<h6><span
