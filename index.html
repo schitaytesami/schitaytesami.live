@@ -956,8 +956,6 @@
 
 				const formatRegionName = station_address => station_address.split(',')[0];
 
-				const formatInstructionToggleText = showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲';
-
 				const formatThumbnailTitle = (station, clip) =>
 					`${formatRegionName(station.station_address)}, УИК ${station.station_number}`+
 					(typeof(clip) === 'number' ?
@@ -1041,7 +1039,7 @@
 					},
 					methods: {
 						formatTimezoneOffset : formatTimezoneOffset,
-						formatInstructionToggleText : formatInstructionToggleText,
+						formatInstructionToggleText : showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
 						formatTaskSubmitResultsButtonText : (submitted, failed) => {
 							let message = 'Разметка этого видео закончена. Спасибо!';
 							let button = 'Отправить результаты';
