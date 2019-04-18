@@ -1063,8 +1063,6 @@
 							if (seconds < 10) seconds = `0${seconds}`;
 							return `${minutes}:${seconds}`;
 						},
-
-
 						submitResults() {
 							//if (!this.submitted) {
 							//	const events = [];
@@ -1136,10 +1134,12 @@
 					},
 					computed: {
 						station() {
-							if (this.clip.station) return this.clip.station;
-
-							if (this.$root.stats && this.$root.stats.stations_dict)
-								return this.$root.stats.stations_dict[this.clip.station_id];
+							if (this.$root.stats && this.$root.stats.clips_dict) {
+								const clip_id = this.clip.id;
+								const { station_id } = this.$root.stats.clips_dict[clip_id];
+								const station = this.$root.stats.stations_dict[station_id];
+								return station;
+							}
 
 							return {};
 						},
