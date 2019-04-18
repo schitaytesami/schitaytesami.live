@@ -285,7 +285,7 @@
 							<dd>Фрагменты видео, не досмотренные до конца, не учитываются и не участвуют в дальнейшей обработке.</dd>
 						</dl>
 					</div>
-					
+
 					<ol>
 						<li>Перед просмотром внимательно прочитайте Анкету (она представляет собой отчет, который будет затем автоматически обрабатываться). Анкета содержит вопросы о выполнении процедур, которые прописаны в законе. При чтении Анкеты вы должны определить, понятен ли вам вопрос. Вопросы составлены так, что положительный ответ на вопрос – это и есть требование закона.</li>
 						<li>Перед просмотром заполните верхнюю часть Анкеты.</li>
@@ -571,7 +571,7 @@
 				<slot name="end"></slot>
 			</div>
 
-			
+
 			<div class="btn-group btn-group-sm">
 				<button type="button" class="btn btn-light border-0"><strong>Скорость {{ playbackRate.toFixed(1) }}x</strong></button>
 				<button
@@ -996,10 +996,13 @@
 						}
 					},
 					methods : {
-						register()
-						{
-							(async () => { this.registered = $root.register(this.email); })();
-						}
+						async register() {
+							try {
+								this.registered = await this.$root.register(this.email);
+							} catch (err) {
+								this.$emit('error', err);
+							}
+						},
 					},
 					template: '#app-task'
 				};
@@ -1517,7 +1520,6 @@
 							this.showError = true;
 							this.errorMessage = err.message;
 						},
-
 						fetchStats() {
 							return fetch('/stats')
 								.then(res => {
@@ -1552,7 +1554,6 @@
 
 									  stats.formatStationIdFull = station_id => stats.stations_dict[station_id].station_id;
 
-
 									this.stats = { ...this.stats, ...stats };
 								});
 						},
@@ -1567,14 +1568,13 @@
 							window.location.reload();
 						},
 						async register(email) {
-							const res = await fetch('/user', {
+							const response = await fetch('/user', {
 								method: 'post',
 								headers: { 'Content-type': 'text/plain' },
 								body: email,
 							});
 
-							if (!res.ok)
-								throw makeError(res); //this.$emit('error', err)
+							if (!response.ok) throw makeError(response);
 
 							return true;
 						},
