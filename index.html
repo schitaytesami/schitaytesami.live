@@ -233,7 +233,7 @@
 					<router-link
 						class="btn btn-primary mb-2 mt-2 w-100"
 						slot-scope="{ election_number, region_number, station_number }"
-						:to="{ name: 'task-vote', params: { election_number, region_number, station_number }}"
+						:to="{ name: 'vote', params: { election_number, region_number, station_number }}"
 						><h5 class="mb-0">Начать работу</h5></router-link>
 					</app-selection>
 				</template>
@@ -247,7 +247,7 @@
 					<router-link
 						class="btn btn-primary mb-2 mt-2 w-100"
 						slot-scope="{ election_number, region_number, station_number }"
-						:to="{ name: 'task-proc', params: { election_number, region_number, station_number }}"
+						:to="{ name: 'proc', params: { election_number, region_number, station_number }}"
 						><h5 class="mb-0">Начать работу</h5></router-link>
 					</app-selection>
 				</template>
@@ -981,6 +981,46 @@
 	<script type="text/javascript">
 
 		(function () {
+			const makeError = err => {
+				const status = err.status ? `${err.status}: ` : '';
+				const message = err.statusText || 'Что-то пошло не так';
+				return new Error(`${status}${message}`);
+			};
+
+			async function sendEvents(events) {
+				const response = await fetch(`/events/${this.clip.id}?csrf=${this.clip.csrf}`, {
+					method: 'post',
+					headers: {'Content-type': 'application/json'},
+					body: JSON.stringify(events),
+				});
+
+				if (!response.ok) throw makeError(response);
+				this.submitted = true;
+				this.failed = false;
+
+				return response;
+			}
+
+			async function nextTask(task, { election_number, region_number, station_number }) {
+				const response = await
+					fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`);
+
+				if (!response.ok) throw makeError(response);
+
+				let clip;
+				try {
+					clip = await response.json();
+				} catch (err) {
+					throw new Error(err);
+				}
+
+				this.clip = clip;
+				this.events = [];
+				this.submitted = false;
+				this.completed = false;
+				this.failed = false;
+			}
+
 			const initVue = () => {
 				const formatTime = (timestamp, timezoneOffset) => {
 					if (!timestamp) return '';
@@ -1023,11 +1063,6 @@
 
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
-				const makeError = err => {
-					const status = err.status ? `${err.status}: ` : '';
-					const message = err.statusText || 'Что-то пошло не так';
-					return new Error(`${status}${message}`);
-				};
 				const appIndex = {
 					methods : {formatHours : formatHours, formatThumbnailTitle : formatThumbnailTitle},
 					computed: {
@@ -1057,7 +1092,7 @@
 							try {
 								this.registered = await this.$root.register(this.email);
 							} catch (err) {
-								this.$emit('error', err);
+								this.$root.errorHandler(err);
 							}
 						},
 					},
@@ -1104,12 +1139,14 @@
 						};
 					},
 					computed: {
-						user() {return this.$root.user;	},
+						user() {
+							return this.$root.user;
+						},
 					},
 					methods: {
 						formatTimezoneOffset : formatTimezoneOffset,
 						formatInstructionToggleText : showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
-						formatTaskSubmitResultsButtonText : (submitted, failed) => {
+						formatTaskSubmitResultsButtonText(submitted, failed) {
 							let message = 'Разметка этого видео закончена. Спасибо!';
 							let button = 'Отправить результаты';
 
@@ -1129,20 +1166,34 @@
 							if (seconds < 10) seconds = `0${seconds}`;
 							return `${minutes}:${seconds}`;
 						},
-						submitResults() {
-							//if (!this.submitted) {
-							//	const events = [];
-							//	//for(var question_id in this.questions) {
-							//	//	this.events.push({ offset: 0, clip: this.clip.id, type : question_id, value : JSON.stringify(this.questions[question_id]) });
-							//	//}
-							//	sendEvents(this, events);
-							//	return;
-							//}
-							//TODO: take 'vote' or 'proc' from route params
+						async submitResults() {
+							let events = [];
+
+							if (this.$route.name === 'vote')
+								events = this.events;
+
+							if (this.$route.name === 'proc')
+								for (let question_id in this.questions)
+									this.events.push({
+										offset: 0,
+										clip: this.clip.id,
+										type : question_id,
+										value : JSON.stringify(this.questions[question_id])
+									});
+
 							if (!this.submitted && (this.failed || this.completed))
-								this.$root.sendEvents(this, this.events);
+								try {
+									await sendEvents.call(this, events);
+								} catch (err) {
+									this.failed = true;
+									this.$root.errorHandler(err);
+								}
 							else
-								this.$root.nextTask(this, 'vote', this.$route.params);
+								try {
+									await nextTask.apply(this, [this.$route.name, this.$route.params]);
+								} catch (err) {
+									this.$root.errorHandler(err);
+								}
 						},
 						addEvent(offset, type, value = '') {
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
@@ -1166,7 +1217,9 @@
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
-						this.$root.nextTask(this, 'vote', this.$route.params);
+
+						nextTask.apply(this, [this.$route.name, this.$route.params])
+							.catch(err => this.$root.errorHandler(err));
 					},
 					template: '#app-task-base',
 				};
@@ -1552,12 +1605,12 @@
 						{ path: '/task', name: 'task', component: appTask },
 						{
 							path: '/task/vote/election/:election_number/region/:region_number/station/:station_number',
-							name: 'task-vote',
+							name: 'vote',
 							component: appTaskVote,
 						},
 						{
 							path: '/task/proc/election/:election_number/region/:region_number/station/:station_number',
-							name: 'task-proc',
+							name: 'proc',
 							component: appTaskProc,
 						},
 						{ path: '/stations', name: 'stations', component: appStations },
@@ -1598,7 +1651,7 @@
 						errorMessage: '',
 					},
 					methods: {
-						erroHandler(err) {
+						errorHandler(err) {
 							this.showError = true;
 							this.errorMessage = err.message;
 						},
@@ -1660,24 +1713,6 @@
 
 							return true;
 						},
-						sendEvents(self, events) {
-							return fetch(`/events/${self.clip.id}?csrf=${self.clip.csrf}`, {
-								method: 'post',
-								headers: {'Content-type': 'application/json'},
-								body: JSON.stringify(events),
-							})
-							.then(res => {
-								self.submitted = true;
-								if (!res.ok) throw makeError(res);
-								self.failed = false;
-								return res;
-							})
-							.catch(() => {
-								self.failed = true;
-								self.$root.showError = true;
-							});
-						},
-
 						sendAccess(self, user_id, station_id) {
 							return fetch(`/user/${user_id}/access/station/${station_id}`, {
 								method: 'POST',
@@ -1694,23 +1729,6 @@
 								self.$root.showError = true;
 							});
 						},
-						nextTask(self, task, { election_number, region_number, station_number }) {
-							if (!self.user) return Promise.resolve();
-
-							return fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`)
-								.then(res => {
-									if (!res.ok) throw makeError(res);
-									return res.json();
-								})
-								.then(task => {
-									self.clip = task;
-									self.events = [];
-									self.submitted = false;
-									self.completed = false;
-									self.failed = false;
-								})
-								.catch(err => self.$emit('error', err));
-						}
 					},
 					components: {
 						'app-navigation-menu': {
@@ -1741,7 +1759,7 @@
 								},
 								[
 									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-vote', 'app-task-proc'] } }, [
-										c('router-view', { on: { error: this.erroHandler } }),
+										c('router-view', { on: { error: this.errorHandler } }),
 									]),
 								]
 							),
