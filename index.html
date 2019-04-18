@@ -362,7 +362,7 @@
 					<h3 class="mb-0"><button class="btn btn-info w-100" @click.prevent="showInstruction = !showInstruction">{{ formatInstructionToggleText(showInstruction) }}</button></h3>
 					<h6>&nbsp;</h6>
 					<div v-if="clip">
-						<div class="btn-group-vertical w-100">
+						<div class="btn-group-vertical w-100 mb-3">
 							<div class="btn-group">
 								<input type="text" class="form-control" placeholder="Необычное? Опишите здесь!" v-model.trim="note" ref="note" />
 								<button class="btn btn-primary w-50 add_note" @click.prevent="addEvent($refs.player.currentTime, 'note', note)">Добавить</button>
@@ -373,7 +373,8 @@
 						</div>
 
 						<template v-if="true" class="mt-2">
-						<button class="btn btn-success w-100 mb-2" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button>
+						<!-- <button class="btn btn-success w-100 mb-2" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button> -->
+						<h6 class="lead">Контроль процедуры подсчёта голосов</h6>
 						<ul class="list-group">
 							<li class="list-group-item" v-for="(question, idx) in questions" >
 								<p class="mb-1"><strong>{{1 + idx }}</strong>. <span v-html="question.question_text" /></p>
