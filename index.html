@@ -328,35 +328,75 @@
 				</div>
 
 				<div class="col-md-7">
-					<h3 class="mb-0"><button class="btn btn-info w-100" @click.prevent="showInstruction = !showInstruction">{{ formatInstructionToggleText(showInstruction) }}</button></h3>
-					<h6>&nbsp;</h6>
-					<div v-if="clip">
+					<h3 class="mb-4">
+						<button
+							type="button"
+							class="btn btn-info w-100"
+							@click="showInstruction = !showInstruction"
+						>{{ formatInstructionToggleText(showInstruction) }}</button>
+					</h3>
+
+					<template v-if="are_controls_vote_shown">
 						<div class="btn-group-vertical w-100 mb-3">
 							<div class="btn-group">
-								<input type="text" class="form-control" placeholder="Необычное? Опишите здесь!" v-model.trim="note" ref="note" />
-								<button class="btn btn-primary w-50 add_note" @click.prevent="addEvent($refs.player.currentTime, 'note', note)">Добавить</button>
+								<input
+									type="text"
+									class="form-control"
+									placeholder="Необычное? Опишите здесь!"
+									v-model.trim="note"
+									ref="note" />
+								<button
+									type="button"
+									class="btn btn-primary w-50 add_note"
+									@click.prevent="addEvent($refs.player.currentTime, 'note', note)"
+								>Добавить</button>
 							</div>
 							<div class="btn-group mt-2">
-								<button class="btn btn-success w-100" @click.prevent="addEvent($refs.player.currentTime, 'vote')">+1 голос (на клавиатуре <kbd>пробел</kbd>)</button>
+								<button
+									type="button"
+									class="btn btn-success w-100"
+									@click="addEvent($refs.player.currentTime, 'vote')"
+								>+1 голос (на клавиатуре <kbd>пробел</kbd>)</button>
 							</div>
 						</div>
+					</template>
 
-						<template v-if="true" class="mt-2">
-						<!-- <button class="btn btn-success w-100 mb-2" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button> -->
+					<template class="mt-2" v-if="are_controls_proc_shown">
+						<button
+							class="btn btn-success w-100 mb-2"
+							:class="{ 'btn-danger': failed }"
+							@click.prevent="submitResults"
+							v-if="false"
+						>{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button>
 						<h6 class="lead">Контроль процедуры подсчёта голосов</h6>
 						<ul class="list-group">
 							<li class="list-group-item" v-for="(question, idx) in questions" >
-								<p class="mb-1"><strong>{{1 + idx }}</strong>. <span v-html="question.question_text" /></p>
-								<div>
-									<label class="radio-inline bg-secondary text-white" v-if="!question.hide_yes_no"><input type="radio" :name="idx" checked v-model="question.yes_no">Не могу ответить</label>
-									<label class="radio-inline bg-success text-white" v-if="!question.hide_yes_no"><input type="radio" :name="idx" value="yes" v-model="question.yes_no">Да</label>
-									<label class="radio-inline bg-danger text-white" v-if="!question.hide_yes_no"><input type="radio" :name="idx" value="no" v-model="question.yes_no">Нет</label>
-									<input class="w-100" type="text" placeholder="Введите в это поле время нарушения или комментарий" v-model="question.comment"></input>
+								<p class="mb-1">
+									<strong>{{1 + idx }}</strong>.
+									<span v-html="question.question_text"></span>
+								</p>
+
+								<div class="form-check form-check-inline bg-secondary text-white mr-0 p-1" v-if="!question.hide_yes_no">
+									<input :id="'cannot' + idx" class="form-check-input" type="radio" :name="idx" checked v-model="question.yes_no">
+									<label :for="'cannot' + idx" class="form-check-label">Не могу ответить</label>
+								</div>
+								<div class="form-check form-check-inline bg-success text-white mr-0 p-1" v-if="!question.hide_yes_no">
+									<input :id="'yes' + idx" class="form-check-input" type="radio" :name="idx" value="yes" v-model="question.yes_no">
+									<label :for="'yes' + idx" class="form-check-label">Да</label>
+								</div>
+								<div class="form-check form-check-inline bg-danger text-white mr-0 mb-1 p-1" v-if="!question.hide_yes_no">
+									<input :id="'no' + idx" class="form-check-input" type="radio" :name="idx" value="no" v-model="question.yes_no">
+									<label :for="'no' + idx" class="form-check-label">Нет</label>
+								</div>
+								<div class="form-check-form-check-inline">
+									<input
+										class="w-100"
+										type="text"
+										placeholder="Введите в это поле время нарушения или комментарий" v-model="question.comment" />
 								</div>
 							</li>
 						</ul>
-						</template>
-					</div>
+					</template>
 				</div>
 			</div>
 		</div>
@@ -364,12 +404,15 @@
 
 	<script type="text/x-template" id="app-task-vote">
 		<div>
-			<app-task-base>
+			<app-task-base
+				:are_controls_vote_shown="true"
+				:are_controls_proc_shown="false"
+			>
 				<dl slot="instruction">
 					<dt>Опускание бюллетеня</dt>
 					<dd>Каждый раз, когда подошедший к урне избиратель опускает в урну свой первый бюллетень, Вам необходимо или кликнуть на <button href="#" class="btn btn-success btn-sm">зелёную кнопку</button> под окном видео, или нажать на пробел (строго одно из двух). Пожалуйста, старайтесь не допускать слишком большого запаздывания (запаздывание в 1-2 секунды допустимо). Не нажимайте на кнопку/пробел заранее, дождитесь момента, когда бюллетень опустится в прорезь ящика для голосования.</dd>
 
-						<dd><i>В случае, когда подошедший к урне избиратель опускает в урну два и более бюллетеней, Вам необходимо реагировать только на первое опускание бюллетеня (опускание нескольких бюллетеней всего скорее связано с совмещением выборов разных уровней). Исключение составляет случай, когда несколько людей (например, семейная пара) подходят к урне вместе, и один человек опускает бюллетени за всех.	В этом случае реагируйте на опускание двух или более бюллетеней (по числу людей подошедших вместе).</i></dd>
+					<dd><i>В случае, когда подошедший к урне избиратель опускает в урну два и более бюллетеней, Вам необходимо реагировать только на первое опускание бюллетеня (опускание нескольких бюллетеней всего скорее связано с совмещением выборов разных уровней). Исключение составляет случай, когда несколько людей (например, семейная пара) подходят к урне вместе, и один человек опускает бюллетени за всех.	В этом случае реагируйте на опускание двух или более бюллетеней (по числу людей подошедших вместе).</i></dd>
 
 					<dt>Пауза в работе</dt>
 					<dd>Вы можете приостановить видео, кликнув по нему в центре или нажав <kbd>escape</kbd> на клавиатуре. Возобновить работу можно, снова кликнув по видео в центре.</dd>
@@ -389,7 +432,10 @@
 
 	<script type="text/x-template" id="app-task-proc">
 		<div>
-			<app-task-base>
+			<app-task-base
+				:are_controls_vote_shown="false"
+				:are_controls_proc_shown="true"
+			>
 				<ol slot="instruction">
 					<li>Перед просмотром внимательно прочитайте Анкету (она представляет собой отчет, который будет затем автоматически обрабатываться). Анкета содержит вопросы о выполнении процедур, которые прописаны в законе. При чтении Анкеты вы должны определить, понятен ли вам вопрос. Вопросы составлены так, что положительный ответ на вопрос – это и есть требование закона.</li>
 					<li>Перед просмотром заполните верхнюю часть Анкеты.</li>
@@ -1019,6 +1065,16 @@
 				};
 
 				const appTaskBase = {
+					props: {
+						are_controls_vote_shown: {
+							type: Boolean,
+							required: true,
+						},
+						are_controls_proc_shown: {
+							type: Boolean,
+							required: true,
+						},
+					},
 					data() {
 						return {
 							questions : [
