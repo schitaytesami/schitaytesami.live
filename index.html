@@ -203,9 +203,6 @@
 		</div>
 	</script>
 
-	<script type="text/x-template" id="app-task-proc">
-	</script>
-
 	<script type="text/x-template" id="app-task">
 		<div class="row">
 			<div class="col-md-6 offset-md-3">
@@ -236,7 +233,7 @@
 					<router-link
 						class="btn btn-primary mb-2 mt-2 w-100"
 						slot-scope="{ election_number, region_number, station_number }"
-						:to="{ name: 'task-vote', params: { election_number, region_number, station_number }}"
+						:to="{ name: 'vote', params: { election_number, region_number, station_number }}"
 						><h5 class="mb-0">Начать работу</h5></router-link>
 					</app-selection>
 				</template>
@@ -250,7 +247,7 @@
 					<router-link
 						class="btn btn-primary mb-2 mt-2 w-100"
 						slot-scope="{ election_number, region_number, station_number }"
-						:to="{ name: 'task-proc', params: { election_number, region_number, station_number }}"
+						:to="{ name: 'proc', params: { election_number, region_number, station_number }}"
 						><h5 class="mb-0">Начать работу</h5></router-link>
 					</app-selection>
 				</template>
@@ -258,43 +255,15 @@
 		</div>
 	</script>
 
-	<script type="text/x-template" id="app-task-vote">
+	<script type="text/x-template" id="app-task-base">
 		<div>
 			<div class="row instruction" v-if="showInstruction">
 				<div class="col-md-6 offset-md-3">
 					<div>
 						<p>Эффективность проекта зависит от вашей аккуратности, пожалуйста, отнеситесь к отметкам ответственно. В данном случае полностью применим принцип «лучше меньше да лучше». Пожалуйста, внимательно прочитайте эту инструкцию. В случае возникновения вопросов напишите нам письмо на <code>schitaytesami@gmail.com</code>. Мы постараемся ответить оперативно.</p>
 						<p>Ваша цель – определить число опустивших бюллетени в ящики для голосования, в показываемом Вам фрагменте видео. Считать в уме ничего не придется, но придется внимательно, не отвлекаясь, просматривать видео.</p>
-
-						<dl>
-							<dt>Опускание бюллетеня</dt>
-							<dd>Каждый раз, когда подошедший к урне избиратель опускает в урну свой первый бюллетень, Вам необходимо или кликнуть на <button href="#" class="btn btn-success btn-sm">зелёную кнопку</button> под окном видео, или нажать на пробел (строго одно из двух). Пожалуйста, старайтесь не допускать слишком большого запаздывания (запаздывание в 1-2 секунды допустимо). Не нажимайте на кнопку/пробел заранее, дождитесь момента, когда бюллетень опустится в прорезь ящика для голосования.</dd>
-
-	 						<dd><i>В случае, когда подошедший к урне избиратель опускает в урну два и более бюллетеней, Вам необходимо реагировать только на первое опускание бюллетеня (опускание нескольких бюллетеней всего скорее связано с совмещением выборов разных уровней). Исключение составляет случай, когда несколько людей (например, семейная пара) подходят к урне вместе, и один человек опускает бюллетени за всех.	В этом случае реагируйте на опускание двух или более бюллетеней (по числу людей подошедших вместе).</i></dd>
-
-							<dt>Пауза в работе</dt>
-							<dd>Вы можете приостановить видео, кликнув по нему в центре или нажав <kbd>escape</kbd> на клавиатуре. Возобновить работу можно, снова кликнув по видео в центре.</dd>
-
-							<dt>Исправление ошибок</dt>
-							<dd>Вы можете удалить ошибочные отметки из списка вручную, нажав на красный крест <a class="text-danger">❌</a>.</dd>
-
-							<dt>Нештатные ситуации</dt>
-							<dd>При наблюдении любой нештатной ситуации, на которую Вы хотели бы обратить наше внимание, введите краткое описание ситуации и нажмите на <button href="#" class="btn btn-primary btn-sm">синюю кнопку</button>. Таким же образом нужно дать нам знать об ошибках системы (например о систематической ускоренной перемотке через момент опускания бюллетеня).</dd>
-
-							<dt>Досрочное окончание работы</dt>
-							<dd>Фрагменты видео, не досмотренные до конца, не учитываются и не участвуют в дальнейшей обработке.</dd>
-						</dl>
 					</div>
-					
-					<ol>
-						<li>Перед просмотром внимательно прочитайте Анкету (она представляет собой отчет, который будет затем автоматически обрабатываться). Анкета содержит вопросы о выполнении процедур, которые прописаны в законе. При чтении Анкеты вы должны определить, понятен ли вам вопрос. Вопросы составлены так, что положительный ответ на вопрос – это и есть требование закона.</li>
-						<li>Перед просмотром заполните верхнюю часть Анкеты.</li>
-						<li>Ответы в анкету можно вписывать как во время просмотра (с приостановкой просмотра!), так и после просмотра. <br />Ответы можно давать в любой последовательности, но последовательность вопросов соответствует предусмотренной законом последовательности подсчета голосов.</li>
-						<li>Ответы вы даёте путем нажатия на одну из кнопок «Да», «Нет», «Не могу ответить». Вы должны нажать на одну из кнопок обязательно. Положительный ответ означает то, что предусмотренная законом процедура, в основном, была выполнена. <br/>Ответ «Нет» давайте только в том случае, если нарушение очевидно. Сомнения должны трактоваться в пользу УИК.</li>
-						<li>Вы можете написать комментарий к любому вопросу Анкеты. Если ответ на вопрос отрицательный, то впишите в поле «Комментарий» примерный интервал времени (по показаниям в левом верхнем углу видеозаписи) времени, когда было допущено нарушение. Другие записи в поле «Комментарий» также допустимы.</li>
-						<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи. </li>
-						<li>14-я строка Анкеты заполняется текстом в произвольной форме по желанию исследователя. (например, Вы заметили вброс бюллетеней перед или во время сортировки бюллетеней). При этом обязательно указывается время нарушения.</li>
-					</ol>
+					<slot name="instruction"></slot>
 				</div>
 			</div>
 
@@ -359,36 +328,124 @@
 				</div>
 
 				<div class="col-md-7">
-					<h3 class="mb-0"><button class="btn btn-info w-100" @click.prevent="showInstruction = !showInstruction">{{ formatInstructionToggleText(showInstruction) }}</button></h3>
-					<h6>&nbsp;</h6>
-					<div v-if="clip">
-						<div class="btn-group-vertical w-100">
+					<h3 class="mb-4">
+						<button
+							type="button"
+							class="btn btn-info w-100"
+							@click="showInstruction = !showInstruction"
+						>{{ formatInstructionToggleText(showInstruction) }}</button>
+					</h3>
+
+					<template v-if="are_controls_vote_shown">
+						<div class="btn-group-vertical w-100 mb-3">
 							<div class="btn-group">
-								<input type="text" class="form-control" placeholder="Необычное? Опишите здесь!" v-model.trim="note" ref="note" />
-								<button class="btn btn-primary w-50 add_note" @click.prevent="addEvent($refs.player.currentTime, 'note', note)">Добавить</button>
+								<input
+									type="text"
+									class="form-control"
+									placeholder="Необычное? Опишите здесь!"
+									v-model.trim="note"
+									ref="note" />
+								<button
+									type="button"
+									class="btn btn-primary w-50 add_note"
+									@click.prevent="addEvent($refs.player.currentTime, 'note', note)"
+								>Добавить</button>
 							</div>
 							<div class="btn-group mt-2">
-								<button class="btn btn-success w-100" @click.prevent="addEvent($refs.player.currentTime, 'vote')">+1 голос (на клавиатуре <kbd>пробел</kbd>)</button>
+								<button
+									type="button"
+									class="btn btn-success w-100"
+									@click="addEvent($refs.player.currentTime, 'vote')"
+								>+1 голос (на клавиатуре <kbd>пробел</kbd>)</button>
 							</div>
 						</div>
+					</template>
 
-						<template v-if="true" class="mt-2">
-						<button class="btn btn-success w-100 mb-2" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button>
+					<template class="mt-2" v-if="are_controls_proc_shown">
+						<button
+							class="btn btn-success w-100 mb-2"
+							:class="{ 'btn-danger': failed }"
+							@click.prevent="submitResults"
+							v-if="false"
+						>{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button>
+						<h6 class="lead">Контроль процедуры подсчёта голосов</h6>
 						<ul class="list-group">
 							<li class="list-group-item" v-for="(question, idx) in questions" >
-								<p class="mb-1"><strong>{{1 + idx }}</strong>. <span v-html="question.question_text" /></p>
-								<div>
-									<label class="radio-inline bg-secondary text-white" v-if="!question.hide_yes_no"><input type="radio" :name="idx" checked v-model="question.yes_no">Не могу ответить</label>
-									<label class="radio-inline bg-success text-white" v-if="!question.hide_yes_no"><input type="radio" :name="idx" value="yes" v-model="question.yes_no">Да</label>
-									<label class="radio-inline bg-danger text-white" v-if="!question.hide_yes_no"><input type="radio" :name="idx" value="no" v-model="question.yes_no">Нет</label>
-									<input class="w-100" type="text" placeholder="Введите в это поле время нарушения или комментарий" v-model="question.comment"></input>
+								<p class="mb-1">
+									<strong>{{1 + idx }}</strong>.
+									<span v-html="question.question_text"></span>
+								</p>
+
+								<div class="form-check form-check-inline bg-secondary text-white mr-0 p-1" v-if="!question.hide_yes_no">
+									<input :id="'cannot' + idx" class="form-check-input" type="radio" :name="idx" checked v-model="question.yes_no">
+									<label :for="'cannot' + idx" class="form-check-label">Не могу ответить</label>
+								</div>
+								<div class="form-check form-check-inline bg-success text-white mr-0 p-1" v-if="!question.hide_yes_no">
+									<input :id="'yes' + idx" class="form-check-input" type="radio" :name="idx" value="yes" v-model="question.yes_no">
+									<label :for="'yes' + idx" class="form-check-label">Да</label>
+								</div>
+								<div class="form-check form-check-inline bg-danger text-white mr-0 mb-1 p-1" v-if="!question.hide_yes_no">
+									<input :id="'no' + idx" class="form-check-input" type="radio" :name="idx" value="no" v-model="question.yes_no">
+									<label :for="'no' + idx" class="form-check-label">Нет</label>
+								</div>
+								<div class="form-check-form-check-inline">
+									<input
+										class="w-100"
+										type="text"
+										placeholder="Введите в это поле время нарушения или комментарий" v-model="question.comment" />
 								</div>
 							</li>
 						</ul>
-						</template>
-					</div>
+					</template>
 				</div>
 			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-task-vote">
+		<div>
+			<app-task-base
+				:are_controls_vote_shown="true"
+				:are_controls_proc_shown="false"
+			>
+				<dl slot="instruction">
+					<dt>Опускание бюллетеня</dt>
+					<dd>Каждый раз, когда подошедший к урне избиратель опускает в урну свой первый бюллетень, Вам необходимо или кликнуть на <button href="#" class="btn btn-success btn-sm">зелёную кнопку</button> под окном видео, или нажать на пробел (строго одно из двух). Пожалуйста, старайтесь не допускать слишком большого запаздывания (запаздывание в 1-2 секунды допустимо). Не нажимайте на кнопку/пробел заранее, дождитесь момента, когда бюллетень опустится в прорезь ящика для голосования.</dd>
+
+					<dd><i>В случае, когда подошедший к урне избиратель опускает в урну два и более бюллетеней, Вам необходимо реагировать только на первое опускание бюллетеня (опускание нескольких бюллетеней всего скорее связано с совмещением выборов разных уровней). Исключение составляет случай, когда несколько людей (например, семейная пара) подходят к урне вместе, и один человек опускает бюллетени за всех.	В этом случае реагируйте на опускание двух или более бюллетеней (по числу людей подошедших вместе).</i></dd>
+
+					<dt>Пауза в работе</dt>
+					<dd>Вы можете приостановить видео, кликнув по нему в центре или нажав <kbd>escape</kbd> на клавиатуре. Возобновить работу можно, снова кликнув по видео в центре.</dd>
+
+					<dt>Исправление ошибок</dt>
+					<dd>Вы можете удалить ошибочные отметки из списка вручную, нажав на красный крест <a class="text-danger">❌</a>.</dd>
+
+					<dt>Нештатные ситуации</dt>
+					<dd>При наблюдении любой нештатной ситуации, на которую Вы хотели бы обратить наше внимание, введите краткое описание ситуации и нажмите на <button href="#" class="btn btn-primary btn-sm">синюю кнопку</button>. Таким же образом нужно дать нам знать об ошибках системы (например о систематической ускоренной перемотке через момент опускания бюллетеня).</dd>
+
+					<dt>Досрочное окончание работы</dt>
+					<dd>Фрагменты видео, не досмотренные до конца, не учитываются и не участвуют в дальнейшей обработке.</dd>
+				</dl>
+			</app-task-base>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-task-proc">
+		<div>
+			<app-task-base
+				:are_controls_vote_shown="false"
+				:are_controls_proc_shown="true"
+			>
+				<ol slot="instruction">
+					<li>Перед просмотром внимательно прочитайте Анкету (она представляет собой отчет, который будет затем автоматически обрабатываться). Анкета содержит вопросы о выполнении процедур, которые прописаны в законе. При чтении Анкеты вы должны определить, понятен ли вам вопрос. Вопросы составлены так, что положительный ответ на вопрос – это и есть требование закона.</li>
+					<li>Перед просмотром заполните верхнюю часть Анкеты.</li>
+					<li>Ответы в анкету можно вписывать как во время просмотра (с приостановкой просмотра!), так и после просмотра. <br />Ответы можно давать в любой последовательности, но последовательность вопросов соответствует предусмотренной законом последовательности подсчета голосов.</li>
+					<li>Ответы вы даёте путем нажатия на одну из кнопок «Да», «Нет», «Не могу ответить». Вы должны нажать на одну из кнопок обязательно. Положительный ответ означает то, что предусмотренная законом процедура, в основном, была выполнена. <br/>Ответ «Нет» давайте только в том случае, если нарушение очевидно. Сомнения должны трактоваться в пользу УИК.</li>
+					<li>Вы можете написать комментарий к любому вопросу Анкеты. Если ответ на вопрос отрицательный, то впишите в поле «Комментарий» примерный интервал времени (по показаниям в левом верхнем углу видеозаписи) времени, когда было допущено нарушение. Другие записи в поле «Комментарий» также допустимы.</li>
+					<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи. </li>
+					<li>14-я строка Анкеты заполняется текстом в произвольной форме по желанию исследователя. (например, Вы заметили вброс бюллетеней перед или во время сортировки бюллетеней). При этом обязательно указывается время нарушения.</li>
+				</ol>
+			</app-task-base>
 		</div>
 	</script>
 
@@ -571,7 +628,7 @@
 				<slot name="end"></slot>
 			</div>
 
-			
+
 			<div class="btn-group btn-group-sm">
 				<button type="button" class="btn btn-light border-0"><strong>Скорость {{ playbackRate.toFixed(1) }}x</strong></button>
 				<button
@@ -924,6 +981,46 @@
 	<script type="text/javascript">
 
 		(function () {
+			const makeError = err => {
+				const status = err.status ? `${err.status}: ` : '';
+				const message = err.statusText || 'Что-то пошло не так';
+				return new Error(`${status}${message}`);
+			};
+
+			async function sendEvents(events) {
+				const response = await fetch(`/events/${this.clip.id}?csrf=${this.clip.csrf}`, {
+					method: 'post',
+					headers: {'Content-type': 'application/json'},
+					body: JSON.stringify(events),
+				});
+
+				if (!response.ok) throw makeError(response);
+				this.submitted = true;
+				this.failed = false;
+
+				return response;
+			}
+
+			async function nextTask(task, { election_number, region_number, station_number }) {
+				const response = await
+					fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`);
+
+				if (!response.ok) throw makeError(response);
+
+				let clip;
+				try {
+					clip = await response.json();
+				} catch (err) {
+					throw new Error(err);
+				}
+
+				this.clip = clip;
+				this.events = [];
+				this.submitted = false;
+				this.completed = false;
+				this.failed = false;
+			}
+
 			const initVue = () => {
 				const formatTime = (timestamp, timezoneOffset) => {
 					if (!timestamp) return '';
@@ -966,11 +1063,6 @@
 
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
-				const makeError = err => {
-					const status = err.status ? `${err.status}: ` : '';
-					const message = err.statusText || 'Что-то пошло не так';
-					return new Error(`${status}${message}`);
-				};
 				const appIndex = {
 					methods : {formatHours : formatHours, formatThumbnailTitle : formatThumbnailTitle},
 					computed: {
@@ -996,16 +1088,28 @@
 						}
 					},
 					methods : {
-						register()
-						{
-							(async () => { this.registered = $root.register(this.email); })();
-						}
+						async register() {
+							try {
+								this.registered = await this.$root.register(this.email);
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
+						},
 					},
 					template: '#app-task'
 				};
 
 				const appTaskBase = {
-					name: 'app-task-vote',
+					props: {
+						are_controls_vote_shown: {
+							type: Boolean,
+							required: true,
+						},
+						are_controls_proc_shown: {
+							type: Boolean,
+							required: true,
+						},
+					},
 					data() {
 						return {
 							questions : [
@@ -1035,12 +1139,14 @@
 						};
 					},
 					computed: {
-						user() {return this.$root.user;	},
+						user() {
+							return this.$root.user;
+						},
 					},
 					methods: {
 						formatTimezoneOffset : formatTimezoneOffset,
 						formatInstructionToggleText : showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
-						formatTaskSubmitResultsButtonText : (submitted, failed) => {
+						formatTaskSubmitResultsButtonText(submitted, failed) {
 							let message = 'Разметка этого видео закончена. Спасибо!';
 							let button = 'Отправить результаты';
 
@@ -1060,22 +1166,34 @@
 							if (seconds < 10) seconds = `0${seconds}`;
 							return `${minutes}:${seconds}`;
 						},
+						async submitResults() {
+							let events = [];
 
+							if (this.$route.name === 'vote')
+								events = this.events;
 
-						submitResults() {
-							//if (!this.submitted) {
-							//	const events = [];
-							//	//for(var question_id in this.questions) {
-							//	//	this.events.push({ offset: 0, clip: this.clip.id, type : question_id, value : JSON.stringify(this.questions[question_id]) });
-							//	//}
-							//	sendEvents(this, events);
-							//	return;
-							//}
-							//TODO: take 'vote' or 'proc' from route params
+							if (this.$route.name === 'proc')
+								for (let question_id in this.questions)
+									this.events.push({
+										offset: 0,
+										clip: this.clip.id,
+										type : question_id,
+										value : JSON.stringify(this.questions[question_id])
+									});
+
 							if (!this.submitted && (this.failed || this.completed))
-								this.$root.sendEvents(this, this.events);
+								try {
+									await sendEvents.call(this, events);
+								} catch (err) {
+									this.failed = true;
+									this.$root.errorHandler(err);
+								}
 							else
-								this.$root.nextTask(this, 'vote', this.$route.params);
+								try {
+									await nextTask.apply(this, [this.$route.name, this.$route.params]);
+								} catch (err) {
+									this.$root.errorHandler(err);
+								}
 						},
 						addEvent(offset, type, value = '') {
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
@@ -1099,9 +1217,27 @@
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
-						this.$root.nextTask(this, 'vote', this.$route.params);
+
+						nextTask.apply(this, [this.$route.name, this.$route.params])
+							.catch(err => this.$root.errorHandler(err));
+					},
+					template: '#app-task-base',
+				};
+
+				const appTaskVote = {
+					name: 'app-task-vote',
+					components: {
+						'app-task-base': appTaskBase,
 					},
 					template: '#app-task-vote',
+				};
+
+				const appTaskProc = {
+					name: 'app-task-proc',
+					components: {
+						'app-task-base': appTaskBase,
+					},
+					template: '#app-task-proc',
 				};
 
 				const appClipPlayer = {
@@ -1133,10 +1269,12 @@
 					},
 					computed: {
 						station() {
-							if (this.clip.station) return this.clip.station;
-
-							if (this.$root.stats && this.$root.stats.stations_dict)
-								return this.$root.stats.stations_dict[this.clip.station_id];
+							if (this.$root.stats && this.$root.stats.clips_dict) {
+								const clip_id = this.clip.id;
+								const { station_id } = this.$root.stats.clips_dict[clip_id];
+								const station = this.$root.stats.stations_dict[station_id];
+								return station;
+							}
 
 							return {};
 						},
@@ -1467,13 +1605,13 @@
 						{ path: '/task', name: 'task', component: appTask },
 						{
 							path: '/task/vote/election/:election_number/region/:region_number/station/:station_number',
-							name: 'task-vote',
-							component: appTaskBase
+							name: 'vote',
+							component: appTaskVote,
 						},
 						{
 							path: '/task/proc/election/:election_number/region/:region_number/station/:station_number',
-							name: 'task-proc',
-							component: appTaskBase
+							name: 'proc',
+							component: appTaskProc,
 						},
 						{ path: '/stations', name: 'stations', component: appStations },
 						{ path: '/stations/:id', name: 'station', component: appStation },
@@ -1513,11 +1651,10 @@
 						errorMessage: '',
 					},
 					methods: {
-						erroHandler(err) {
+						errorHandler(err) {
 							this.showError = true;
 							this.errorMessage = err.message;
 						},
-
 						fetchStats() {
 							return fetch('/stats')
 								.then(res => {
@@ -1552,7 +1689,6 @@
 
 									  stats.formatStationIdFull = station_id => stats.stations_dict[station_id].station_id;
 
-
 									this.stats = { ...this.stats, ...stats };
 								});
 						},
@@ -1567,35 +1703,16 @@
 							window.location.reload();
 						},
 						async register(email) {
-							const res = await fetch('/user', {
+							const response = await fetch('/user', {
 								method: 'post',
 								headers: { 'Content-type': 'text/plain' },
 								body: email,
 							});
 
-							if (!res.ok)
-								throw makeError(res); //this.$emit('error', err)
+							if (!response.ok) throw makeError(response);
 
 							return true;
 						},
-						sendEvents(self, events) {
-							return fetch(`/events/${self.clip.id}?csrf=${self.clip.csrf}`, {
-								method: 'post',
-								headers: {'Content-type': 'application/json'},
-								body: JSON.stringify(events),
-							})
-							.then(res => {
-								self.submitted = true;
-								if (!res.ok) throw makeError(res);
-								self.failed = false;
-								return res;
-							})
-							.catch(() => {
-								self.failed = true;
-								self.$root.showError = true;
-							});
-						},
-
 						sendAccess(self, user_id, station_id) {
 							return fetch(`/user/${user_id}/access/station/${station_id}`, {
 								method: 'POST',
@@ -1612,23 +1729,6 @@
 								self.$root.showError = true;
 							});
 						},
-						nextTask(self, task, { election_number, region_number, station_number }) {
-							if (!self.user) return Promise.resolve();
-
-							return fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`)
-								.then(res => {
-									if (!res.ok) throw makeError(res);
-									return res.json();
-								})
-								.then(task => {
-									self.clip = task;
-									self.events = [];
-									self.submitted = false;
-									self.completed = false;
-									self.failed = false;
-								})
-								.catch(err => self.$emit('error', err));
-						}
 					},
 					components: {
 						'app-navigation-menu': {
@@ -1659,7 +1759,7 @@
 								},
 								[
 									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-vote', 'app-task-proc'] } }, [
-										c('router-view', { on: { error: this.erroHandler } }),
+										c('router-view', { on: { error: this.errorHandler } }),
 									]),
 								]
 							),
