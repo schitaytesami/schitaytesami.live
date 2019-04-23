@@ -1204,10 +1204,11 @@
 						},
 						keyDown(e) {
 							if (this.$route.name == 'task-vote' && this.$refs.note !== document.activeElement) {
-								if (e.keyCode == 32) {
+								const keycode_space = 32, keycode_escape = 27;
+								if (e.keyCode == keycode_space) {
 									e.preventDefault();
 									this.addEvent(this.$refs.player.currentTime, 'vote');
-								} else if (e.keyCode == 27) {
+								} else if (e.keyCode == keycode_escape) {
 									e.preventDefault();
 									this.$refs.player.pause();
 								}
