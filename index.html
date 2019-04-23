@@ -972,7 +972,7 @@
 			class="btn btn-sm" :class="{ 'btn-success': granted, 'btn-light': !granted }"
 			:disabled="granted !== -1"
 			@click="submit"
-		>{{ get_text() }}</button>
+		>{{ formatAccessButtonText(granted) }}</button>
 	</script>
 
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
@@ -1059,8 +1059,6 @@
 						`, Сегментов: ${clip}.` :
 						` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
 
-				const formatTimezoneOffset = timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', '');
-
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
 				const appIndex = {
@@ -1144,7 +1142,6 @@
 						},
 					},
 					methods: {
-						formatTimezoneOffset : formatTimezoneOffset,
 						formatInstructionToggleText : showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
 						formatTaskSubmitResultsButtonText(submitted, failed) {
 							let message = 'Разметка этого видео закончена. Спасибо!';
@@ -1281,7 +1278,7 @@
 						},
 					},
 					methods : {
-						formatTimezoneOffset : formatTimezoneOffset,
+						formatTimezoneOffset(timezone_offset) { return (timezone_offset / 60.0).toFixed(1).replace('.0', ''); },
 						formatClipInterval : formatClipInterval,
 						formatRegionName : formatRegionName,
 						pause() {
@@ -1525,26 +1522,15 @@
 				  	},
 				  },
 				  methods: {
+					  	formatAccessButtonText : granted => ({1: 'Доступ разрешен', 0: 'Доступ запрошен', -1: 'Запросить доступ'})[granted] || 'Загрузка...',
+					  
 						submit() {
 							this.$root.sendAccess(this, this.user_id, this.station_id)
 								.then(() => {
 									this.granted = 0;
 								});
 						},
-						// It could be an external function which holds more cases.
-						// But currently, it uses only here.
-						get_text() {
-							switch (this.granted) {
-								case 1:
-									return 'Доступ разрешен';
-								case 0:
-									return 'Доступ запрошен';
-								case -1:
-									return 'Запросить доступ';
-								default:
-									return 'Загрузка...';
-							}
-						},
+						
 						set_state() {
 							if (this.station_access == null) {
 				  			this.granted = -2;
