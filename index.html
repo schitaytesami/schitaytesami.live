@@ -1041,7 +1041,7 @@
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
 
-				const formatClipInterval = (clip, station, full) => (full == true ? formatElectionDate(station.election_number) + ', ' : '') + `${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)} - ${formatTime(clip.clip_interval_end, station.timezone_offset)}`;
+				const formatClipInterval = (clip, station, full) => (full == true ? formatElectionDate(station.election_number) + ', ' : '') + `${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)} - ${formatHoursMinutes(clip.clip_interval_end, station.timezone_offset)}`;
 				
 				const formatRegionName = station_address => station_address.split(',')[0];
 
