@@ -1158,19 +1158,12 @@
 							return `${minutes}:${seconds}`;
 						},
 						async submitResults() {
-							let events = [];
-
-							if (this.$route.name === 'vote')
-								events = this.events;
-
-							if (this.$route.name === 'proc')
-								for (let question_id in this.questions)
-									this.events.push({
-										offset: 0,
-										clip: this.clip.id,
-										type : question_id,
-										value : JSON.stringify(this.questions[question_id])
-									});
+							const events = this.$route.name == 'vote' ? this.events : this.$route.name == 'proc' ? this.questions.map((q, i) => {
+								offset: 0,
+								clip: this.clip.id,
+								type : `question{i}`,
+								value : JSON.stringify(q)
+							}) : [];
 
 							if (!this.submitted && (this.failed || this.completed))
 								try {
