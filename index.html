@@ -1262,8 +1262,7 @@
 					computed: {
 						station() {
 							if (this.$root.stats && this.$root.stats.clips_dict) {
-								const clip_id = this.clip.id;
-								const { station_id } = this.$root.stats.clips_dict[clip_id];
+								const { station_id } = this.$root.stats.clips_dict[this.clip.id];
 								const station = this.$root.stats.stations_dict[station_id];
 								return station;
 							}
