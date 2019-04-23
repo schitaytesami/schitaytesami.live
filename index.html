@@ -1274,7 +1274,7 @@
 						},
 					},
 					methods : {
-						formatTimezoneOffset(timezone_offset) { return (timezone_offset / 60.0).toFixed(1).replace('.0', ''); },
+						formatTimezoneOffset : timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', ''),
 						formatClipInterval : formatClipInterval,
 						formatRegionName : formatRegionName,
 						pause() {
