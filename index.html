@@ -1060,7 +1060,7 @@
 					computed: {
 						guard() { return this.$root.stats.stations && !this.$root.showError; },
 						thumbnails() {
-							return Array(Math.min(this.$root.stats.clips.length, 5)).fill().map((_, i) =>
+							return Array(Math.min(this.$root.stats.clips.length, 5)).fill().map(_ =>
 							{
 								const id = Math.floor(Math.random() * this.$root.stats.clips.length);
 								const clip = this.$root.stats.clips_dict[id];
