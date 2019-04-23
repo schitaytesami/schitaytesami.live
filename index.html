@@ -1062,8 +1062,8 @@
 						thumbnails() {
 							return Array(Math.min(this.$root.stats.clips.length, 5)).fill().map((_, i) =>
 							{
-								const idx = Math.floor(Math.random() * this.$root.stats.clips.length);
-								const clip = this.$root.stats.clips_dict[idx];
+								const id = Math.floor(Math.random() * this.$root.stats.clips.length);
+								const clip = this.$root.stats.clips_dict[id];
 								const station = this.$root.stats.stations_dict[clip.station_id];
 								return { clip, station };
 							});
