@@ -1046,7 +1046,7 @@
 				const formatRegionName = station_address => station_address.split(',')[0];
 
 				const formatThumbnailTitle = (station, clip) =>
-					`${formatRegionName(station.station_address)}, УИК ${station.station_number}`+
+					`${formatRegionName(station.station_address)}, ${formatElectionDate(station.election_number)}, УИК ${station.station_number}`+
 					(typeof(clip) === 'number' ?
 						`, Сегментов: ${clip}.` :
 						` ${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)}-${formatHoursMinutes(clip.clip_interval_end, station.timezone_offset)}`);
