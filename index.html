@@ -1516,7 +1516,7 @@
 				  	},
 				  },
 				  methods: {
-					  	formatAccessButtonText : granted => ({1: 'Доступ разрешен', 0: 'Доступ запрошен', -1: 'Запросить доступ'})[granted] || 'Загрузка...',
+					  	formatAccessButtonText : granted => new Map([[1, 'Доступ разрешен'], [0, 'Доступ запрошен'], [-1, 'Запросить доступ']]).get(granted) || 'Загрузка...',
 					  
 						submit() {
 							this.$root.sendAccess(this, this.user_id, this.station_id)
