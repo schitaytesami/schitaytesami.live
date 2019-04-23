@@ -1022,30 +1022,26 @@
 			}
 
 			const initVue = () => {
-				const formatTime = (timestamp, timezoneOffset) => {
-					if (!timestamp) return '';
-
+				const formatHoursMinutes = (timestamp, timezoneOffset) => {
+					if (!timestamp)
+						return '';
 					const time = new Date(1000 * (timestamp + timezoneOffset * 60));
-					const hours = time.getUTCHours();
-					let minutes = time.getUTCMinutes();
-					if (minutes < 10) minutes = `0${minutes}`;
-					return `${hours}:${minutes}`;
+					const hours = time.getUTCHours(), minutes = time.getUTCMinutes();
+					return `${hours}:${minutes < 10 ? "0" : "" }${minutes}`;
 				};
 
-				const formatPercent = fraction => `${(fraction * 100).toFixed(0)}%`;
-
+				const formatHours = seconds => seconds ? (seconds / 3600).toFixed(0) : 0;
+				
 				const formatMinutes = seconds => (seconds / 60).toFixed(0);
 
-				const formatHours = seconds => seconds ? (seconds / 3600).toFixed(0) : 0;
-
+				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
+				
 				const formatElectionDate = election_number => {
 					const date = String(election_number);
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
 
-				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
-
-				const formatClipInterval = (clip, station, full) => (full == true ? formatElectionDate(station.election_number) + ', ' : '') + `${formatTime(clip.clip_interval_start, station.timezone_offset)} - ${formatTime(clip.clip_interval_end, station.timezone_offset)}`;
+				const formatClipInterval = (clip, station, full) => (full == true ? formatElectionDate(station.election_number) + ', ' : '') + `${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)} - ${formatTime(clip.clip_interval_end, station.timezone_offset)}`;
 				
 				const formatRegionName = station_address => station_address.split(',')[0];
 
@@ -1053,7 +1049,9 @@
 					`${formatRegionName(station.station_address)}, УИК ${station.station_number}`+
 					(typeof(clip) === 'number' ?
 						`, Сегментов: ${clip}.` :
-						` ${formatTime(clip.clip_interval_start, station.timezone_offset)}-${formatTime(clip.clip_interval_end, station.timezone_offset)}`);
+						` ${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)}-${formatHoursMinutes(clip.clip_interval_end, station.timezone_offset)}`);
+
+				const formatPercent = fraction => `${(fraction * 100).toFixed(0)}%`;
 
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
