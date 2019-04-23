@@ -191,12 +191,12 @@
 					<p>Следите за нашими новостями в <a href="https://twitter.com/schitaytesami">Твиттере</a> или <router-link :to="{ name: 'about' }">свяжитесь с нами</router-link>.</p>
 				</blockquote>
 				<ul class="bg-light">
-					<li>Зарегистрировано: <span v-if="showStats"><span>{{ $root.stats.users.length }}</span> пользователей</span><span v-else>загрузка...</span></li>
-					<li>Всего видео в системе: <span v-if="showStats"><span>{{ $root.stats.stations.length }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds) }}</span> часов)</span><span v-else>загрузка...</span></li>
-					<li>Полностью размечено: <span v-if="showStats"><span>{{ $root.stats.num_stations_labeled }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds_labeled) }}</span> часов)</span><span v-else>загрузка...</span></li>
+					<li>Зарегистрировано: <span v-if="guard"><span>{{ $root.stats.users.length }}</span> пользователей</span><span v-else>загрузка...</span></li>
+					<li>Всего видео в системе: <span v-if="guard"><span>{{ $root.stats.stations.length }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds) }}</span> часов)</span><span v-else>загрузка...</span></li>
+					<li>Полностью размечено: <span v-if="guard"><span>{{ $root.stats.num_stations_labeled }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds_labeled) }}</span> часов)</span><span v-else>загрузка...</span></li>
 				</ul>
 				<router-link :to="{ name: 'task' }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
-				<div v-if="showStats">
+				<div v-if="guard">
 					<img class="thumbnail" width="120" height="80" :src="clip_station.clip.thumbnail" :title="formatThumbnailTitle(clip_station.station, clip_station.clip)" :key="i" v-for="(clip_station, i) in thumbnails" />
 				</div>
 			</div>
@@ -1058,7 +1058,7 @@
 				const appIndex = {
 					methods : {formatHours : formatHours, formatThumbnailTitle : formatThumbnailTitle},
 					computed: {
-						showStats() { return this.$root.stats.stations && !this.$root.showError; },
+						guard() { return this.$root.stats.stations && !this.$root.showError; },
 						thumbnails() {
 							return Array(Math.min(this.$root.stats.clips.length, 5)).fill().map((_, i) =>
 							{
