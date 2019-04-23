@@ -536,7 +536,7 @@
 									<tbody>
 										<tr v-for="(clip, i) in segment" :key="i">
 											<td>
-												<button class="btn btn-link btn-sm w-100 p-0 text-left" type="button" @click="current_clip = clip">{{ formatClipInterval(clip, station)[0] }}</button>
+												<button class="btn btn-link btn-sm w-100 p-0 text-left" type="button" @click="current_clip = clip">{{ formatClipInterval(clip, station) }}</button>
 											</td>
 											<td :class="{ 'text-muted': !clip.turnout.estimate && clip.turnout.average }"
 												>{{ clip.turnout.estimate || (clip.turnout.average && (clip.turnout.average + '*')) || '' }}</td>
@@ -582,7 +582,7 @@
 													type="button"
 													class="btn btn-link btn-sm w-100 p-0"
 													@click="current_clip = t.clips[camera_id][i]"
-													>{{ formatClipInterval(t.clips[camera_id][i], station)[0] }}</button>
+													>{{ formatClipInterval(t.clips[camera_id][i], station) }}</button>
 												</button>
 											</td>
 										</tr>
@@ -601,7 +601,7 @@
 		<div>
 			<h3 :title="station.station_address">
 				<router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(station.id) } }">УИК {{ station.station_number }}</router-link>
-				<span class="float-right">{{ formatClipInterval(clip, station)[1] }}</span>
+				<span class="float-right">{{ formatClipInterval(clip, station, true) }}</span>
 			</h3>
 			<h6><span
 				>{{ verbose ? station.station_address : formatRegionName(station.station_address) }}</span><span
@@ -1045,12 +1045,8 @@
 
 				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
 
-				const formatClipInterval = (clip, station) => {
-					const interval = `${formatTime(clip.clip_interval_start, station.timezone_offset)} - ${formatTime(clip.clip_interval_end, station.timezone_offset)}`;
-					const interval_full = formatElectionDate(station.election_number) + ', ' + interval;
-					return [interval, interval_full];
-				};
-
+				const formatClipInterval = (clip, station, full) => (full == true ? formatElectionDate(station.election_number) + ', ' : '') + `${formatTime(clip.clip_interval_start, station.timezone_offset)} - ${formatTime(clip.clip_interval_end, station.timezone_offset)}`;
+				
 				const formatRegionName = station_address => station_address.split(',')[0];
 
 				const formatThumbnailTitle = (station, clip) =>
