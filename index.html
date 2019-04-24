@@ -299,30 +299,28 @@
 
 					</app-clip-player>
 
-					<table class="table table-striped mt-2" style="table-layout:fixed" v-if="clip">
+					<table class="table table-sm table-striped mt-2" v-if="clip">
 						<thead>
 							<tr>
-								<th class="text-left p-0 border-bottom-0" style="width:20%">
-									<h3>ОТМЕТКИ</h3>
-									<h6>&nbsp;</h6>
+								<th class="text-left border-bottom-0">
+									<h3 class="m-0">ОТМЕТКИ</h3>
 								</th>
-								<th class="p-0 border-bottom-0"><h2>&nbsp;</h2><h6>&nbsp;</h6></th>
-								<th class="text-right p-0 border-bottom-0" style="width:15%">
-									<h2><span id="num_events">{{ events.length }}</span></h2>
-									<h6>&nbsp;</h6>
+								<th class="p-0 border-bottom-0 w-75">
+									<button type="button" class="btn w-100" @click="showEvents = !showEvents">&#9660;</button>
+								</th>
+								<th class="text-right border-bottom-0">
+									<h2 class="m-0">{{ events.length }}</h2>
 								</th>
 							</tr>
 						</thead>
-						<tbody>
-							<template v-for="event in events" v-if="false">
-								<tr>
-									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
-									<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
-									<td class="text-right pr-0">
-										<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
-									</td>
-								</tr>
-							</template>
+						<tbody v-if="showEvents">
+							<tr v-for="event in events">
+								<td class="text-left">{{ formatEventTime(event.offset) }}</td>
+								<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
+								<td class="text-right pr-0">
+									<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
+								</td>
+							</tr>
 						</tbody>
 					</table>
 				</div>
@@ -987,38 +985,80 @@
 				return new Error(`${status}${message}`);
 			};
 
-			async function sendEvents(events) {
-				const response = await fetch(`/events/${this.clip.id}?csrf=${this.clip.csrf}`, {
-					method: 'post',
-					headers: {'Content-type': 'application/json'},
-					body: JSON.stringify(events),
-				});
-
-				if (!response.ok) throw makeError(response);
-				this.submitted = true;
-				this.failed = false;
-
-				return response;
-			}
-
-			async function nextTask(task, { election_number, region_number, station_number }) {
-				const response = await
-					fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`);
-
+			async function fetchStats() {
+				const response = await fetch('/stats');
 				if (!response.ok) throw makeError(response);
 
-				let clip;
+				let data;
 				try {
-					clip = await response.json();
+					data = await response.json();
 				} catch (err) {
 					throw new Error(err);
 				}
 
-				this.clip = clip;
-				this.events = [];
-				this.submitted = false;
-				this.completed = false;
-				this.failed = false;
+				const stats = {
+						...data,
+						clips_dict: {},
+						stations_dict: {},
+						stations_dict_station_id: {},
+					};
+
+				data.clips.forEach(clip => {
+					stats.clips_dict[clip.id] = clip;
+				});
+				data.stations.forEach(station => {
+					stats.stations_dict[station.id] = station;
+					stats.stations_dict_station_id[station.station_id] = station;
+				});
+
+				stats.bookmarks_dict = stats.bookmarks.reduce((acc, event) => ({
+					[event.id]: {...stats.stations_dict[event.station_id], ...event},
+					...acc,
+				}), {});
+
+				stats.notes_dict = stats.notes.reduce((acc, event) => ({
+					[event.id]: {...stats.stations_dict[event.station_id], ...event},
+					...acc,
+				}), {});
+
+			  stats.formatStationIdFull = station_id => stats.stations_dict[station_id].station_id;
+
+			  return stats;
+			}
+
+			const statsPromise = fetchStats();
+
+			async function sendEvents(events, { id, csrf }) {
+				const response = await fetch(`/events/${id}?csrf=${csrf}`, {
+					method: 'post',
+					headers: {'Content-type': 'application/json'},
+					body: JSON.stringify(events),
+				});
+				if (!response.ok) throw makeError(response);
+
+				return response;
+			}
+
+			async function nextTask({ task, election_number, region_number, station_number }) {
+				const response = await
+					fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`);
+				if (!response.ok) throw makeError(response);
+
+				try {
+					return await response.json();
+				} catch (err) {
+					throw new Error(err);
+				}
+			}
+
+			async function sendAccess({ user_id, station_id }) {
+				const response = await fetch(`/user/${user_id}/access/station/${station_id}`, {
+					method: 'POST',
+					headers: {'Content-type': 'application/json'},
+				});
+				if (!response.ok) throw makeError(response);
+
+				return response;
 			}
 
 			const initVue = () => {
@@ -1031,18 +1071,18 @@
 				};
 
 				const formatHours = seconds => seconds ? (seconds / 3600).toFixed(0) : 0;
-				
+
 				const formatMinutes = seconds => (seconds / 60).toFixed(0);
 
 				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
-				
+
 				const formatElectionDate = election_number => {
 					const date = String(election_number);
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
 
 				const formatClipInterval = (clip, station, full) => (full == true ? formatElectionDate(station.election_number) + ', ' : '') + `${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)} - ${formatHoursMinutes(clip.clip_interval_end, station.timezone_offset)}`;
-				
+
 				const formatRegionName = station_address => station_address.split(',')[0];
 
 				const formatThumbnailTitle = (station, clip) =>
@@ -1121,6 +1161,7 @@
 								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Замеченные нарушения, не отраженные выше' },
 							],
 							showInstruction: false,
+							showEvents: true,
 							clip: null,
 							events: [],
 							note: '',
@@ -1158,26 +1199,48 @@
 							return `${minutes}:${seconds}`;
 						},
 						async submitResults() {
-							const events = this.$route.name == 'vote' ? this.events : this.$route.name == 'proc' ? this.questions.map((q, i) => {
-								offset: 0,
-								clip: this.clip.id,
-								type : `question{i}`,
-								value : JSON.stringify(q)
-							}) : [];
+							const events = this.$route.name == 'vote' ?
+								this.events :
+								this.$route.name == 'proc' ?
+									this.questions.map((q, i) => ({
+										offset: 0,
+										clip: this.clip.id,
+										type : `question${i}`,
+										value : JSON.stringify(q),
+									})) : [];
 
 							if (!this.submitted && (this.failed || this.completed))
-								try {
-									await sendEvents.call(this, events);
-								} catch (err) {
-									this.failed = true;
-									this.$root.errorHandler(err);
-								}
+								await this.sendEvents(events);
 							else
-								try {
-									await nextTask.apply(this, [this.$route.name, this.$route.params]);
-								} catch (err) {
-									this.$root.errorHandler(err);
-								}
+								await this.nextTask();
+						},
+						async sendEvents(events) {
+							try {
+								await sendEvents(events, {
+									id: this.clip.id,
+									csrf: this.clip.csrf,
+								});
+								this.submitted = true;
+								this.failed = false;
+							} catch (err) {
+								this.failed = true;
+								this.$root.errorHandler(err);
+							}
+						},
+						async nextTask() {
+							try {
+								const clip = await nextTask({
+									task: this.$route.name,
+									...this.$route.params,
+								});
+								this.clip = clip;
+								this.events = [];
+								this.submitted = false;
+								this.completed = false;
+								this.failed = false;
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
 						},
 						addEvent(offset, type, value = '') {
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
@@ -1188,7 +1251,9 @@
 						},
 						keyDown(e) {
 							if (this.$route.name == 'task-vote' && this.$refs.note !== document.activeElement) {
-								const keycode_space = 32, keycode_escape = 27;
+								const keycode_space = 32;
+								const keycode_escape = 27;
+
 								if (e.keyCode == keycode_space) {
 									e.preventDefault();
 									this.addEvent(this.$refs.player.currentTime, 'vote');
@@ -1203,8 +1268,7 @@
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
 
-						nextTask.apply(this, [this.$route.name, this.$route.params])
-							.catch(err => this.$root.errorHandler(err));
+						this.nextTask();
 					},
 					template: '#app-task-base',
 				};
@@ -1362,12 +1426,10 @@
 					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp},
 					computed: {
 						user() {
-							return this.$root.stats.users ? this.$root.stats.users.find(u => u.display === this.$route.params.display) : {};
+							return this.$root.stats.users.find(u => u.display === this.$route.params.display);
 						},
 						thumbnails() {
-							if (!this.$root.stats.clips) return;
-
-							const clipsByStation = (this.user.clips ? this.user.clips.split(',').map(Number) : []).reduce((acc, clip_id) => {
+							const clipsByStation = this.user.clips.split(',').map(Number).reduce((acc, clip_id) => {
 								const clip = this.$root.stats.clips_dict[clip_id];
 								const station = this.$root.stats.stations_dict[clip.station_id];
 								acc[clip.station_id] = acc[clip.station_id] || [];
@@ -1383,18 +1445,18 @@
 							);
 						},
 						bookmarks() {
-							return (!this.user.bookmarks) ? [] : this.user.bookmarks
-						  	.split(',')
-							.map(id => this.$root.stats.bookmarks_dict[id])
-							.sort(sorterNewFirst);
+							return this.user.bookmarks
+								.split(',')
+								.map(id => this.$root.stats.bookmarks_dict[id])
+								.sort(sorterNewFirst);
 						},
 						notes() {
-							return (!this.user.notes) ? [] : this.user.notes
-						  	.split(',')
-							.map(id => this.$root.stats.notes_dict[id]);
+							return this.user.notes
+								.split(',')
+								.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
-							return (this.$root.stats.station_access || [])
+							return this.$root.stats.station_access
 								.filter(x => x.user_id === this.user.id)
 								.sort(sorterNewFirst)
 								.map(station_access => ({
@@ -1402,6 +1464,10 @@
 									...this.$root.stats.stations_dict[station_access.station_id]
 							}));
 						},
+					},
+					async beforeRouteEnter(to, from, next) {
+						await statsPromise;
+						next();
 					},
 					template: '#app-user'
 				};
@@ -1507,14 +1573,16 @@
 				  },
 				  methods: {
 					  	formatAccessButtonText : granted => new Map([[1, 'Доступ разрешен'], [0, 'Доступ запрошен'], [-1, 'Запросить доступ']]).get(granted) || 'Загрузка...',
-					  
-						submit() {
-							this.$root.sendAccess(this, this.user_id, this.station_id)
-								.then(() => {
-									this.granted = 0;
-								});
+
+						async submit() {
+							try {
+								const { user_id, station_id } = this;
+								await sendAccess({ user_id, station_id });
+								this.granted = 0;
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
 						},
-						
 						set_state() {
 							if (this.station_access == null) {
 				  			this.granted = -2;
@@ -1626,43 +1694,6 @@
 							this.showError = true;
 							this.errorMessage = err.message;
 						},
-						fetchStats() {
-							return fetch('/stats')
-								.then(res => {
-									if (!res.ok) throw makeError(res);
-									return res.json();
-								})
-								.then(data => {
-									const stats = {
-										...data,
-										clips_dict: {},
-										stations_dict: {},
-										stations_dict_station_id: {},
-									};
-
-									data.clips.forEach(clip => {
-										stats.clips_dict[clip.id] = clip;
-									});
-									data.stations.forEach(station => {
-										stats.stations_dict[station.id] = station;
-										stats.stations_dict_station_id[station.station_id] = station;
-									});
-
-									  stats.bookmarks_dict = stats.bookmarks.reduce((acc, event) => ({
-									      [event.id]: {...stats.stations_dict[event.station_id], ...event},
-									      ...acc
-									  }), {});
-
-									  stats.notes_dict = stats.notes.reduce((acc, event) => ({
-									      [event.id]: {...stats.stations_dict[event.station_id], ...event},
-									      ...acc,
-									  }), {});
-
-									  stats.formatStationIdFull = station_id => stats.stations_dict[station_id].station_id;
-
-									this.stats = { ...this.stats, ...stats };
-								});
-						},
 						login(token) {
 							const userToken = token != null ? token : (document.cookie.match(/user_token=([^;^$]+)/) || [, ''])[1];
 							this.user = userToken ? { ...JSON.parse(atob(userToken)), is_admin : function() { return this.role.includes('admin'); } } : null;
@@ -1684,22 +1715,6 @@
 
 							return true;
 						},
-						sendAccess(self, user_id, station_id) {
-							return fetch(`/user/${user_id}/access/station/${station_id}`, {
-								method: 'POST',
-								headers: {'Content-type': 'application/json'},
-							})
-							.then(res => {
-								//self.submitted = true;
-								if (!res.ok) throw makeError(res);
-								//self.failed = false;
-								return res;
-							})
-							.catch(() => {
-								//self.failed = true;
-								self.$root.showError = true;
-							});
-						},
 					},
 					components: {
 						'app-navigation-menu': {
@@ -1712,9 +1727,16 @@
 						}
 					},
 					beforeMount() {
-						if(!this.user)
-							this.login();
-						this.fetchStats().catch(this.erroHandler);
+						if(!this.user) this.login();
+
+						statsPromise
+							.then(stats => {
+								this.stats = {
+									...this.stats,
+									...stats,
+								};
+							})
+							.catch(this.errorHandler);
 					},
 					render(c) {
 						return c('div', [
