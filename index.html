@@ -985,38 +985,27 @@
 				return new Error(`${status}${message}`);
 			};
 
-			async function sendEvents(events) {
-				const response = await fetch(`/events/${this.clip.id}?csrf=${this.clip.csrf}`, {
+			async function sendEvents(events, { id, csrf }) {
+				const response = await fetch(`/events/${id}?csrf=${csrf}`, {
 					method: 'post',
 					headers: {'Content-type': 'application/json'},
 					body: JSON.stringify(events),
 				});
-
 				if (!response.ok) throw makeError(response);
-				this.submitted = true;
-				this.failed = false;
 
 				return response;
 			}
 
-			async function nextTask(task, { election_number, region_number, station_number }) {
+			async function nextTask({ task, election_number, region_number, station_number }) {
 				const response = await
 					fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`);
-
 				if (!response.ok) throw makeError(response);
 
-				let clip;
 				try {
-					clip = await response.json();
+					return await response.json();
 				} catch (err) {
 					throw new Error(err);
 				}
-
-				this.clip = clip;
-				this.events = [];
-				this.submitted = false;
-				this.completed = false;
-				this.failed = false;
 			}
 
 			const initVue = () => {
@@ -1168,18 +1157,37 @@
 									})) : [];
 
 							if (!this.submitted && (this.failed || this.completed))
-								try {
-									await sendEvents.call(this, events);
-								} catch (err) {
-									this.failed = true;
-									this.$root.errorHandler(err);
-								}
+								await this.sendEvents(events);
 							else
-								try {
-									await nextTask.apply(this, [this.$route.name, this.$route.params]);
-								} catch (err) {
-									this.$root.errorHandler(err);
-								}
+								await this.nextTask();
+						},
+						async sendEvents(events) {
+							try {
+								await sendEvents(events, {
+									id: this.clip.id,
+									csrf: this.clip.csrf,
+								});
+								this.submitted = true;
+								this.failed = false;
+							} catch (err) {
+								this.failed = true;
+								this.$root.errorHandler(err);
+							}
+						},
+						async nextTask() {
+							try {
+								const clip = await nextTask({
+									task: this.$route.name,
+									...this.$route.params,
+								});
+								this.clip = clip;
+								this.events = [];
+								this.submitted = false;
+								this.completed = false;
+								this.failed = false;
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
 						},
 						addEvent(offset, type, value = '') {
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
@@ -1207,8 +1215,7 @@
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
 
-						nextTask.apply(this, [this.$route.name, this.$route.params])
-							.catch(err => this.$root.errorHandler(err));
+						this.nextTask();
 					},
 					template: '#app-task-base',
 				};
