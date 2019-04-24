@@ -1008,6 +1008,16 @@
 				}
 			}
 
+			async function sendAccess({ user_id, station_id }) {
+				const response = await fetch(`/user/${user_id}/access/station/${station_id}`, {
+					method: 'POST',
+					headers: {'Content-type': 'application/json'},
+				});
+				if (!response.ok) throw makeError(response);
+
+				return response;
+			}
+
 			const initVue = () => {
 				const formatHoursMinutes = (timestamp, timezoneOffset) => {
 					if (!timestamp)
@@ -1519,13 +1529,15 @@
 				  methods: {
 					  	formatAccessButtonText : granted => new Map([[1, 'Доступ разрешен'], [0, 'Доступ запрошен'], [-1, 'Запросить доступ']]).get(granted) || 'Загрузка...',
 
-						submit() {
-							this.$root.sendAccess(this, this.user_id, this.station_id)
-								.then(() => {
-									this.granted = 0;
-								});
+						async submit() {
+							try {
+								const { user_id, station_id } = this;
+								await sendAccess({ user_id, station_id });
+								this.granted = 0;
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
 						},
-
 						set_state() {
 							if (this.station_access == null) {
 				  			this.granted = -2;
@@ -1695,22 +1707,6 @@
 
 							return true;
 						},
-						sendAccess(self, user_id, station_id) {
-							return fetch(`/user/${user_id}/access/station/${station_id}`, {
-								method: 'POST',
-								headers: {'Content-type': 'application/json'},
-							})
-							.then(res => {
-								//self.submitted = true;
-								if (!res.ok) throw makeError(res);
-								//self.failed = false;
-								return res;
-							})
-							.catch(() => {
-								//self.failed = true;
-								self.$root.showError = true;
-							});
-						},
 					},
 					components: {
 						'app-navigation-menu': {
@@ -1725,7 +1721,7 @@
 					beforeMount() {
 						if(!this.user)
 							this.login();
-						this.fetchStats().catch(this.erroHandler);
+						this.fetchStats().catch(this.errorHandler);
 					},
 					render(c) {
 						return c('div', [
