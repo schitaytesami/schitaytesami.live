@@ -985,6 +985,49 @@
 				return new Error(`${status}${message}`);
 			};
 
+			async function fetchStats() {
+				const response = await fetch('/stats');
+				if (!response.ok) throw makeError(response);
+
+				let data;
+				try {
+					data = await response.json();
+				} catch (err) {
+					throw new Error(err);
+				}
+
+				const stats = {
+						...data,
+						clips_dict: {},
+						stations_dict: {},
+						stations_dict_station_id: {},
+					};
+
+				data.clips.forEach(clip => {
+					stats.clips_dict[clip.id] = clip;
+				});
+				data.stations.forEach(station => {
+					stats.stations_dict[station.id] = station;
+					stats.stations_dict_station_id[station.station_id] = station;
+				});
+
+				stats.bookmarks_dict = stats.bookmarks.reduce((acc, event) => ({
+					[event.id]: {...stats.stations_dict[event.station_id], ...event},
+					...acc,
+				}), {});
+
+				stats.notes_dict = stats.notes.reduce((acc, event) => ({
+					[event.id]: {...stats.stations_dict[event.station_id], ...event},
+					...acc,
+				}), {});
+
+			  stats.formatStationIdFull = station_id => stats.stations_dict[station_id].station_id;
+
+			  return stats;
+			}
+
+			const statsPromise = fetchStats();
+
 			async function sendEvents(events, { id, csrf }) {
 				const response = await fetch(`/events/${id}?csrf=${csrf}`, {
 					method: 'post',
@@ -1383,12 +1426,10 @@
 					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp},
 					computed: {
 						user() {
-							return this.$root.stats.users ? this.$root.stats.users.find(u => u.display === this.$route.params.display) : {};
+							return this.$root.stats.users.find(u => u.display === this.$route.params.display);
 						},
 						thumbnails() {
-							if (!this.$root.stats.clips) return;
-
-							const clipsByStation = (this.user.clips ? this.user.clips.split(',').map(Number) : []).reduce((acc, clip_id) => {
+							const clipsByStation = this.user.clips.split(',').map(Number).reduce((acc, clip_id) => {
 								const clip = this.$root.stats.clips_dict[clip_id];
 								const station = this.$root.stats.stations_dict[clip.station_id];
 								acc[clip.station_id] = acc[clip.station_id] || [];
@@ -1404,18 +1445,18 @@
 							);
 						},
 						bookmarks() {
-							return (!this.user.bookmarks) ? [] : this.user.bookmarks
-						  	.split(',')
-							.map(id => this.$root.stats.bookmarks_dict[id])
-							.sort(sorterNewFirst);
+							return this.user.bookmarks
+								.split(',')
+								.map(id => this.$root.stats.bookmarks_dict[id])
+								.sort(sorterNewFirst);
 						},
 						notes() {
-							return (!this.user.notes) ? [] : this.user.notes
-						  	.split(',')
-							.map(id => this.$root.stats.notes_dict[id]);
+							return this.user.notes
+								.split(',')
+								.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
-							return (this.$root.stats.station_access || [])
+							return this.$root.stats.station_access
 								.filter(x => x.user_id === this.user.id)
 								.sort(sorterNewFirst)
 								.map(station_access => ({
@@ -1423,6 +1464,10 @@
 									...this.$root.stats.stations_dict[station_access.station_id]
 							}));
 						},
+					},
+					async beforeRouteEnter(to, from, next) {
+						await statsPromise;
+						next();
 					},
 					template: '#app-user'
 				};
@@ -1649,43 +1694,6 @@
 							this.showError = true;
 							this.errorMessage = err.message;
 						},
-						fetchStats() {
-							return fetch('/stats')
-								.then(res => {
-									if (!res.ok) throw makeError(res);
-									return res.json();
-								})
-								.then(data => {
-									const stats = {
-										...data,
-										clips_dict: {},
-										stations_dict: {},
-										stations_dict_station_id: {},
-									};
-
-									data.clips.forEach(clip => {
-										stats.clips_dict[clip.id] = clip;
-									});
-									data.stations.forEach(station => {
-										stats.stations_dict[station.id] = station;
-										stats.stations_dict_station_id[station.station_id] = station;
-									});
-
-									  stats.bookmarks_dict = stats.bookmarks.reduce((acc, event) => ({
-									      [event.id]: {...stats.stations_dict[event.station_id], ...event},
-									      ...acc
-									  }), {});
-
-									  stats.notes_dict = stats.notes.reduce((acc, event) => ({
-									      [event.id]: {...stats.stations_dict[event.station_id], ...event},
-									      ...acc,
-									  }), {});
-
-									  stats.formatStationIdFull = station_id => stats.stations_dict[station_id].station_id;
-
-									this.stats = { ...this.stats, ...stats };
-								});
-						},
 						login(token) {
 							const userToken = token != null ? token : (document.cookie.match(/user_token=([^;^$]+)/) || [, ''])[1];
 							this.user = userToken ? { ...JSON.parse(atob(userToken)), is_admin : function() { return this.role.includes('admin'); } } : null;
@@ -1719,9 +1727,16 @@
 						}
 					},
 					beforeMount() {
-						if(!this.user)
-							this.login();
-						this.fetchStats().catch(this.errorHandler);
+						if(!this.user) this.login();
+
+						statsPromise
+							.then(stats => {
+								this.stats = {
+									...this.stats,
+									...stats,
+								};
+							})
+							.catch(this.errorHandler);
 					},
 					render(c) {
 						return c('div', [
