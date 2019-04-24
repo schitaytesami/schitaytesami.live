@@ -1031,18 +1031,18 @@
 				};
 
 				const formatHours = seconds => seconds ? (seconds / 3600).toFixed(0) : 0;
-				
+
 				const formatMinutes = seconds => (seconds / 60).toFixed(0);
 
 				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
-				
+
 				const formatElectionDate = election_number => {
 					const date = String(election_number);
 					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
 				};
 
 				const formatClipInterval = (clip, station, full) => (full == true ? formatElectionDate(station.election_number) + ', ' : '') + `${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)} - ${formatHoursMinutes(clip.clip_interval_end, station.timezone_offset)}`;
-				
+
 				const formatRegionName = station_address => station_address.split(',')[0];
 
 				const formatThumbnailTitle = (station, clip) =>
@@ -1158,12 +1158,15 @@
 							return `${minutes}:${seconds}`;
 						},
 						async submitResults() {
-							const events = this.$route.name == 'vote' ? this.events : this.$route.name == 'proc' ? this.questions.map((q, i) => {
-								offset: 0,
-								clip: this.clip.id,
-								type : `question{i}`,
-								value : JSON.stringify(q)
-							}) : [];
+							const events = this.$route.name == 'vote' ?
+								this.events :
+								this.$route.name == 'proc' ?
+									this.questions.map((q, i) => ({
+										offset: 0,
+										clip: this.clip.id,
+										type : `question${i}`,
+										value : JSON.stringify(q),
+									})) : [];
 
 							if (!this.submitted && (this.failed || this.completed))
 								try {
@@ -1188,7 +1191,9 @@
 						},
 						keyDown(e) {
 							if (this.$route.name == 'task-vote' && this.$refs.note !== document.activeElement) {
-								const keycode_space = 32, keycode_escape = 27;
+								const keycode_space = 32;
+								const keycode_escape = 27;
+
 								if (e.keyCode == keycode_space) {
 									e.preventDefault();
 									this.addEvent(this.$refs.player.currentTime, 'vote');
@@ -1507,14 +1512,14 @@
 				  },
 				  methods: {
 					  	formatAccessButtonText : granted => new Map([[1, 'Доступ разрешен'], [0, 'Доступ запрошен'], [-1, 'Запросить доступ']]).get(granted) || 'Загрузка...',
-					  
+
 						submit() {
 							this.$root.sendAccess(this, this.user_id, this.station_id)
 								.then(() => {
 									this.granted = 0;
 								});
 						},
-						
+
 						set_state() {
 							if (this.station_access == null) {
 				  			this.granted = -2;
