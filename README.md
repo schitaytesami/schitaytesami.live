@@ -52,7 +52,7 @@ python3 app.py adduser
 python3 app.py adduser --admin
 
 # import clips
-python3 app.py import --clips_path https://proverim.webcam/speedup/clips.json --gold 5
+python3 app.py import --clips_path https://github.com/schitaytesami/schitaytesami.live/releases/download/data/clips.json --gold 5
 
 # import official turnout
 python3 app.py import --stations_path https://github.com/schitaytesami/data/releases/download/20180318/stations.json --turnout
