@@ -1539,23 +1539,40 @@
 				};
 
 				const appBookmarkButton = {
-				  name: 'bookmark-button',
-				  props: {
-					clip: {
-					  type: Object,
-					  required: true,
+					name: 'bookmark-button',
+					props: {
+						clip: {
+							type: Object,
+							required: true,
+						},
 					},
-				  },
-				  data() {
-					return {
-					  submitted: false,
-					  failed: false,
-					}
-				  },
-				  methods: {
-					submit() {
-					  this.$root.sendEvents(this, [{ type: 'bookmark', offset: 0, value: window.location.href, clip: this.clip.id }]);
+					data() {
+						return {
+							submitted: false,
+							failed: false,
+						};
 					},
+					methods: {
+						async submit() {
+							const event = {
+								type: 'bookmark',
+								offset: 0,
+								value: window.location.href,
+								clip: this.clip.id,
+							};
+
+							try {
+								await sendEvents([event], {
+									id: this.clip.id,
+									csrf: this.clip.csrf,
+								});
+								this.submitted = true;
+								this.failed = false;
+							} catch (err) {
+								this.failed = true;
+								this.$root.errorHandler(err);
+							}
+						},
 				  },
 				  template: '#app-bookmark-button',
 				};
