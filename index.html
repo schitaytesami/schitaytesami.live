@@ -41,6 +41,10 @@
 			flex-grow: 1;
 		}
 
+		.text-decoration-underline {
+			text-decoration: underline;
+		}
+
 		.instr-screenshot {
 			max-width: 49%;
 		}
@@ -299,30 +303,27 @@
 
 					</app-clip-player>
 
-					<table class="table table-sm table-striped mt-2" v-if="clip">
-						<thead>
-							<tr>
-								<th class="text-left border-bottom-0">
-									<h3 class="m-0">ОТМЕТКИ</h3>
-								</th>
-								<th class="p-0 border-bottom-0 w-75">
-									<button type="button" class="btn w-100" @click="showEvents = !showEvents">&#9660;</button>
-								</th>
-								<th class="text-right border-bottom-0">
-									<h2 class="m-0">{{ events.length }}</h2>
-								</th>
-							</tr>
-						</thead>
-						<tbody v-if="showEvents">
-							<tr v-for="event in events">
-								<td class="text-left">{{ formatEventTime(event.offset) }}</td>
-								<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
-								<td class="text-right pr-0">
-									<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+					<div v-if="clip">
+						<button
+							class="btn btn-sm btn-block d-flex align-items-center justify-content-between pr-0"
+							@click="showEvents = !showEvents"
+						>
+							<h3 class="m-0 text-left text-decoration-underline">ОТМЕТКИ</h3>
+							<span>&#9660;</span>
+							<h2 class="m-0 w-25 text-right">{{ events.length }}</h2>
+						</button>
+						<table class="table table-sm table-striped mt-2">
+							<tbody v-if="showEvents">
+								<tr v-for="event in events">
+									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
+									<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
+									<td class="text-right pr-0">
+										<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 
 				<div class="col-md-7">
