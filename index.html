@@ -1751,6 +1751,18 @@
 
 							return true;
 						},
+						checkStationAccess(station_id) {
+							const { station_access } = this.stats;
+
+							if (station_access == null || this.user === null) return -1;
+
+							const user_access =	station_access.find(sa =>
+								sa.station_id === station_id && sa.user_id === this.user.id);
+
+							if (user_access == null) return -1;
+
+							return user_access.granted;
+						},
 					},
 					components: {
 						'app-navigation-menu': {
