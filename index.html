@@ -1600,16 +1600,19 @@
 						return {
 							granted: -2,
 						};
-				  },
-				  computed: {
-				  	// When the component is mounted probably there is no this.$root.stats.station_access
-				  	station_access() {
-				  		return this.$root.stats.station_access;
-				  	},
-				  },
-				  methods: {
-					  	formatAccessButtonText : granted => new Map([[1, 'Доступ разрешен'], [0, 'Доступ запрошен'], [-1, 'Запросить доступ']]).get(granted) || 'Загрузка...',
-
+					},
+					computed: {
+						// When the component is mounted probably there is no this.$root.stats.station_access
+						station_access() {
+							return this.$root.stats.station_access;
+						},
+					},
+					methods: {
+						formatAccessButtonText: granted => ({
+							'1': 'Доступ разрешен',
+							'0': 'Доступ запрошен',
+							'-1': 'Запросить доступ',
+						})[granted] || 'Загрузка...',
 						async submit() {
 							try {
 								const { user_id, station_id } = this;
