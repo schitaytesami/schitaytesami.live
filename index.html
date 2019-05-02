@@ -1464,12 +1464,14 @@
 						bookmarks() {
 							return this.user.bookmarks
 								.split(',')
+								.filter(Boolean)
 								.map(id => this.$root.stats.bookmarks_dict[id])
 								.sort(sorterNewFirst);
 						},
 						notes() {
 							return this.user.notes
 								.split(',')
+								.filter(Boolean)
 								.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
