@@ -999,21 +999,34 @@
 	<script type="text/javascript">
 
 		(function () {
-			const makeError = err => {
+			function makeNetworkError(err) {
+				console.error(err);
+
 				const status = err.status ? `${err.status}: ` : '';
 				const message = err.statusText || 'Что-то пошло не так';
 				return new Error(`${status}${message}`);
 			};
 
+			function makeDataError(err) {
+				console.error(err);
+
+				let message = err.message;
+				/* more appropriate error message for a user. */
+				if (err.name === 'SyntaxError')
+					message = 'Ошибка при обработке данных';
+
+				return new Error(message);
+			}
+
 			async function fetchStats() {
 				const response = await fetch('/stats');
-				if (!response.ok) throw makeError(response);
+				if (!response.ok) throw makeNetworkError(response);
 
 				let data;
 				try {
 					data = await response.json();
 				} catch (err) {
-					throw new Error(err);
+					throw makeDataError(err);
 				}
 
 				const stats = {
@@ -1054,7 +1067,7 @@
 					headers: {'Content-type': 'application/json'},
 					body: JSON.stringify(events),
 				});
-				if (!response.ok) throw makeError(response);
+				if (!response.ok) throw makeNetworkError(response);
 
 				return response;
 			}
@@ -1062,12 +1075,12 @@
 			async function nextTask({ task, election_number, region_number, station_number }) {
 				const response = await
 					fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`);
-				if (!response.ok) throw makeError(response);
+				if (!response.ok) throw makeNetworkError(response);
 
 				try {
 					return await response.json();
 				} catch (err) {
-					throw new Error(err);
+					throw makeDataError(err);
 				}
 			}
 
@@ -1076,7 +1089,7 @@
 					method: 'POST',
 					headers: {'Content-type': 'application/json'},
 				});
-				if (!response.ok) throw makeError(response);
+				if (!response.ok) throw makeNetworkError(response);
 
 				return response;
 			}
@@ -1738,7 +1751,7 @@
 								body: email,
 							});
 
-							if (!response.ok) throw makeError(response);
+							if (!response.ok) throw makeNetworkError(response);
 
 							return true;
 						},
