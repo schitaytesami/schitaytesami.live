@@ -176,9 +176,18 @@
 						</li>
 						<template v-if="this.$root.user">
 							<li class="nav-pill navbar-nav ml-auto">
-								<router-link id="current_username" class="nav-link px-2" active-class="" :to="{ name: 'user', params: { display: this.$root.user.display } }">{{ this.$root.user.display }}</router-link>
+								<router-link
+									class="nav-link px-2"
+									:to="{ name: 'user', params: { display: this.$root.user.display } }"
+								>{{ this.$root.user.display }}</router-link>
 							</li>
-							<li><a class="nav-link text-warning ml-auto" href="#" @click.prevent="logout">[выход]</a></li>
+							<li class="ml-1">
+								<button
+									type="button"
+									class="btn btn-link text-warning"
+									@click="logout"
+								>[выход]</button>
+							</li>
 						</template>
 					</ul>
 				</div>
