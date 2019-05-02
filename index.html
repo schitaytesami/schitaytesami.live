@@ -1621,40 +1621,25 @@
 						},
 						set_state() {
 							if (this.station_access == null) {
-				  			this.granted = -2;
-				  			return;
-				  		}
+								this.granted = -2;
+								return;
+							}
 
-				  		const user_access =	this.station_access
-				  			.find(x => x.station_id === this.station_id &&
-				  				x.user_id === this.user_id
-				  			);
-
-				  		if (!user_access) {
-				  			this.granted = -1;
-				  			return;
-				  		}
-
-				  		if (user_access && !user_access.granted) {
-				  			this.granted = 0;
-				  			return;
-				  		}
-
-				  		this.granted = 1;
+							this.granted = this.$root.checkStationAccess(this.station_id);
 						}
-				  },
-				  watch: {
-				  	// the watcher is good for async op like getting $root.stats
-				  	// we use this if stats is NOT loaded
-				  	station_access() {
-				  		this.set_state();
-				  	},
-				  },
-				  // we use this if stats is loaded
-				  mounted() {
-				  	this.set_state();
-				  },
-				  template: '#app-access-button',
+					},
+					watch: {
+						// the watcher is good for async op like getting $root.stats
+						// we use this if stats is NOT loaded
+						station_access() {
+							this.set_state();
+						},
+					},
+					// we use this if stats is loaded
+					mounted() {
+						this.set_state();
+					},
+					template: '#app-access-button',
 				};
 
 				const appUsers = {
