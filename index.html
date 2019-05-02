@@ -1193,14 +1193,13 @@
 							return { message, button };
 						},
 						formatEventTime(offset) {
-							const minutes = Math.floor(offset / 60);
-							let seconds = Math.floor(offset % 60);
-							if (seconds < 10) seconds = `0${seconds}`;
-							return `${minutes}:${seconds}`;
+							const minutes = Math.floor(offset / 60), seconds = Math.floor(offset % 60);
+							return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 						},
 						async submitResults() {
-							const events = this.$route.name == 'vote' ?
-								this.events :
+							const events = 
+							        this.$route.name == 'vote' ?
+									this.events :
 								this.$route.name == 'proc' ?
 									this.questions.map((q, i) => ({
 										offset: 0,
