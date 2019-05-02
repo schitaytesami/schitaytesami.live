@@ -472,8 +472,8 @@
 
 	<script type="text/x-template" id="app-stations">
 		<div class="row">
-			<div class="col-md-12" id="stations-body">
-				<table class="table table-striped">
+			<div class="col-md-12">
+				<table class="table table-striped mt-2">
 					<thead>
 						<tr>
 							<th>Дата голосования</th>
@@ -649,40 +649,38 @@
 	</script>
 
 	<script type="text/x-template" id="app-users">
-		<div class="row" id="users">
+		<div class="row">
 			<div class="col-md-12">
-				<div id="users">
-					<table class="table table-striped mt-2">
-						<thead>
-							<tr>
-								<th class="text-muted">#</th>
-								<th>Имя</th>
-								<th>Избиратели</th>
-								<th>Участки</th>
-								<th>Просмотрено минут</th>
-								<th>Сегменты</th>
-								<th>Комментарии</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr
-								v-for="(user, index) in $root.stats.users"
-								:key="user.id"
-								:class="{ 'bg-success': $root.user && $root.user.id === user.id }"
-							>
-								<td class="text-muted">{{ index + 1 }}</td>
-								<td>
-									<router-link :to="{ name: 'user', params: { display: user.display } }">{{ user.display }}</router-link>
-								</td>
-								<td>{{ user.num_votes }}</td>
-								<td>{{ user.num_stations }}</td>
-								<td>{{ formatMinutes(user.num_seconds) }}</td>
-								<td>{{ user.num_clips }}</td>
-								<td>{{ user.num_notes }}</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
+				<table class="table table-striped mt-2">
+					<thead>
+						<tr>
+							<th class="text-muted">#</th>
+							<th>Имя</th>
+							<th>Избиратели</th>
+							<th>Участки</th>
+							<th>Просмотрено минут</th>
+							<th>Сегменты</th>
+							<th>Комментарии</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr
+							v-for="(user, index) in $root.stats.users"
+							:key="user.id"
+							:class="{ 'bg-success': $root.user && $root.user.id === user.id }"
+						>
+							<td class="text-muted">{{ index + 1 }}</td>
+							<td>
+								<router-link :to="{ name: 'user', params: { display: user.display } }">{{ user.display }}</router-link>
+							</td>
+							<td>{{ user.num_votes }}</td>
+							<td>{{ user.num_stations }}</td>
+							<td>{{ formatMinutes(user.num_seconds) }}</td>
+							<td>{{ user.num_clips }}</td>
+							<td>{{ user.num_notes }}</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</script>
