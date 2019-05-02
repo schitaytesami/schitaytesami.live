@@ -41,6 +41,10 @@
 			flex-grow: 1;
 		}
 
+		.text-decoration-underline {
+			text-decoration: underline;
+		}
+
 		.instr-screenshot {
 			max-width: 49%;
 		}
@@ -172,9 +176,18 @@
 						</li>
 						<template v-if="this.$root.user">
 							<li class="nav-pill navbar-nav ml-auto">
-								<router-link id="current_username" class="nav-link px-2" active-class="" :to="{ name: 'user', params: { display: this.$root.user.display } }">{{ this.$root.user.display }}</router-link>
+								<router-link
+									class="nav-link px-2"
+									:to="{ name: 'user', params: { display: this.$root.user.display } }"
+								>{{ this.$root.user.display }}</router-link>
 							</li>
-							<li><a class="nav-link text-warning ml-auto" href="#" @click.prevent="logout">[выход]</a></li>
+							<li class="ml-1">
+								<button
+									type="button"
+									class="btn btn-link text-warning"
+									@click="logout"
+								>[выход]</button>
+							</li>
 						</template>
 					</ul>
 				</div>
@@ -299,40 +312,38 @@
 
 					</app-clip-player>
 
-					<table class="table table-sm table-striped mt-2" v-if="clip">
-						<thead>
-							<tr>
-								<th class="text-left border-bottom-0">
-									<h3 class="m-0">ОТМЕТКИ</h3>
-								</th>
-								<th class="p-0 border-bottom-0 w-75">
-									<button type="button" class="btn w-100" @click="showEvents = !showEvents">&#9660;</button>
-								</th>
-								<th class="text-right border-bottom-0">
-									<h2 class="m-0">{{ events.length }}</h2>
-								</th>
-							</tr>
-						</thead>
-						<tbody v-if="showEvents">
-							<tr v-for="event in events">
-								<td class="text-left">{{ formatEventTime(event.offset) }}</td>
-								<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
-								<td class="text-right pr-0">
-									<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
+					<div v-if="clip">
+						<button
+							class="btn btn-sm btn-block d-flex align-items-center justify-content-between pr-0"
+							@click="showEvents = !showEvents"
+						>
+							<h3 class="m-0 text-left text-decoration-underline">ОТМЕТКИ</h3>
+							<span>&#9660;</span>
+							<h2 class="m-0 w-25 text-right">{{ events.length }}</h2>
+						</button>
+						<table class="table table-sm table-striped mt-2">
+							<tbody v-if="showEvents">
+								<tr v-for="event in events">
+									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
+									<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
+									<td class="text-right pr-0">
+										<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 
 				<div class="col-md-7">
-					<h3 class="mb-4">
+					<div class="btn-group w-100 mb-4" role="group">
 						<button
 							type="button"
-							class="btn btn-info w-100"
+							class="btn btn-info flex-grow-1"
 							@click="showInstruction = !showInstruction"
 						>{{ formatInstructionToggleText(showInstruction) }}</button>
-					</h3>
+						<app-bookmark-button :clip="clip" class="flex-grow-1"/>
+					</div>
 
 					<template v-if="are_controls_vote_shown">
 						<div class="btn-group-vertical w-100 mb-3">
@@ -470,8 +481,8 @@
 
 	<script type="text/x-template" id="app-stations">
 		<div class="row">
-			<div class="col-md-12" id="stations-body">
-				<table class="table table-striped">
+			<div class="col-md-12">
+				<table class="table table-striped mt-2">
 					<thead>
 						<tr>
 							<th>Дата голосования</th>
@@ -563,7 +574,10 @@
 								<app-access-button :station_id="station.id" :user_id="$root.user.id" />
 							</div>
 						</div>
-						<div class="row no-gutters mb-2">
+						<div
+							class="row no-gutters mb-2"
+							v-if="$root.checkStationAccess(station.id) === 1"
+						>
 							<div class="col text-center">
 								<table class="table table-sm table-bordered table-striped w-100">
 									<thead>
@@ -628,7 +642,9 @@
 
 
 			<div class="btn-group btn-group-sm">
-				<button type="button" class="btn btn-light border-0"><strong>Скорость {{ playbackRate.toFixed(1) }}x</strong></button>
+				<div class="d-inline-flex align-items-center pr-1 bg-light">
+					<span class="font-weight-bold">Скорость {{ playbackRate.toFixed(1) }}x</span>
+				</div>
 				<button
 					type="button"
 					class="btn btn-secondary"
@@ -645,40 +661,38 @@
 	</script>
 
 	<script type="text/x-template" id="app-users">
-		<div class="row" id="users">
+		<div class="row">
 			<div class="col-md-12">
-				<div id="users">
-					<table class="table table-striped mt-2">
-						<thead>
-							<tr>
-								<th class="text-muted">#</th>
-								<th>Имя</th>
-								<th>Избиратели</th>
-								<th>Участки</th>
-								<th>Просмотрено минут</th>
-								<th>Сегменты</th>
-								<th>Комментарии</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr
-								v-for="(user, index) in $root.stats.users"
-								:key="user.id"
-								:class="{ 'bg-success': $root.user && $root.user.id === user.id }"
-							>
-								<td class="text-muted">{{ index + 1 }}</td>
-								<td>
-									<router-link :to="{ name: 'user', params: { display: user.display } }">{{ user.display }}</router-link>
-								</td>
-								<td>{{ user.num_votes }}</td>
-								<td>{{ user.num_stations }}</td>
-								<td>{{ formatMinutes(user.num_seconds) }}</td>
-								<td>{{ user.num_clips }}</td>
-								<td>{{ user.num_notes }}</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
+				<table class="table table-striped mt-2">
+					<thead>
+						<tr>
+							<th class="text-muted">#</th>
+							<th>Имя</th>
+							<th>Избиратели</th>
+							<th>Участки</th>
+							<th>Просмотрено минут</th>
+							<th>Сегменты</th>
+							<th>Комментарии</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr
+							v-for="(user, index) in $root.stats.users"
+							:key="user.id"
+							:class="{ 'bg-success': $root.user && $root.user.id === user.id }"
+						>
+							<td class="text-muted">{{ index + 1 }}</td>
+							<td>
+								<router-link :to="{ name: 'user', params: { display: user.display } }">{{ user.display }}</router-link>
+							</td>
+							<td>{{ user.num_votes }}</td>
+							<td>{{ user.num_stations }}</td>
+							<td>{{ formatMinutes(user.num_seconds) }}</td>
+							<td>{{ user.num_clips }}</td>
+							<td>{{ user.num_notes }}</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</script>
@@ -961,9 +975,15 @@
 		</form>
 	</script>
 
-  <script type="text/x-template" id="app-bookmark-button">
-    <button	class="btn btn-sm" :class="{ 'btn-success': submitted, 'btn-primary' : !submitted }" :disabled="submitted" @click="submit">{{ submitted ? 'Добавлено' : 'Добавить в закладки' }}</button>
-  </script>
+	<script type="text/x-template" id="app-bookmark-button">
+		<button
+			type="button"
+			class="btn"
+			:class="{ 'btn-success': submitted, 'btn-primary' : !submitted }"
+			:disabled="submitted"
+			@click="submit"
+		>{{ submitted ? 'Добавлено' : 'Добавить в закладки' }}</button>
+	</script>
 
 	<script type="text/x-template" id="app-access-button">
 		<button
@@ -979,21 +999,34 @@
 	<script type="text/javascript">
 
 		(function () {
-			const makeError = err => {
+			function makeNetworkError(err) {
+				console.error(err);
+
 				const status = err.status ? `${err.status}: ` : '';
 				const message = err.statusText || 'Что-то пошло не так';
 				return new Error(`${status}${message}`);
 			};
 
+			function makeDataError(err) {
+				console.error(err);
+
+				let message = err.message;
+				/* more appropriate error message for a user. */
+				if (err.name === 'SyntaxError')
+					message = 'Ошибка при обработке данных';
+
+				return new Error(message);
+			}
+
 			async function fetchStats() {
 				const response = await fetch('/stats');
-				if (!response.ok) throw makeError(response);
+				if (!response.ok) throw makeNetworkError(response);
 
 				let data;
 				try {
 					data = await response.json();
 				} catch (err) {
-					throw new Error(err);
+					throw makeDataError(err);
 				}
 
 				const stats = {
@@ -1034,7 +1067,7 @@
 					headers: {'Content-type': 'application/json'},
 					body: JSON.stringify(events),
 				});
-				if (!response.ok) throw makeError(response);
+				if (!response.ok) throw makeNetworkError(response);
 
 				return response;
 			}
@@ -1042,12 +1075,12 @@
 			async function nextTask({ task, election_number, region_number, station_number }) {
 				const response = await
 					fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`);
-				if (!response.ok) throw makeError(response);
+				if (!response.ok) throw makeNetworkError(response);
 
 				try {
 					return await response.json();
 				} catch (err) {
-					throw new Error(err);
+					throw makeDataError(err);
 				}
 			}
 
@@ -1056,7 +1089,7 @@
 					method: 'POST',
 					headers: {'Content-type': 'application/json'},
 				});
-				if (!response.ok) throw makeError(response);
+				if (!response.ok) throw makeNetworkError(response);
 
 				return response;
 			}
@@ -1161,7 +1194,7 @@
 								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Замеченные нарушения, не отраженные выше' },
 							],
 							showInstruction: false,
-							showEvents: true,
+							showEvents: false,
 							clip: null,
 							events: [],
 							note: '',
@@ -1249,7 +1282,7 @@
 							this.events.splice(this.events.indexOf(event), 1);
 						},
 						keyDown(e) {
-							if (this.$route.name == 'task-vote' && this.$refs.note !== document.activeElement) {
+							if (this.$route.name == 'vote' && this.$refs.note !== document.activeElement) {
 								const keycode_space = 32;
 								const keycode_escape = 27;
 
@@ -1446,12 +1479,14 @@
 						bookmarks() {
 							return this.user.bookmarks
 								.split(',')
+								.filter(Boolean)
 								.map(id => this.$root.stats.bookmarks_dict[id])
 								.sort(sorterNewFirst);
 						},
 						notes() {
 							return this.user.notes
 								.split(',')
+								.filter(Boolean)
 								.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
@@ -1535,23 +1570,40 @@
 				};
 
 				const appBookmarkButton = {
-				  name: 'bookmark-button',
-				  props: {
-					clip: {
-					  type: Object,
-					  required: true,
+					name: 'bookmark-button',
+					props: {
+						clip: {
+							type: Object,
+							required: true,
+						},
 					},
-				  },
-				  data() {
-					return {
-					  submitted: false,
-					  failed: false,
-					}
-				  },
-				  methods: {
-					submit() {
-					  this.$root.sendEvents(this, [{ type: 'bookmark', offset: 0, value: window.location.href, clip: this.clip.id }]);
+					data() {
+						return {
+							submitted: false,
+							failed: false,
+						};
 					},
+					methods: {
+						async submit() {
+							const event = {
+								type: 'bookmark',
+								offset: 0,
+								value: window.location.href,
+								clip: this.clip.id,
+							};
+
+							try {
+								await sendEvents([event], {
+									id: this.clip.id,
+									csrf: this.clip.csrf,
+								});
+								this.submitted = true;
+								this.failed = false;
+							} catch (err) {
+								this.failed = true;
+								this.$root.errorHandler(err);
+							}
+						},
 				  },
 				  template: '#app-bookmark-button',
 				};
@@ -1563,16 +1615,19 @@
 						return {
 							granted: -2,
 						};
-				  },
-				  computed: {
-				  	// When the component is mounted probably there is no this.$root.stats.station_access
-				  	station_access() {
-				  		return this.$root.stats.station_access;
-				  	},
-				  },
-				  methods: {
-					  	formatAccessButtonText : granted => new Map([[1, 'Доступ разрешен'], [0, 'Доступ запрошен'], [-1, 'Запросить доступ']]).get(granted) || 'Загрузка...',
-
+					},
+					computed: {
+						// When the component is mounted probably there is no this.$root.stats.station_access
+						station_access() {
+							return this.$root.stats.station_access;
+						},
+					},
+					methods: {
+						formatAccessButtonText: granted => ({
+							'1': 'Доступ разрешен',
+							'0': 'Доступ запрошен',
+							'-1': 'Запросить доступ',
+						})[granted] || 'Загрузка...',
 						async submit() {
 							try {
 								const { user_id, station_id } = this;
@@ -1584,40 +1639,25 @@
 						},
 						set_state() {
 							if (this.station_access == null) {
-				  			this.granted = -2;
-				  			return;
-				  		}
+								this.granted = -2;
+								return;
+							}
 
-				  		const user_access =	this.station_access
-				  			.find(x => x.station_id === this.station_id &&
-				  				x.user_id === this.user_id
-				  			);
-
-				  		if (!user_access) {
-				  			this.granted = -1;
-				  			return;
-				  		}
-
-				  		if (user_access && !user_access.granted) {
-				  			this.granted = 0;
-				  			return;
-				  		}
-
-				  		this.granted = 1;
+							this.granted = this.$root.checkStationAccess(this.station_id);
 						}
-				  },
-				  watch: {
-				  	// the watcher is good for async op like getting $root.stats
-				  	// we use this if stats is NOT loaded
-				  	station_access() {
-				  		this.set_state();
-				  	},
-				  },
-				  // we use this if stats is loaded
-				  mounted() {
-				  	this.set_state();
-				  },
-				  template: '#app-access-button',
+					},
+					watch: {
+						// the watcher is good for async op like getting $root.stats
+						// we use this if stats is NOT loaded
+						station_access() {
+							this.set_state();
+						},
+					},
+					// we use this if stats is loaded
+					mounted() {
+						this.set_state();
+					},
+					template: '#app-access-button',
 				};
 
 				const appUsers = {
@@ -1710,9 +1750,21 @@
 								body: email,
 							});
 
-							if (!response.ok) throw makeError(response);
+							if (!response.ok) throw makeNetworkError(response);
 
 							return true;
+						},
+						checkStationAccess(station_id) {
+							const { station_access } = this.stats;
+
+							if (station_access == null || this.user === null) return -1;
+
+							const user_access =	station_access.find(sa =>
+								sa.station_id === station_id && sa.user_id === this.user.id);
+
+							if (user_access == null) return -1;
+
+							return user_access.granted;
 						},
 					},
 					components: {
