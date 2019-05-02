@@ -574,7 +574,10 @@
 								<app-access-button :station_id="station.id" :user_id="$root.user.id" />
 							</div>
 						</div>
-						<div class="row no-gutters mb-2">
+						<div
+							class="row no-gutters mb-2"
+							v-if="$root.checkStationAccess(station.id) === 1"
+						>
 							<div class="col text-center">
 								<table class="table table-sm table-bordered table-striped w-100">
 									<thead>
