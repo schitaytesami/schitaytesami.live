@@ -327,13 +327,14 @@
 				</div>
 
 				<div class="col-md-7">
-					<h3 class="mb-4">
+					<div class="btn-group w-100 mb-4" role="group">
 						<button
 							type="button"
-							class="btn btn-info w-100"
+							class="btn btn-info flex-grow-1"
 							@click="showInstruction = !showInstruction"
 						>{{ formatInstructionToggleText(showInstruction) }}</button>
-					</h3>
+						<app-bookmark-button :clip="clip" class="flex-grow-1"/>
+					</div>
 
 					<template v-if="are_controls_vote_shown">
 						<div class="btn-group-vertical w-100 mb-3">
@@ -964,9 +965,15 @@
 		</form>
 	</script>
 
-  <script type="text/x-template" id="app-bookmark-button">
-    <button	class="btn btn-sm" :class="{ 'btn-success': submitted, 'btn-primary' : !submitted }" :disabled="submitted" @click="submit">{{ submitted ? 'Добавлено' : 'Добавить в закладки' }}</button>
-  </script>
+	<script type="text/x-template" id="app-bookmark-button">
+		<button
+			type="button"
+			class="btn"
+			:class="{ 'btn-success': submitted, 'btn-primary' : !submitted }"
+			:disabled="submitted"
+			@click="submit"
+		>{{ submitted ? 'Добавлено' : 'Добавить в закладки' }}</button>
+	</script>
 
 	<script type="text/x-template" id="app-access-button">
 		<button
