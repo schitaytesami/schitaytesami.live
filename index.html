@@ -161,6 +161,11 @@
 		.highlight {
 			animation: highlight 1s ease-out;
 		}
+
+		.loader {
+			width: 10rem;
+			height: 10rem;
+		}
 	</style>
 </head>
 
@@ -1003,6 +1008,15 @@
 		>{{ formatAccessButtonText(granted) }}</button>
 	</script>
 
+	<script type="text/x-template" id="app-spinner">
+		<div class="d-flex flex-column justify-content-center align-items-center h-100">
+			<div class="loader spinner-grow text-primary" role="status">
+				<span class="sr-only">Загрузка...</span>
+			</div>
+			<p class="lead text-muted">Загрузка...</p>
+		</div>
+	</script>
+
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
 	<script src="https://unpkg.com/vue-router@3.0.1/dist/vue-router.min.js"></script>
 
@@ -1690,6 +1704,27 @@
 					template: '#app-notes',
 				};
 
+				const appLoader = {
+					exclude: ['index'],
+					data() {
+						return {
+							isLoaded: false,
+						};
+					},
+					components: {
+						'app-spinner': { template: '#app-spinner' },
+					},
+					created() {
+						statsPromise.then(() => (this.isLoaded = true));
+					},
+					render(h) {
+						if (this.isLoaded || this.$options.exclude.includes(this.$route.name))
+							return h('div', this.$slots.default);
+
+						return h('app-spinner');
+					}
+				};
+
 				const router = new VueRouter({
 					linkActiveClass: 'active',
 					routes: [
@@ -1789,7 +1824,8 @@
 						'app-error' : {
 							template: '#app-error',
 							props: ['showError']
-						}
+						},
+						'app-loader': appLoader,
 					},
 					beforeMount() {
 						if(!this.user) this.login();
@@ -1804,20 +1840,19 @@
 							.catch(this.errorHandler);
 					},
 					render(c) {
-						return c('div', [
+						return c('div', { attrs: { class: 'h-100' }}, [
 							c('app-navigation-menu', { props: { logout: this.logout } }),
 							c('app-error', { props: { showError: this.showError } }, this.errorMessage),
 							c(
-								'main',
-								{
+								'main', {
 									attrs: {
 										role: 'main',
-										class: 'container-fluid tab-content mt-2',
+										class: 'container-fluid tab-content mt-2 h-100',
 									},
 								},
 								[
-									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-vote', 'app-task-proc'] } }, [
-										c('router-view', { on: { error: this.errorHandler } }),
+									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-vote', 'app-task-proc'] }}, [
+										c('app-loader', [c('router-view')]),
 									]),
 								]
 							),
