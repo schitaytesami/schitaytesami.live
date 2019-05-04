@@ -1517,10 +1517,6 @@
 							}));
 						},
 					},
-					async beforeRouteEnter(to, from, next) {
-						await statsPromise;
-						next();
-					},
 					template: '#app-user'
 				};
 
