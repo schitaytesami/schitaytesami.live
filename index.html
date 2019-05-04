@@ -12,8 +12,7 @@
 	<meta property="og:image" content="https://schitaytesami.live/images/logo.png" />
 	<meta name="description" content="Проверяем явку на выборах, используя краудсорсинг и ускоренные видео" />
 	<link href="https://schitaytesami.live/images/logo.png" rel="icon" type="image/png" />
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B"
-	 crossorigin="anonymous">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
 	<style>
 		.btn:focus, .btn:active {outline: none !important; box-shadow: none;}
@@ -39,10 +38,6 @@
 
 		main {
 			flex-grow: 1;
-		}
-
-		.text-decoration-underline {
-			text-decoration: underline;
 		}
 
 		.instr-screenshot {
@@ -152,6 +147,25 @@
 			background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMyIgaGVpZ2h0PSIyMyIgdmlld0JveD0iMCAwIDIzIDIzIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wLTJoMjNWOUgweiIgb3BhY2l0eT0iLjQ4MSIvPjxwYXRoIGZpbGw9IiMyQzc5QkUiIGQ9Ik04IDdsMS4xNTQtN0gxMUw5Ljg0NiA3SDhtOS02LjcxNUE1LjU3IDUuNTcgMCAwIDAgMTUuMjA4IDBjLTEuOTc3IDAtMy4zNjguOTItMy4zOCAyLjIzOC0uMDEyLjk3NS45OTMgMS41MTggMS43NTEgMS44NDIuNzguMzMzIDEuMDQxLjU0NSAxLjAzOC44NDItLjAwNS40NTQtLjYyMi42NjItMS4xOTcuNjYyLS44IDAtMS4yMjUtLjEwMi0xLjg4My0uMzU1bC0uMjU3LS4xMDhMMTEgNi42MzljLjQ2Ni4xODkgMS4zMy4zNTMgMi4yMjguMzYxIDIuMTAxIDAgMy40NjYtLjkxIDMuNDgyLTIuMzE2LjAwNy0uNzczLS41MjYtMS4zNTktMS42OC0xLjg0My0uNjk4LS4zMTQtMS4xMjctLjUyMy0xLjEyMi0uODQgMC0uMjgzLjM2Mi0uNTg0IDEuMTQ2LS41ODRhMy45NDIgMy45NDIgMCAwIDEgMS40OTYuMjZsLjE4LjA3OC4yNy0xLjQ3TTIxLjY0OCAwaC0xLjI5MWMtLjQgMC0uNy4xMjQtLjg3Ni41OEwxNyA3aDEuNzU1cy4yODYtLjg2My4zNTEtMS4wNTNsMi4xNC4wMDRjLjA1LjI0NC4yMDMgMS4wNDkuMjAzIDEuMDQ5SDIzbC0xLjM1Mi03bS0yLjA2MSA0LjUxNGMuMTM4LS40MDMuNjY1LTEuOTU4LjY2NS0xLjk1OC0uMDEuMDE5LjEzOC0uNDA2LjIyMi0uNjY4bC4xMTMuNjA0LjM4NyAyLjAyMmgtMS4zODdNMS44MzguOTE0QTYuOTg2IDYuOTg2IDAgMCAwIDAgLjE0NUwuMDIzIDBoMi44MjFjLjM4LjAxNi42ODguMTQ3Ljc5My41OTFsLjYxMyAzLjIyLjE4NC45NzFMNi4xNDYuMDA1SDhMNS4yNDUgNi45OTkgMy4zOTQgNyAxLjgzOC45MTR6Ii8+PHBhdGggZmlsbD0iI0ZGNUYwMCIgZD0iTTkgMjJoNXYtOUg5eiIvPjxwYXRoIGZpbGw9IiNFQjAwMUIiIGQ9Ik05Ljg3NSAxNy41YzAtMS43NTUuODMxLTMuMzE3IDIuMTI1LTQuMzI0QTUuNTc4IDUuNTc4IDAgMCAwIDguNTYyIDEyQzUuNDkgMTIgMyAxNC40NjIgMyAxNy41UzUuNDkgMjMgOC41NjIgMjNjMS4yOTggMCAyLjQ5Mi0uNDQgMy40MzgtMS4xNzZBNS40NjkgNS40NjkgMCAwIDEgOS44NzUgMTcuNSIvPjxwYXRoIGZpbGw9IiNGNzlFMUIiIGQ9Ik0yMSAxNy41YzAgMy4wMzgtMi40OSA1LjUtNS41NjIgNS41QTUuNTc4IDUuNTc4IDAgMCAxIDEyIDIxLjgyNGE1LjQ2OSA1LjQ2OSAwIDAgMCAyLjEyNS00LjMyNEE1LjQ2NyA1LjQ2NyAwIDAgMCAxMiAxMy4xNzYgNS41NzggNS41NzggMCAwIDEgMTUuNDM4IDEyQzE4LjUxIDEyIDIxIDE0LjQ2MiAyMSAxNy41Ii8+PC9nPjwvc3ZnPgo=")
 			/*background-image: url(https://money.yandex.ru/b/_/znDCcGN9U__lRVsmiQ6akvmMXuE.svg);*/
 		}
+
+		@keyframes highlight {
+			from {
+				color: yellow;
+			}
+
+			to {
+				color: currentColor;
+			}
+		}
+
+		.highlight {
+			animation: highlight 1s ease-out;
+		}
+
+		.loader {
+			width: 10rem;
+			height: 10rem;
+		}
 	</style>
 </head>
 
@@ -173,6 +187,9 @@
 							<router-link class="nav-link px-2" :to="{ name: 'donate' }">
 								<abbr title="Техника дорогая!" style="border-bottom: 4px dotted">Помочь деньгами</abbr>
 							</router-link>
+						</li>
+						<li class="nav-pill navbar-nav" v-if="$root.user.is_admin()">
+							<router-link class="nav-link px-2" :to="{ name: 'admin' }">Управление</router-link>
 						</li>
 						<template v-if="this.$root.user">
 							<li class="nav-pill navbar-nav ml-auto">
@@ -283,6 +300,7 @@
 			<div class="row mt-3">
 				<div class="col-md-5">
 					<app-clip-player
+						class="mb-2"
 						:verbose="false"
 						:clip="clip"
 						:started.sync="started"
@@ -314,12 +332,12 @@
 
 					<div v-if="clip">
 						<button
-							class="btn btn-sm btn-block d-flex align-items-center justify-content-between pr-0"
+							class="btn btn-sm btn-block btn-light d-flex align-items-center justify-content-between pr-0"
 							@click="showEvents = !showEvents"
 						>
-							<h3 class="m-0 text-left text-decoration-underline">ОТМЕТКИ</h3>
+							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
 							<span>&#9660;</span>
-							<h2 class="m-0 w-25 text-right">{{ events.length }}</h2>
+							<h2 class="m-0 w-25 text-right" ref="counter">{{ events.length }}</h2>
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
@@ -626,8 +644,8 @@
 
 			<div class="position-relative">
 				<video
-					class="app-station__video--js w-100"
 					controls="controls"
+					class="w-100"
 					preload="auto"
 					ref="player"
 					:src="clip.video"
@@ -993,6 +1011,53 @@
 		>{{ formatAccessButtonText(granted) }}</button>
 	</script>
 
+	<script type="text/x-template" id="app-spinner">
+		<div class="d-flex flex-column justify-content-center align-items-center h-100">
+			<div class="loader spinner-grow text-primary" role="status">
+				<span class="sr-only">Загрузка...</span>
+			</div>
+			<p class="lead text-muted">Загрузка...</p>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-admin">
+		<div class="pt-2">
+			<table class="table table-sm">
+				<thead>
+					<tr>
+						<th>Дата голосования</th>
+						<th>Регион</th>
+						<th>УИК</th>
+						<th>Участник</th>
+						<th>Доступ</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="sa in station_access">
+						<td>{{ formatElectionDate(sa.station.election_number) }}</td>
+						<td>{{ formatRegionName(sa.station.station_address) }}</td>
+						<td>
+							<router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(sa.station_id) } }">{{ sa.station.station_number }}</router-link>
+						</td>
+						<td>
+							<router-link :to="{ name: 'user', params: { display: sa.user.display } }">{{ sa.user.display }}</router-link>
+						</td>
+						<td>
+							<button
+								type="button"
+								class="btn btn-sm"
+								:class="{
+									'btn-danger': sa.granted === 1,
+									'btn-success': sa.granted !== 1,
+								}"
+							>{{ sa.granted === 1 ? 'Запретить' : 'Разрешить' }}</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</script>
+
 	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
 	<script src="https://unpkg.com/vue-router@3.0.1/dist/vue-router.min.js"></script>
 
@@ -1230,9 +1295,9 @@
 							return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 						},
 						async submitResults() {
-							const events = 
-							        this.$route.name == 'vote' ?
-									this.events :
+							const events =
+								this.$route.name == 'vote' ?
+								this.events :
 								this.$route.name == 'proc' ?
 									this.questions.map((q, i) => ({
 										offset: 0,
@@ -1275,10 +1340,12 @@
 							}
 						},
 						addEvent(offset, type, value = '') {
+							this.highlightCounter();
 							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
 							if (value) this.note = '';
 						},
 						removeEvent(event) {
+							this.highlightCounter();
 							this.events.splice(this.events.indexOf(event), 1);
 						},
 						keyDown(e) {
@@ -1295,6 +1362,12 @@
 								}
 							}
 						},
+						highlightCounter() {
+							const { counter } = this.$refs;
+							counter.classList.remove('highlight');
+							void counter.offsetWidth; /* MAGIC */
+							counter.classList.add('highlight');
+						}
 					},
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
@@ -1499,10 +1572,6 @@
 							}));
 						},
 					},
-					async beforeRouteEnter(to, from, next) {
-						await statsPromise;
-						next();
-					},
 					template: '#app-user'
 				};
 
@@ -1676,6 +1745,49 @@
 					template: '#app-notes',
 				};
 
+				const appLoader = {
+					exclude: ['index'],
+					data() {
+						return {
+							isLoaded: false,
+						};
+					},
+					components: {
+						'app-spinner': { template: '#app-spinner' },
+					},
+					created() {
+						statsPromise.then(() => (this.isLoaded = true));
+					},
+					render(h) {
+						if (this.isLoaded || this.$options.exclude.includes(this.$route.name))
+							return h('div', this.$slots.default);
+
+						return h('app-spinner');
+					}
+				};
+
+				const appAdmin = {
+					computed: {
+						station_access() {
+							const { station_access, stations_dict, users } = this.$root.stats;
+
+							return station_access
+								.map(sa => ({
+									...sa,
+									station: stations_dict[sa.station_id],
+									user: users.find(user => user.id === sa.user_id),
+								}))
+								.sort((a, b) => b.timestamp - a.timestamp);
+						},
+					},
+					methods: {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatTimestamp: formatTimestamp,
+					},
+					template: '#app-admin',
+				};
+
 				const router = new VueRouter({
 					linkActiveClass: 'active',
 					routes: [
@@ -1695,8 +1807,9 @@
 						{ path: '/stations/:id', name: 'station', component: appStation },
 						{ path: '/users', name: 'users', component: appUsers },
 						{ path: '/user/:display', name: 'user', component: appUser },
-						{ path: '/about', name: 'about', component: { template: '#app-about' } },
-						{ path: '/donate', name: 'donate', component: { template: '#app-donate' } },
+						{ path: '/about', name: 'about', component: { template: '#app-about' }},
+						{ path: '/donate', name: 'donate', component: { template: '#app-donate' }},
+						{ path: '/admin', name: 'admin', component: appAdmin },
 						{
 							path: '/login/:token',
 							component: {
@@ -1775,7 +1888,8 @@
 						'app-error' : {
 							template: '#app-error',
 							props: ['showError']
-						}
+						},
+						'app-loader': appLoader,
 					},
 					beforeMount() {
 						if(!this.user) this.login();
@@ -1790,20 +1904,19 @@
 							.catch(this.errorHandler);
 					},
 					render(c) {
-						return c('div', [
+						return c('div', { attrs: { class: 'h-100' }}, [
 							c('app-navigation-menu', { props: { logout: this.logout } }),
 							c('app-error', { props: { showError: this.showError } }, this.errorMessage),
 							c(
-								'main',
-								{
+								'main', {
 									attrs: {
 										role: 'main',
-										class: 'container-fluid tab-content mt-2',
+										class: 'container-fluid tab-content mt-2 h-100',
 									},
 								},
 								[
-									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-vote', 'app-task-proc'] } }, [
-										c('router-view', { on: { error: this.errorHandler } }),
+									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-vote', 'app-task-proc'] }}, [
+										c('app-loader', [c('router-view')]),
 									]),
 								]
 							),
