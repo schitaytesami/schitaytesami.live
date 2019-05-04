@@ -283,6 +283,7 @@
 			<div class="row mt-3">
 				<div class="col-md-5">
 					<app-clip-player
+						class="mb-2"
 						:verbose="false"
 						:clip="clip"
 						:started.sync="started"
@@ -626,8 +627,8 @@
 
 			<div class="position-relative">
 				<video
-					class="app-station__video--js w-100"
 					controls="controls"
+					class="w-100"
 					preload="auto"
 					ref="player"
 					:src="clip.video"
@@ -1230,7 +1231,7 @@
 							return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 						},
 						async submitResults() {
-							const events = 
+							const events =
 							        this.$route.name == 'vote' ?
 									this.events :
 								this.$route.name == 'proc' ?
