@@ -41,10 +41,6 @@
 			flex-grow: 1;
 		}
 
-		.text-decoration-underline {
-			text-decoration: underline;
-		}
-
 		.instr-screenshot {
 			max-width: 49%;
 		}
@@ -315,10 +311,10 @@
 
 					<div v-if="clip">
 						<button
-							class="btn btn-sm btn-block d-flex align-items-center justify-content-between pr-0"
+							class="btn btn-sm btn-block btn-light d-flex align-items-center justify-content-between pr-0"
 							@click="showEvents = !showEvents"
 						>
-							<h3 class="m-0 text-left text-decoration-underline">ОТМЕТКИ</h3>
+							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
 							<span>&#9660;</span>
 							<h2 class="m-0 w-25 text-right">{{ events.length }}</h2>
 						</button>
