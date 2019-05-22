@@ -332,12 +332,12 @@
 
 					<div v-if="clip">
 						<button
-							class="btn btn-sm btn-block btn-light d-flex align-items-center justify-content-between pr-0"
+							class="btn btn-sm btn-block btn-light d-flex align-items-center pr-0"
 							@click="showEvents = !showEvents"
 						>
 							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
-							<span>&#9660;</span>
-							<h2 class="m-0 w-25 text-right" ref="counter">{{ events.length }}</h2>
+							<span class="h5 m-0 ml-1">{{ showEvents ? '▲' : '▼' }}</span>
+							<h2 class="m-0 ml-auto" ref="counter">{{ events.length }}</h2>
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
@@ -652,6 +652,7 @@
 					@timeupdate="currentTime = $event.target.currentTime"
 					@play.once="$emit('update:started', true)"
 					@ended="$emit('update:completed', true)"
+					@keyup="preventPause"
 				></video>
 
 				<slot name="intro"></slot>
@@ -1439,6 +1440,10 @@
 						pause() {
 							this.$refs.player.pause();
 						},
+						preventPause(event) {
+							const { player } = this.$refs;
+							if (event.code === 'Space') setTimeout(player.play.bind(player), 0);
+						},
 						setPlaybackRate(delta) {
 							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
 							this.playbackRate = this.$refs.player.playbackRate;
@@ -1462,7 +1467,7 @@
 						},
 						clips() {
 							if (this.station.clips) {
-								const clips = this.station.clips.split(',').map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]);
+								const clips = this.station.clips.map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]);
 								if (this.current_clip === null) this.current_clip = clips[0];
 								return clips;
 							}
@@ -1482,7 +1487,6 @@
 									.map(note => this.$root.stats.notes_dict[note.id])
 
 							const user_notes = (!user || !user.notes) ? [] : user.notes
-								.split(',')
 								.map(id => this.$root.stats.notes_dict[id])
 								.filter(note => note.station_id === this.station.id);
 
@@ -1534,7 +1538,7 @@
 							return this.$root.stats.users.find(u => u.display === this.$route.params.display);
 						},
 						thumbnails() {
-							const clipsByStation = this.user.clips.split(',').map(Number).reduce((acc, clip_id) => {
+							const clipsByStation = this.user.clips.reduce((acc, clip_id) => {
 								const clip = this.$root.stats.clips_dict[clip_id];
 								const station = this.$root.stats.stations_dict[clip.station_id];
 								acc[clip.station_id] = acc[clip.station_id] || [];
@@ -1551,14 +1555,12 @@
 						},
 						bookmarks() {
 							return this.user.bookmarks
-								.split(',')
 								.filter(Boolean)
 								.map(id => this.$root.stats.bookmarks_dict[id])
 								.sort(sorterNewFirst);
 						},
 						notes() {
 							return this.user.notes
-								.split(',')
 								.filter(Boolean)
 								.map(id => this.$root.stats.notes_dict[id]);
 						},

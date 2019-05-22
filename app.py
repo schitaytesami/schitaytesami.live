@@ -100,7 +100,7 @@ class Event(pw.Model):
 	value = pw.TextField()
 	offset = pw.DoubleField(default = 0.0)
 	type = pw.TextField(index = True)
-	
+
 class StationAccess(pw.Model):
 	station = pw.ForeignKeyField(Station)
 	user = pw.ForeignKeyField(User)
@@ -147,6 +147,12 @@ def estimate_station(station, clip_turnout):
 	estimate = {'final' : interval_turnout(timestamp_begin = station.station_interval_start, timestamp_end = station.station_interval_end, normalize = False), '10h' : interval_turnout(8, 10), '12h' : interval_turnout(10, 12), '15h' : interval_turnout(12, 15), '18h' : interval_turnout(15, 18), '20h' : interval_turnout(18, 20)}
 	return dict(estimate = estimate, official = official, comment = comment, progress = progress)
 
+def aug_user(u):
+	for f in ['notes', 'bookmarks', 'clips']:
+		u[f] = list(map(int, u[f].split(','))) if u[f] else []
+	return u
+
+
 def stats_get():
 	stations, clips = list(Station.select().order_by(Station.election_number, Station.region_number, Station.station_number).prefetch(Event).prefetch(Clip)), list(Clip.select().where(Clip.task == 'vote').prefetch(Event).prefetch(Station))
 	clip_turnout = {clip.id : estimate_clip(clip) for clip in clips}
@@ -158,8 +164,8 @@ def stats_get():
 	by_election = lambda stations: [('Выборы {k}'.format(k = k), k, by_region(g)) for k, g in groupby(stations, key = lambda s: s.election_number)]
 
 	return flask.Response(response = json.dumps(dict(
-		
-		stations = [dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, turnout = station_turnout[station.id], clips = ','.join(str(clip.id) for clip in station.clips)) for station in stations],
+
+		stations = [dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, turnout = station_turnout[station.id], clips = [c.id for c in station.clips]) for station in stations],
 		clips = [dict(id = clip.id, thumbnail = clip.thumbnail, video = clip.video, station_id = clip.station_id, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, turnout = clip_turnout[clip.id], camera_id = clip.camera_id, task = clip.task) for clip in clips],
 		num_stations_labeled = sum(1 for turnout in station_turnout.values() if turnout['estimate'].get('final') is not None),
 		num_seconds = Clip._meta.database.execute_sql(
@@ -174,11 +180,11 @@ def stats_get():
 			'WHERE c.task == "vote"'
 		).fetchone()[0],
 		bookmarks = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station_id if ev.station is not None else ev.clip.station_id if ev.clip is not None else None) for ev in Event.select().where(Event.type == 'bookmark').prefetch(Clip)],
-		notes = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station_id if ev.station is not None else ev.clip.station_id if ev.clip is not None else None) for ev in Event.select().where(Event.type == 'note').prefetch(Clip)],		
-		users = list(User.raw(
-			'SELECT u.id,'  
-			'	u.display, ' 
-			'	IFNULL(SUM(e.type == "vote"), 0) as num_votes, ' 
+		notes = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station_id if ev.station is not None else ev.clip.station_id if ev.clip is not None else None) for ev in Event.select().where(Event.type == 'note').prefetch(Clip)],
+		users = list(map(aug_user, User.raw(
+			'SELECT u.id,'
+			'	u.display, '
+			'	IFNULL(SUM(e.type == "vote"), 0) as num_votes, '
 			'	IFNULL(SUM(e.type == "note"), 0) as num_notes, '
 			'	IFNULL(COUNT(DISTINCT c.station_id), 0) as num_stations, '
 			'	SUM(IFNULL(c.clip_interval_end - c.clip_interval_start, 0)) as num_seconds, '
@@ -191,7 +197,7 @@ def stats_get():
 			'LEFT OUTER JOIN Clip c ON c.id = e.clip_id '
 			'GROUP BY u.id, u.display '
 			'ORDER BY num_votes DESC'
-		).dicts()),
+		).dicts())),
 		station_access = [dict(user_id = s.user_id, station_id = s.station_id, timestamp = s.timestamp, granted = 1 if s.granted else 0)  for s in StationAccess.raw(
 			'SELECT a.user_id, a.station_id, MAX(a.granted) as granted, MAX(a.timestamp) as timestamp '
 			'FROM StationAccess a '
