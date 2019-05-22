@@ -652,6 +652,7 @@
 					@timeupdate="currentTime = $event.target.currentTime"
 					@play.once="$emit('update:started', true)"
 					@ended="$emit('update:completed', true)"
+					@keyup="preventPause"
 				></video>
 
 				<slot name="intro"></slot>
@@ -1438,6 +1439,10 @@
 						formatRegionName : formatRegionName,
 						pause() {
 							this.$refs.player.pause();
+						},
+						preventPause(event) {
+							const { player } = this.$refs;
+							if (event.code === 'Space') setTimeout(player.play.bind(player), 0);
 						},
 						setPlaybackRate(delta) {
 							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
