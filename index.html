@@ -332,12 +332,12 @@
 
 					<div v-if="clip">
 						<button
-							class="btn btn-sm btn-block btn-light d-flex align-items-center justify-content-between pr-0"
+							class="btn btn-sm btn-block btn-light d-flex align-items-center pr-0"
 							@click="showEvents = !showEvents"
 						>
 							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
-							<span>&#9660;</span>
-							<h2 class="m-0 w-25 text-right" ref="counter">{{ events.length }}</h2>
+							<span class="h5 m-0 ml-1">{{ showEvents ? '▲' : '▼' }}</span>
+							<h2 class="m-0 ml-auto" ref="counter">{{ events.length }}</h2>
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
