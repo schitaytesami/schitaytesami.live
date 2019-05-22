@@ -1467,7 +1467,7 @@
 						},
 						clips() {
 							if (this.station.clips) {
-								const clips = this.station.clips.split(',').map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]);
+								const clips = this.station.clips.map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]);
 								if (this.current_clip === null) this.current_clip = clips[0];
 								return clips;
 							}
@@ -1487,7 +1487,6 @@
 									.map(note => this.$root.stats.notes_dict[note.id])
 
 							const user_notes = (!user || !user.notes) ? [] : user.notes
-								.split(',')
 								.map(id => this.$root.stats.notes_dict[id])
 								.filter(note => note.station_id === this.station.id);
 
@@ -1539,7 +1538,7 @@
 							return this.$root.stats.users.find(u => u.display === this.$route.params.display);
 						},
 						thumbnails() {
-							const clipsByStation = this.user.clips.split(',').map(Number).reduce((acc, clip_id) => {
+							const clipsByStation = this.user.clips.reduce((acc, clip_id) => {
 								const clip = this.$root.stats.clips_dict[clip_id];
 								const station = this.$root.stats.stations_dict[clip.station_id];
 								acc[clip.station_id] = acc[clip.station_id] || [];
@@ -1556,14 +1555,12 @@
 						},
 						bookmarks() {
 							return this.user.bookmarks
-								.split(',')
 								.filter(Boolean)
 								.map(id => this.$root.stats.bookmarks_dict[id])
 								.sort(sorterNewFirst);
 						},
 						notes() {
 							return this.user.notes
-								.split(',')
 								.filter(Boolean)
 								.map(id => this.$root.stats.notes_dict[id]);
 						},
