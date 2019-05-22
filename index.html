@@ -188,7 +188,7 @@
 								<abbr title="Техника дорогая!" style="border-bottom: 4px dotted">Помочь деньгами</abbr>
 							</router-link>
 						</li>
-						<li class="nav-pill navbar-nav" v-if="$root.user.is_admin()">
+						<li class="nav-pill navbar-nav" v-if="$root.user && $root.user.is_admin()">
 							<router-link class="nav-link px-2" :to="{ name: 'admin' }">Управление</router-link>
 						</li>
 						<template v-if="this.$root.user">
