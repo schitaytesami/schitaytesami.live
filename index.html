@@ -151,10 +151,12 @@
 		@keyframes highlight {
 			from {
 				color: yellow;
+				background: lightyellow;
 			}
 
 			to {
 				color: currentColor;
+				background: inherit;
 			}
 		}
 
@@ -260,11 +262,12 @@
 						:options="$root.stats.task_selector_options"
 						v-if="$root.stats.task_selector_options"
 					>
-					<router-link
-						class="btn btn-primary mb-2 mt-2 w-100"
-						slot-scope="{ election_number, region_number, station_number }"
-						:to="{ name: 'vote', params: { election_number, region_number, station_number }}"
-						><h5 class="mb-0">Начать работу</h5></router-link>
+						<button
+							type="submit"
+							class="btn btn-primary mb-2 mt-2 w-100"
+							slot-scope="{ election_number, region_number, station_number }"
+							@click="nextTask($event, { task: 'vote', election_number, region_number, station_number })"
+						><h5 class="mb-0">Начать работу</h5></button>
 					</app-selection>
 				</template>
 				<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
@@ -274,11 +277,12 @@
 						:options="$root.stats.task_selector_options"
 						v-if="$root.stats.task_selector_options"
 					>
-					<router-link
-						class="btn btn-primary mb-2 mt-2 w-100"
-						slot-scope="{ election_number, region_number, station_number }"
-						:to="{ name: 'proc', params: { election_number, region_number, station_number }}"
-						><h5 class="mb-0">Начать работу</h5></router-link>
+						<button
+							type="submit"
+							class="btn btn-primary mb-2 mt-2 w-100"
+							slot-scope="{ election_number, region_number, station_number }"
+							@click="nextTask($event, { task: 'proc', election_number, region_number, station_number })"
+						><h5 class="mb-0">Начать работу</h5></button>
 					</app-selection>
 				</template>
 			</div>
@@ -1195,17 +1199,23 @@
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
 				const appIndex = {
-					methods : {formatHours : formatHours, formatThumbnailTitle : formatThumbnailTitle},
+					methods: {
+						formatHours: formatHours,
+						formatThumbnailTitle: formatThumbnailTitle
+					},
 					computed: {
-						guard() { return this.$root.stats.stations && !this.$root.showError; },
+						guard() {
+							return this.$root.stats.stations && !this.$root.showError;
+						},
 						thumbnails() {
-							return Array(Math.min(this.$root.stats.clips.length, 5)).fill().map(_ =>
-							{
-								const id = Math.floor(Math.random() * this.$root.stats.clips.length);
-								const clip = this.$root.stats.clips_dict[id];
-								const station = this.$root.stats.stations_dict[clip.station_id];
-								return { clip, station };
-							});
+							return Array(Math.min(this.$root.stats.clips.length, 5))
+								.fill()
+								.map(_ => {
+									const id = Math.floor(Math.random() * this.$root.stats.clips.length);
+									const clip = this.$root.stats.clips_dict[id];
+									const station = this.$root.stats.stations_dict[clip.station_id];
+									return { clip, station };
+								});
 						},
 					},
 					template: '#app-index',
@@ -1223,6 +1233,25 @@
 							try {
 								this.registered = await this.$root.register(this.email);
 							} catch (err) {
+								this.$root.errorHandler(err);
+							}
+						},
+						async nextTask(event, params) {
+							const button = event.target.closest('button');
+
+							try {
+								button.disabled = true;
+								const clip = await nextTask(params);
+								this.$router.push({
+									name: params.task,
+									params: {
+										...params,
+										id: clip.id,
+										csrf: clip.csrf,
+									},
+								});
+							} catch (err) {
+								button.disabled = false;
 								this.$root.errorHandler(err);
 							}
 						},
@@ -1261,7 +1290,10 @@
 							],
 							showInstruction: false,
 							showEvents: false,
-							clip: null,
+							clip: {
+								...this.$root.stats.clips_dict[this.$route.params.id],
+								csrf: this.$route.params.csrf,
+							},
 							events: [],
 							note: '',
 							started: false,
@@ -1276,7 +1308,7 @@
 						},
 					},
 					methods: {
-						formatInstructionToggleText : showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
+						formatInstructionToggleText: showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
 						formatTaskSubmitResultsButtonText(submitted, failed) {
 							let message = 'Разметка этого видео закончена. Спасибо!';
 							let button = 'Отправить результаты';
@@ -1331,11 +1363,21 @@
 									task: this.$route.name,
 									...this.$route.params,
 								});
+
 								this.clip = clip;
 								this.events = [];
 								this.submitted = false;
 								this.completed = false;
 								this.failed = false;
+
+								this.$router.push({
+									name: this.$router.task,
+									params: {
+										...this.$route.params,
+										id: clip.id,
+										csrf: clip.csrf,
+									},
+								});
 							} catch (err) {
 								this.$root.errorHandler(err);
 							}
@@ -1373,8 +1415,6 @@
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
-
-						this.nextTask();
 					},
 					template: '#app-task-base',
 				};
@@ -1424,19 +1464,15 @@
 					},
 					computed: {
 						station() {
-							if (this.$root.stats && this.$root.stats.clips_dict) {
-								const { station_id } = this.$root.stats.clips_dict[this.clip.id];
-								const station = this.$root.stats.stations_dict[station_id];
-								return station;
-							}
-
-							return {};
+							const { station_id } = this.$root.stats.clips_dict[this.clip.id];
+							const station = this.$root.stats.stations_dict[station_id];
+							return station;
 						},
 					},
 					methods : {
-						formatTimezoneOffset : timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', ''),
-						formatClipInterval : formatClipInterval,
-						formatRegionName : formatRegionName,
+						formatTimezoneOffset: timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', ''),
+						formatClipInterval: formatClipInterval,
+						formatRegionName: formatRegionName,
 						pause() {
 							this.$refs.player.pause();
 						},
@@ -1461,28 +1497,22 @@
 					},
 					computed: {
 						station() {
-							return this.$root.stats.stations_dict_station_id
-								? this.$root.stats.stations_dict_station_id[this.$route.params.id]
-								: {};
+								return this.$root.stats.stations_dict_station_id[this.$route.params.id];
 						},
 						clips() {
-							if (this.station.clips) {
-								const clips = this.station.clips.map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]);
-								if (this.current_clip === null) this.current_clip = clips[0];
-								return clips;
-							}
-
-							return [];
+							const clips = this.station.clips.map(clip_id => this.$root.stats.clips_dict[clip_id]);
+							if (this.current_clip === null) this.current_clip = clips[0];
+							return clips;
 						},
 						notes() {
 							if (!this.$root.user) return [];
 
-							const user = (this.$root.stats.users || []).find(u => u.id === this.$root.user.id);
-							const user_access = (this.$root.stats.station_access || [])
+							const user = this.$root.stats.users.find(u => u.id === this.$root.user.id);
+							const user_access = this.$root.stats.station_access
 								.find(x => x.station_id === this.station.id && x.user_id === user.id) || {};
 
 							if (user_access.granted === 1)
-								return (this.$root.stats.notes || [])
+								return this.$root.stats.notes
 									.filter(note => note.station_id === this.station.id)
 									.map(note => this.$root.stats.notes_dict[note.id])
 
@@ -1518,13 +1548,22 @@
 						}
 					},
 					methods: {
-						formatClipTask : clip_task => ({ full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов' })[clip_task] || clip_task,
-						formatClipInterval : formatClipInterval,
+						formatClipTask: clip_task =>
+							({ full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов' })[clip_task] || clip_task,
+						formatClipInterval: formatClipInterval,
 						getTurnout(name) {
 							if (!this.station.turnout) return {};
 							const obj = this.station.turnout[name];
 							const orderList = this.$options.turnoutOrder;
-							return !obj ? [] : Object.keys(obj).reduce((acc, cur) => (orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]), acc), []);
+							return !obj
+								? []
+								: Object.keys(obj).reduce(
+									(acc, cur) => (
+										orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]),
+										acc
+									),
+									[]
+								);
 						},
 					},
 					template: '#app-station',
@@ -1532,7 +1571,11 @@
 
 				const appUser = {
 					name: 'app-user',
-					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp},
+					methods : {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatTimestamp: formatTimestamp,
+					},
 					computed: {
 						user() {
 							return this.$root.stats.users.find(u => u.display === this.$route.params.display);
@@ -1547,7 +1590,7 @@
 							}, {});
 
 							return Object.keys(clipsByStation).map(id => ({
-									id : this.$root.stats.stations_dict[id].station_id,
+									id: this.$root.stats.stations_dict[id].station_id,
 									src: clipsByStation[id][0].thumbnail,
 									title: formatThumbnailTitle(this.$root.stats.stations_dict[id], clipsByStation[id].length)
 								})
@@ -1555,14 +1598,11 @@
 						},
 						bookmarks() {
 							return this.user.bookmarks
-								.filter(Boolean)
 								.map(id => this.$root.stats.bookmarks_dict[id])
 								.sort(sorterNewFirst);
 						},
 						notes() {
-							return this.user.notes
-								.filter(Boolean)
-								.map(id => this.$root.stats.notes_dict[id]);
+							return this.user.notes.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
 							return this.$root.stats.station_access
@@ -1597,9 +1637,15 @@
 						};
 					},
 					computed: {
-						election_list() { return this.filter(this.options, 'election');	},
-						region_list() {	return this.filter(this.getList([this.election_number]), 'region'); },
-						station_list() { return this.filter(this.getList([this.election_number, this.region_number]), 'station'); }
+						election_list() {
+							return this.filter(this.options, 'election');
+						},
+						region_list() {
+							return this.filter(this.getList([this.election_number]), 'region');
+						},
+						station_list() {
+							return this.filter(this.getList([this.election_number, this.region_number]), 'station');
+						},
 					},
 					methods: {
 						filter(list, value) {
@@ -1732,17 +1778,26 @@
 				};
 
 				const appUsers = {
-					methods : {formatMinutes : formatMinutes},
+					methods: { formatMinutes: formatMinutes },
 					template: '#app-users',
 				};
 
 				const appStations = {
-					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatPercent : formatPercent},
+					methods: {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatPercent: formatPercent,
+					},
 					template: '#app-stations',
 				};
 
 				const appNotes = {
-					methods: {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp, sorter : sorterNewFirst},
+					methods: {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatTimestamp: formatTimestamp,
+						sorter: sorterNewFirst,
+					},
 					props: ['notes'],
 					template: '#app-notes',
 				};
@@ -1796,12 +1851,12 @@
 						{ path: '/', name: 'index', component: appIndex },
 						{ path: '/task', name: 'task', component: appTask },
 						{
-							path: '/task/vote/election/:election_number/region/:region_number/station/:station_number',
+							path: '/task/:id/:csrf/vote/election/:election_number/region/:region_number/station/:station_number',
 							name: 'vote',
 							component: appTaskVote,
 						},
 						{
-							path: '/task/proc/election/:election_number/region/:region_number/station/:station_number',
+							path: '/task/:id/:csrf/proc/election/:election_number/region/:region_number/station/:station_number',
 							name: 'proc',
 							component: appTaskProc,
 						},
