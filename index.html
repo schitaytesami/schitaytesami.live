@@ -260,11 +260,12 @@
 						:options="$root.stats.task_selector_options"
 						v-if="$root.stats.task_selector_options"
 					>
-					<router-link
-						class="btn btn-primary mb-2 mt-2 w-100"
-						slot-scope="{ election_number, region_number, station_number }"
-						:to="{ name: 'vote', params: { election_number, region_number, station_number }}"
-						><h5 class="mb-0">Начать работу</h5></router-link>
+						<button
+							type="submit"
+							class="btn btn-primary mb-2 mt-2 w-100"
+							slot-scope="{ election_number, region_number, station_number }"
+							@click="nextTask($event, { task: 'vote', election_number, region_number, station_number })"
+						><h5 class="mb-0">Начать работу</h5></button>
 					</app-selection>
 				</template>
 				<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
@@ -274,11 +275,12 @@
 						:options="$root.stats.task_selector_options"
 						v-if="$root.stats.task_selector_options"
 					>
-					<router-link
-						class="btn btn-primary mb-2 mt-2 w-100"
-						slot-scope="{ election_number, region_number, station_number }"
-						:to="{ name: 'proc', params: { election_number, region_number, station_number }}"
-						><h5 class="mb-0">Начать работу</h5></router-link>
+						<button
+							type="submit"
+							class="btn btn-primary mb-2 mt-2 w-100"
+							slot-scope="{ election_number, region_number, station_number }"
+							@click="nextTask($event, { task: 'proc', election_number, region_number, station_number })"
+						><h5 class="mb-0">Начать работу</h5></button>
 					</app-selection>
 				</template>
 			</div>
@@ -1232,6 +1234,25 @@
 								this.$root.errorHandler(err);
 							}
 						},
+						async nextTask(event, params) {
+							const button = event.target.closest('button');
+
+							try {
+								button.disabled = true;
+								const clip = await nextTask(params);
+								this.$router.push({
+									name: params.task,
+									params: {
+										...params,
+										id: clip.id,
+										csrf: clip.csrf,
+									},
+								});
+							} catch (err) {
+								button.disabled = false;
+								this.$root.errorHandler(err);
+							}
+						},
 					},
 					template: '#app-task'
 				};
@@ -1267,7 +1288,10 @@
 							],
 							showInstruction: false,
 							showEvents: false,
-							clip: null,
+							clip: {
+								...this.$root.stats.clips_dict[this.$route.params.id],
+								csrf: this.$route.params.csrf,
+							},
 							events: [],
 							note: '',
 							started: false,
@@ -1337,11 +1361,21 @@
 									task: this.$route.name,
 									...this.$route.params,
 								});
+
 								this.clip = clip;
 								this.events = [];
 								this.submitted = false;
 								this.completed = false;
 								this.failed = false;
+
+								this.$router.push({
+									name: this.$router.task,
+									params: {
+										...this.$route.params,
+										id: clip.id,
+										csrf: clip.csrf,
+									},
+								});
 							} catch (err) {
 								this.$root.errorHandler(err);
 							}
@@ -1379,8 +1413,6 @@
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
-
-						this.nextTask();
 					},
 					template: '#app-task-base',
 				};
@@ -1817,12 +1849,12 @@
 						{ path: '/', name: 'index', component: appIndex },
 						{ path: '/task', name: 'task', component: appTask },
 						{
-							path: '/task/vote/election/:election_number/region/:region_number/station/:station_number',
+							path: '/task/:id/:csrf/vote/election/:election_number/region/:region_number/station/:station_number',
 							name: 'vote',
 							component: appTaskVote,
 						},
 						{
-							path: '/task/proc/election/:election_number/region/:region_number/station/:station_number',
+							path: '/task/:id/:csrf/proc/election/:election_number/region/:region_number/station/:station_number',
 							name: 'proc',
 							component: appTaskProc,
 						},
