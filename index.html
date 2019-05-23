@@ -1195,17 +1195,23 @@
 				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
 
 				const appIndex = {
-					methods : {formatHours : formatHours, formatThumbnailTitle : formatThumbnailTitle},
+					methods: {
+						formatHours: formatHours,
+						formatThumbnailTitle: formatThumbnailTitle
+					},
 					computed: {
-						guard() { return this.$root.stats.stations && !this.$root.showError; },
+						guard() {
+							return this.$root.stats.stations && !this.$root.showError;
+						},
 						thumbnails() {
-							return Array(Math.min(this.$root.stats.clips.length, 5)).fill().map(_ =>
-							{
-								const id = Math.floor(Math.random() * this.$root.stats.clips.length);
-								const clip = this.$root.stats.clips_dict[id];
-								const station = this.$root.stats.stations_dict[clip.station_id];
-								return { clip, station };
-							});
+							return Array(Math.min(this.$root.stats.clips.length, 5))
+								.fill()
+								.map(_ => {
+									const id = Math.floor(Math.random() * this.$root.stats.clips.length);
+									const clip = this.$root.stats.clips_dict[id];
+									const station = this.$root.stats.stations_dict[clip.station_id];
+									return { clip, station };
+								});
 						},
 					},
 					template: '#app-index',
@@ -1276,7 +1282,7 @@
 						},
 					},
 					methods: {
-						formatInstructionToggleText : showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
+						formatInstructionToggleText: showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
 						formatTaskSubmitResultsButtonText(submitted, failed) {
 							let message = 'Разметка этого видео закончена. Спасибо!';
 							let button = 'Отправить результаты';
@@ -1424,19 +1430,15 @@
 					},
 					computed: {
 						station() {
-							if (this.$root.stats && this.$root.stats.clips_dict) {
-								const { station_id } = this.$root.stats.clips_dict[this.clip.id];
-								const station = this.$root.stats.stations_dict[station_id];
-								return station;
-							}
-
-							return {};
+							const { station_id } = this.$root.stats.clips_dict[this.clip.id];
+							const station = this.$root.stats.stations_dict[station_id];
+							return station;
 						},
 					},
 					methods : {
-						formatTimezoneOffset : timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', ''),
-						formatClipInterval : formatClipInterval,
-						formatRegionName : formatRegionName,
+						formatTimezoneOffset: timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', ''),
+						formatClipInterval: formatClipInterval,
+						formatRegionName: formatRegionName,
 						pause() {
 							this.$refs.player.pause();
 						},
@@ -1461,28 +1463,22 @@
 					},
 					computed: {
 						station() {
-							return this.$root.stats.stations_dict_station_id
-								? this.$root.stats.stations_dict_station_id[this.$route.params.id]
-								: {};
+								return this.$root.stats.stations_dict_station_id[this.$route.params.id];
 						},
 						clips() {
-							if (this.station.clips) {
-								const clips = this.station.clips.map(clip_id => this.$root.stats.clips_dict[Number(clip_id)]);
-								if (this.current_clip === null) this.current_clip = clips[0];
-								return clips;
-							}
-
-							return [];
+							const clips = this.station.clips.map(clip_id => this.$root.stats.clips_dict[clip_id]);
+							if (this.current_clip === null) this.current_clip = clips[0];
+							return clips;
 						},
 						notes() {
 							if (!this.$root.user) return [];
 
-							const user = (this.$root.stats.users || []).find(u => u.id === this.$root.user.id);
-							const user_access = (this.$root.stats.station_access || [])
+							const user = this.$root.stats.users.find(u => u.id === this.$root.user.id);
+							const user_access = this.$root.stats.station_access
 								.find(x => x.station_id === this.station.id && x.user_id === user.id) || {};
 
 							if (user_access.granted === 1)
-								return (this.$root.stats.notes || [])
+								return this.$root.stats.notes
 									.filter(note => note.station_id === this.station.id)
 									.map(note => this.$root.stats.notes_dict[note.id])
 
@@ -1518,13 +1514,22 @@
 						}
 					},
 					methods: {
-						formatClipTask : clip_task => ({ full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов' })[clip_task] || clip_task,
-						formatClipInterval : formatClipInterval,
+						formatClipTask: clip_task =>
+							({ full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов' })[clip_task] || clip_task,
+						formatClipInterval: formatClipInterval,
 						getTurnout(name) {
 							if (!this.station.turnout) return {};
 							const obj = this.station.turnout[name];
 							const orderList = this.$options.turnoutOrder;
-							return !obj ? [] : Object.keys(obj).reduce((acc, cur) => (orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]), acc), []);
+							return !obj
+								? []
+								: Object.keys(obj).reduce(
+									(acc, cur) => (
+										orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]),
+										acc
+									),
+									[]
+								);
 						},
 					},
 					template: '#app-station',
@@ -1532,7 +1537,11 @@
 
 				const appUser = {
 					name: 'app-user',
-					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp},
+					methods : {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatTimestamp: formatTimestamp,
+					},
 					computed: {
 						user() {
 							return this.$root.stats.users.find(u => u.display === this.$route.params.display);
@@ -1547,7 +1556,7 @@
 							}, {});
 
 							return Object.keys(clipsByStation).map(id => ({
-									id : this.$root.stats.stations_dict[id].station_id,
+									id: this.$root.stats.stations_dict[id].station_id,
 									src: clipsByStation[id][0].thumbnail,
 									title: formatThumbnailTitle(this.$root.stats.stations_dict[id], clipsByStation[id].length)
 								})
@@ -1555,14 +1564,11 @@
 						},
 						bookmarks() {
 							return this.user.bookmarks
-								.filter(Boolean)
 								.map(id => this.$root.stats.bookmarks_dict[id])
 								.sort(sorterNewFirst);
 						},
 						notes() {
-							return this.user.notes
-								.filter(Boolean)
-								.map(id => this.$root.stats.notes_dict[id]);
+							return this.user.notes.map(id => this.$root.stats.notes_dict[id]);
 						},
 						station_access() {
 							return this.$root.stats.station_access
@@ -1597,9 +1603,15 @@
 						};
 					},
 					computed: {
-						election_list() { return this.filter(this.options, 'election');	},
-						region_list() {	return this.filter(this.getList([this.election_number]), 'region'); },
-						station_list() { return this.filter(this.getList([this.election_number, this.region_number]), 'station'); }
+						election_list() {
+							return this.filter(this.options, 'election');
+						},
+						region_list() {
+							return this.filter(this.getList([this.election_number]), 'region');
+						},
+						station_list() {
+							return this.filter(this.getList([this.election_number, this.region_number]), 'station');
+						},
 					},
 					methods: {
 						filter(list, value) {
@@ -1732,17 +1744,26 @@
 				};
 
 				const appUsers = {
-					methods : {formatMinutes : formatMinutes},
+					methods: { formatMinutes: formatMinutes },
 					template: '#app-users',
 				};
 
 				const appStations = {
-					methods : {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatPercent : formatPercent},
+					methods: {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatPercent: formatPercent,
+					},
 					template: '#app-stations',
 				};
 
 				const appNotes = {
-					methods: {formatElectionDate : formatElectionDate, formatRegionName : formatRegionName, formatTimestamp : formatTimestamp, sorter : sorterNewFirst},
+					methods: {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatTimestamp: formatTimestamp,
+						sorter: sorterNewFirst,
+					},
 					props: ['notes'],
 					template: '#app-notes',
 				};
