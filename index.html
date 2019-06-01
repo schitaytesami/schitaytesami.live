@@ -1961,7 +1961,7 @@
 							.catch(this.errorHandler);
 					},
 					render(c) {
-						return c('div', { attrs: { class: 'h-100' }}, [
+						return c('div', { attrs: { class: 'd-flex flex-column h-100' }}, [
 							c('app-navigation-menu', { props: { logout: this.logout } }),
 							c('app-error', { props: { showError: this.showError } }, this.errorMessage),
 							c(
