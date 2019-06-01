@@ -1552,7 +1552,6 @@
 							({ full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов' })[clip_task] || clip_task,
 						formatClipInterval: formatClipInterval,
 						getTurnout(name) {
-							if (!this.station.turnout) return {};
 							const obj = this.station.turnout[name];
 							const orderList = this.$options.turnoutOrder;
 							return !obj
