@@ -255,6 +255,15 @@
 					<p class="text-center text-light" v-else>Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
 				</div>
 
+				<h3 class="text-center lead">Мур Мяу</h3>
+				<template v-if="$root.user">
+					<button
+						type="submit"
+						class="btn btn-primary mb-2 mt-2 w-100"
+						@click="nextTask($event, { task: 'polygon', election_number: -1, region_number: -1, station_number: -1 })"
+					><h5 class="mb-0">Начать работу</h5></button>
+				</template>
+
 				<h3 class="text-center lead">Подсчёт явки</h3>
 				<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
 				<template v-if="$root.user">
@@ -331,7 +340,6 @@
 								<div><button class="btn btn-success" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button></div>
 							</div>
 						</div>
-
 					</app-clip-player>
 
 					<div v-if="clip">
@@ -367,6 +375,67 @@
 						<app-bookmark-button :clip="clip" class="flex-grow-1"/>
 					</div>
 
+					<template v-if="are_controls_polygon_shown">
+						<div class="btn-group-vertical w-100">
+							<div class="btn-group mb-3">
+								<button
+									type="submit"
+									class="btn btn-success w-50"
+									id="next_task_polygon"
+								>Готово, дальше! (пробел)</button>
+								<button
+									type="button"
+									class="btn btn-danger w-50"
+								>Удалить разметку (delete)</button>
+							</div>
+							<div class="btn-group mb-3">
+								<input
+									type="text"
+									class="form-control"
+									placeholder="Необычное? Опишите здесь!"
+									v-model.trim="note"
+									ref="note"/>
+								<button
+									type="button"
+									class="btn btn-primary w-50"
+									@click.prevent="addEvent(0, 'note', note)"
+								>Добавить</button>
+							</div>
+							<div class="btn-group-toggle" data-toggle="buttons">
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Ящик мелкий, сложно отметить
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Ящик не в кадре
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Ящик загорожен <u>не</u> людьми
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Ящик <u>будет часто</u> загорожен людьми
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Ящик ещё устанавливают
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Ящики сильно перемещали
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Видна комиссия
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Ящиков почти не видно
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Два участка в кадре
+								</label>
+								<label class="btn btn-sm btn-secondary mb-1">
+									<input type="checkbox" autocomplete="off">Видно очень плохо / камеру заслонили или отвернули
+								</label>
+							</div>
+						</div>
+					</template>
+
 					<template v-if="are_controls_vote_shown">
 						<div class="btn-group-vertical w-100 mb-3">
 							<div class="btn-group">
@@ -375,10 +444,10 @@
 									class="form-control"
 									placeholder="Необычное? Опишите здесь!"
 									v-model.trim="note"
-									ref="note" />
+									ref="note"/>
 								<button
 									type="button"
-									class="btn btn-primary w-50 add_note"
+									class="btn btn-primary w-50"
 									@click.prevent="addEvent($refs.player.currentTime, 'note', note)"
 								>Добавить</button>
 							</div>
@@ -433,9 +502,101 @@
 		</div>
 	</script>
 
+	<script type="text/x-template" id="app-task-polygon">
+		<app-task-base
+			:are_controls_polygon_shown="true"
+			:are_controls_vote_shown="false"
+			:are_controls_proc_shown="false"
+		>
+			<div slot="instruction">
+				<h1 class="lead text-center">Инструкция по разметке ящиков</h1>
+				<p>Это первый этап проекта, от аккуратности разметки ящиков для голосования (неформально – «урн») зависит выбор участков для ускорения видео и качество этого ускорения.</p>
+				<p>Мы просим вас отметить четырёхугольниками поверхности всех ящиков и выбрать атрибуты, которые справедливы хотя бы для одного из ящиков на предложенной картинке с участка.</p>
+				<p>Пожалуйста, внимательно прочитайте эту инструкцию, мы подробно с примерами обсуждаем все нюансы. Если появляются вопросы, <a href="mailto:schitaytesami+polygon@gmail.com">напишите нам письмо</a>. Мы постараемся ответить оперативно.</p>
+
+				<h5>Частые вопросы</h5>
+				<dl class="small">
+					<dt>Отмечать или нет "Ящик будет часто загорожен людьми" при сомнениях?</dt>
+					<dd>Не отмечать.</dd>
+					<dt>Один ящик виден, а второй не виден. Нужно ли отмечать первый?</dt>
+					<dd>Да, нужно отмечать. Но при этом нужно также отметить "Ящик не в кадре".</dd>
+					<dt>Виден только уголок ящика. Отмечать ли его поверхность?</dt>
+					<dd>Да, отмечать. Но при этом можно и отметить "Ящик не в кадре".</dd>
+				</dl>
+
+				<dl>
+					<dt>Разметка поверхностей и выбор атрибутов</dt>
+					<dd>
+						<p>Ваша цель – отметить верхнюю поверхность каждого ящика четырёхугольником. Для этого кликайте по углам поверхности. Одна поверхность – один четырёхугольник. Внимательно отметьте все ящики. Система подсветит каждый размеченный ящик своим цветом. Пример разметки:</p>
+						<img class="d-block w-100" alt="Пример интерфейса" src="/images/urn.jpg"></img>
+						<p>Атрибуты представлены <button class="btn btn-secondary btn-sm">серыми кнопками</button>. Нажмите на все кнпоки, атрибут на которых справедлив для предложенной картинки. Для справки под кадром есть две кнопки <button class="btn btn-dark btn-sm">чёрные кнопки</button>. Если они активны, наведите на них мышку, и появится другой вспомогательный кадр. Потом уберите мышку с этих кнопок и продолжайте разметку. Эти дополнительные кадры могут помочь выбрать правильные атрибуты в непонятных ситуациях (например, непонятно, все ли ящики видны на кадре).
+						</p>
+						<p>Если вы ошиблись, вы можете очистить разметку, нажав на <button class="btn btn-warning btn-sm">жёлтую кнопку</button> (или на клавишу <code>delete</code>). Для отправки разметки и получения нового задания нажмите на <button class="btn btn-success btn-sm">зелёную кнопку</button> (или на клавишу <code>пробел</code>). Отправка и получение нового задания займёт несколько секунд, пожалуйста, не нажимайте на другие кнопки в это время. Если атрибутов не хватает и считаете нужным добавить комментарий, пишите его в поле "Необычное?" и добавляйте комментарий, нажав на <button class="btn btn-primary btn-sm">синюю кнопку</button>.</p>
+						<p>Ниже мы обсуждаем атрибуты, которые мы просим выбрать. Принцип, по которому мы сформулировали атрибуты – помочь сформировать выборку
+						участков для автоматического ускорения видео. При разметке не забудьте выбрать все атрибуты, которые справедливы хотя бы для одного из ящиков на предложенной картинке с участка.</p>
+					</dd>
+					<dt>Ящик мелкий, сложно отметить</dt>
+					<dd>
+						Если поверхность ящика на картинке очень маленькая – до степени, что её было сложно размечать. Часто это бывает в случаях, когда ящики расположены
+						далеко от веб-камеры на участке: в конце коридора или в углу школьного спортзала. Иногда ящики стоят рядом и бывает сложно их отделить друг от друга. В таком случае можно выделить общую поверхность и отметить этот атрибут. Если ящики видно совсем плохо – не отмечайте ящики, мы не будем автоматически ускорять такие видео.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/2a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/2b.jpeg"></img>
+					</dd>
+					<dt>Ящик не в кадре</dt>
+					<dd>Виден край ящика, а поверхность ящика не видна на картинке. Или по номерам на ящиках видно, что какого-то ящика нет.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/3a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/3b.jpeg"></img>
+					</dd>
+					<dt>Ящик загорожен <u>не</u> людьми</dt>
+					<dd>Иногда ящик загорожен кабиной для голосования, дверью, люстрой, столом комиссии, флагом, сеткой в спортзале, меткой времени, чем-то ещё.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/4a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/4b.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/5a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/5b.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/6a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/6b.jpeg"></img>
+					</dd>
+					<dt>Ящик загорожен людьми</dt>
+					<dd>Поверхность ящика сложно выделить, потому что конкретно на этой картинке к ящику кто-то подошёл (чаще всего это избиратель).<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/7a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/7b.jpeg"></img>
+					</dd>
+					<dt>Ящик <u>будет часто</u> загорожен людьми</dt>
+					<dd>Ракурс камеры такой, что поверхность ящика будет явно часто загорожена избирателями, подходящими к комиссии или уходящими из участка.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/8a.jpeg"></img>
+					</dd>
+					<dt>Ящик ещё устанавливают</dt><dd>Видно, что ящик двигают, у ящика суетятся какие-то люди члены комиссии или полицейские.<br/>
+					<img class="instr-screenshot" alt="" src="/images/examples/9a.jpeg"></img>
+					</dd>
+					<dt>Ящики сильно перемещали</dt>
+					<dd>
+						Если кнопка <button class="btn btn-dark btn-sm">Вечер на этой камере</button> активна, наведите на неё. Появится кадр с этого же участка, но с вечера. Отметьте этот атрибут, если утром и вечером на кадре находятся в разных местах, или если ракурс камеры сильно изменился.
+					</dd>
+					<dt>Видна комиссия</dt>
+					<dd>Часто бывает, что даже на камере с ящиками видна комиссия и люди, которые подходят к комиссии.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/10a.jpeg"></img>
+					</dd>
+					<dt>Ящиков почти не видно</dt>
+					<dd>Когда на картинке почти не видно ящиков, зато видна избирательная комиссия. Это очень частая ситуация, потому что мы не знаем заранее, на какой камере в основном ящики, а на какой в основном комиссия.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/11a.jpeg"></img>
+					</dd>
+					<dt>Два участка в кадре</dt>
+					<dd>Когда очень похоже, что на картинке есть ящики от двух разных избирательных участков. Иногда такое происходит, когда с двух сторон спортзала находятся два разных участка, но на камере видны ящики от обоих.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/12a.jpeg"></img>
+					</dd>
+					<dt>Видно очень плохо / камеру заслонили или отвернули</dt>
+					<dd>Иногда изображение слишком тёмное и отметить ящики невозможно, или камеру отвернули в потолок или чем-то заслонили.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/13a.jpeg"></img>
+					</dd>
+				</dl>
+			</div>
+		</app-task-base>
+	</script>
+
 	<script type="text/x-template" id="app-task-vote">
 		<div>
 			<app-task-base
+				:are_controls_polygon_shown="false"
 				:are_controls_vote_shown="true"
 				:are_controls_proc_shown="false"
 			>
@@ -464,6 +625,7 @@
 	<script type="text/x-template" id="app-task-proc">
 		<div>
 			<app-task-base
+				:are_controls_polygon_shown="false"
 				:are_controls_vote_shown="false"
 				:are_controls_proc_shown="true"
 			>
@@ -473,7 +635,7 @@
 					<li>Ответы в анкету можно вписывать как во время просмотра (с приостановкой просмотра!), так и после просмотра. <br />Ответы можно давать в любой последовательности, но последовательность вопросов соответствует предусмотренной законом последовательности подсчета голосов.</li>
 					<li>Ответы вы даёте путем нажатия на одну из кнопок «Да», «Нет», «Не могу ответить». Вы должны нажать на одну из кнопок обязательно. Положительный ответ означает то, что предусмотренная законом процедура, в основном, была выполнена. <br/>Ответ «Нет» давайте только в том случае, если нарушение очевидно. Сомнения должны трактоваться в пользу УИК.</li>
 					<li>Вы можете написать комментарий к любому вопросу Анкеты. Если ответ на вопрос отрицательный, то впишите в поле «Комментарий» примерный интервал времени (по показаниям в левом верхнем углу видеозаписи) времени, когда было допущено нарушение. Другие записи в поле «Комментарий» также допустимы.</li>
-					<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи. </li>
+					<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи.</li>
 					<li>14-я строка Анкеты заполняется текстом в произвольной форме по желанию исследователя. (например, Вы заметили вброс бюллетеней перед или во время сортировки бюллетеней). При этом обязательно указывается время нарушения.</li>
 				</ol>
 			</app-task-base>
@@ -646,40 +808,55 @@
 				</span>
 			</h6>
 
-			<div class="position-relative">
-				<video
-					controls="controls"
-					class="w-100"
-					preload="auto"
-					ref="player"
-					:src="clip.video"
-					@timeupdate="currentTime = $event.target.currentTime"
-					@play.once="$emit('update:started', true)"
-					@ended="$emit('update:completed', true)"
-					@keyup="preventPause"
-				></video>
+			<template v-if="clip.video !== null">
+				<div class="position-relative">
+					<video
+						controls="controls"
+						class="w-100"
+						preload="auto"
+						ref="player"
+						:src="clip.video"
+						@timeupdate="currentTime = $event.target.currentTime"
+						@play.once="$emit('update:started', true)"
+						@ended="$emit('update:completed', true)"
+						@keyup="preventPause"
+					></video>
 
-				<slot name="intro"></slot>
-				<slot name="end"></slot>
-			</div>
-
-
-			<div class="btn-group btn-group-sm">
-				<div class="d-inline-flex align-items-center pr-1 bg-light">
-					<span class="font-weight-bold">Скорость {{ playbackRate.toFixed(1) }}x</span>
+					<slot name="intro"></slot>
+					<slot name="end"></slot>
 				</div>
-				<button
-					type="button"
-					class="btn btn-secondary"
-					@click.prevent="setPlaybackRate(-0.5)"
-				>Медленнее</button>
-				<button
-					type="button"
-					class="btn btn-secondary"
-					@click.prevent="setPlaybackRate(+0.5)"
-				>Быстрее</button>
-			</div>
 
+				<div class="btn-group btn-group-sm">
+					<div class="d-inline-flex align-items-center pr-1 bg-light">
+						<span class="font-weight-bold">Скорость {{ playbackRate.toFixed(1) }}x</span>
+					</div>
+					<button
+						type="button"
+						class="btn btn-secondary"
+						@click.prevent="setPlaybackRate(-0.5)"
+					>Медленнее</button>
+					<button
+						type="button"
+						class="btn btn-secondary"
+						@click.prevent="setPlaybackRate(+0.5)"
+					>Быстрее</button>
+				</div>
+			</template>
+
+			<template v-if="clip.video === null">
+				<div class="position-relative w-100 h-0" style="padding-bottom: 75%;">
+					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1">
+						<image preserveAspectRatio="none" height="1" width="1" :href="clip.poster" />
+						<path stroke-width="0.03" fill-opacity="0.5" class="collapse" />
+						<circle r="0.008" class="collapse" />
+					</svg>
+				</div>
+
+				<div class="btn-group mt-1 w-100">
+					<button class="btn btn-dark mr-1 w-50">Вечер на этой камере</button>
+					<button class="btn btn-dark ml-1 w-50">Утро на другой камере</button>
+				</div>
+			</template>
 		</div>
 	</script>
 
@@ -1239,9 +1416,13 @@
 						async nextTask(event, params) {
 							const button = event.target.closest('button');
 
+							/* HACK: remove after we'll get API for polygon */
+							let { task } = params;
+							if (task === 'polygon') task = 'vote';
+
 							try {
 								button.disabled = true;
-								const clip = await nextTask(params);
+								const clip = await nextTask({ ...params, task });
 								this.$router.push({
 									name: params.task,
 									params: {
@@ -1261,6 +1442,10 @@
 
 				const appTaskBase = {
 					props: {
+						are_controls_polygon_shown: {
+							type: Boolean,
+							required: true,
+						},
 						are_controls_vote_shown: {
 							type: Boolean,
 							required: true,
@@ -1290,10 +1475,6 @@
 							],
 							showInstruction: false,
 							showEvents: false,
-							clip: {
-								...this.$root.stats.clips_dict[this.$route.params.id],
-								csrf: this.$route.params.csrf,
-							},
 							events: [],
 							note: '',
 							started: false,
@@ -1305,6 +1486,21 @@
 					computed: {
 						user() {
 							return this.$root.user;
+						},
+						clip() {
+							const clip = {
+								...this.$root.stats.clips_dict[this.$route.params.id],
+								csrf: this.$route.params.csrf,
+							};
+
+							if (this.$route.name === 'polygon')
+									return {
+										...clip,
+										video: null,
+										poster: 'https://proverim.webcam/speedup_/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub_1521348900_1521392700.mp4.0008.mp4.jpg',
+									};
+
+							return clip;
 						},
 					},
 					methods: {
@@ -1417,6 +1613,14 @@
 						document.addEventListener('keydown', this.keyDown);
 					},
 					template: '#app-task-base',
+				};
+
+				const appTaskPolygon = {
+					name: 'app-task-polygon',
+					components: {
+						'app-task-base': appTaskBase,
+					},
+					template: '#app-task-polygon',
 				};
 
 				const appTaskVote = {
@@ -1849,6 +2053,11 @@
 					routes: [
 						{ path: '/', name: 'index', component: appIndex },
 						{ path: '/task', name: 'task', component: appTask },
+						{
+							path: '/task/polygon/:id/:csrf',
+							name: 'polygon',
+							component: appTaskPolygon,
+						},
 						{
 							path: '/task/:id/:csrf/vote/election/:election_number/region/:region_number/station/:station_number',
 							name: 'vote',
