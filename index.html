@@ -401,36 +401,18 @@
 									@click.prevent="addEvent(0, 'note', note)"
 								>Добавить</button>
 							</div>
-							<div class="btn-group-toggle" data-toggle="buttons">
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Ящик мелкий, сложно отметить
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Ящик не в кадре
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Ящик загорожен <u>не</u> людьми
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Ящик <u>будет часто</u> загорожен людьми
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Ящик ещё устанавливают
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Ящики сильно перемещали
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Видна комиссия
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Ящиков почти не видно
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Два участка в кадре
-								</label>
-								<label class="btn btn-sm btn-secondary mb-1">
-									<input type="checkbox" autocomplete="off">Видно очень плохо / камеру заслонили или отвернули
+							<div class="btn-group-toggle">
+								<label
+									class="btn btn-sm btn-secondary mb-1 mr-1"
+									:class="{ active: checked_options.includes(key) }"
+									:key="key"
+									v-for="([key, value]) in options"
+								>
+									<input
+										type="checkbox"
+										autocomplete="off"
+										:value="key"
+										v-model="checked_options">{{ value }}
 								</label>
 							</div>
 						</div>
@@ -1473,6 +1455,20 @@
 								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Оцените качество аудиозаписи (хорошо ли различимо оглашение данных, не было ли помех для аудиозаписи)' },
 								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Замеченные нарушения, не отраженные выше' },
 							],
+							options: [
+								['box_small_hard', 'Ящик мелкий, сложно отметить'],
+								['box_missing_in_frame', 'Ящик не в кадре'],
+								['box_occluded_by_stuff', 'Ящик загорожен не людьми'],
+								['box_occluded_by_people', 'Ящик загорожен людьми'],
+								['box_occluded_by_people_future', 'Ящик будет часто загорожен людьми'],
+								['box_installation_ongoing', 'Ящик ещё устанавливают'],
+								['box_moved', 'Ящики сильно перемещали'],
+								['commission_well', 'Видна комиссия'],
+								['box_no', 'Ящиков почти не видно'],
+								['two_stations', 'Два участка в кадре'],
+								['image_bad_quality', 'Видно очень плохо / камеру заслонили или отвернули'],
+							],
+							checked_options: [],
 							showInstruction: false,
 							showEvents: false,
 							events: [],
