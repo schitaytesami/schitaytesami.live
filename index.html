@@ -318,6 +318,7 @@
 						:clip="clip"
 						:started.sync="started"
 						:completed.sync="completed"
+						:polygons="polygons"
 						ref="player"
 						v-if="clip"
 					>
@@ -414,6 +415,14 @@
 										:value="key"
 										v-model="checked_options">{{ value }}
 								</label>
+							</div>
+							<div class="btn-group">
+								<button
+									type="button"
+									class="btn btn-primary"
+									:disabled="!canAddPolygon"
+									@click="addPolygon"
+								>Разметить урну</button>
 							</div>
 						</div>
 					</template>
@@ -827,10 +836,14 @@
 
 			<template v-if="clip.video === null">
 				<div class="position-relative w-100 h-0" style="padding-bottom: 75%;">
-					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1">
+					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1" ref="svg">
 						<image preserveAspectRatio="none" height="1" width="1" :href="clip.poster" />
-						<path stroke-width="0.03" fill-opacity="0.5" class="collapse" />
-						<circle r="0.008" class="collapse" />
+						<polygon
+							v-for="polygon in polygons"
+							fill-opacity="0.5"
+							stroke="red"
+							stroke-width="0.002"
+							:points="polygon.map(pair => pair.join(',')).join(' ')" />
 					</svg>
 				</div>
 
@@ -1323,6 +1336,18 @@
 				return response;
 			}
 
+			function polygonClickListener(callback) {
+				return function click(event) {
+					const { left, top, width, height } = this.getBoundingClientRect();
+					const { clientX, clientY } = event;
+
+					const x = clientX - left;
+					const y = clientY - top;
+
+					callback(x / width, y / height);
+				}
+			}
+
 			const initVue = () => {
 				const formatHoursMinutes = (timestamp, timezoneOffset) => {
 					if (!timestamp)
@@ -1469,6 +1494,8 @@
 								['image_bad_quality', 'Видно очень плохо / камеру заслонили или отвернули'],
 							],
 							checked_options: [],
+							polygons: [],
+							canAddPolygon: true,
 							showInstruction: false,
 							showEvents: false,
 							events: [],
@@ -1602,7 +1629,21 @@
 							counter.classList.remove('highlight');
 							void counter.offsetWidth; /* MAGIC */
 							counter.classList.add('highlight');
-						}
+						},
+						addPolygon() {
+							this.canAddPolygon = false;
+							this.collectPolygonPoints([], polygon => {
+								this.canAddPolygon = true;
+								this.polygons.push(polygon);
+							});
+						},
+						collectPolygonPoints(points, callback) {
+							this.$refs.player.getPolygonPoint((x, y) => {
+								const newPoints = points.concat([[x, y]]);
+								if (newPoints.length !== 4) this.collectPolygonPoints(newPoints, callback);
+								else callback(newPoints);
+							});
+						},
 					},
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
@@ -1653,6 +1694,10 @@
 							type: Boolean,
 							required: false,
 						},
+						polygons: {
+							type: Array,
+							required: false,
+						},
 					},
 					name : 'app-clip-player',
 					template : '#app-clip-player',
@@ -1683,6 +1728,14 @@
 						setPlaybackRate(delta) {
 							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
 							this.playbackRate = this.$refs.player.playbackRate;
+						},
+						getPolygonPoint(callback) {
+							const clickHandler = polygonClickListener((x, y) => {
+								this.$refs.svg.removeEventListener('click', clickHandler);
+								callback(x, y);
+							});
+
+							this.$refs.svg.addEventListener('click', clickHandler);
 						},
 					},
 				};
