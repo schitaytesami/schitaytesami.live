@@ -324,6 +324,7 @@
 						:started.sync="started"
 						:completed.sync="completed"
 						:polygons="polygons"
+						:clickCallback="clickCallback()"
 						ref="player"
 						v-if="clip"
 					>
@@ -426,14 +427,6 @@
 										@change="addEvent('polygon', { value: key, text: value })"
 										v-model="checked_options">{{ value }}
 								</label>
-							</div>
-							<div class="btn-group">
-								<button
-									type="button"
-									class="btn btn-primary"
-									:disabled="!canAddPolygon"
-									@click="addPolygon"
-								>Разметить урну</button>
 							</div>
 						</div>
 					</template>
@@ -847,7 +840,7 @@
 
 			<template v-if="clip.video === null">
 				<div class="position-relative w-100 h-0" style="padding-bottom: 75%;">
-					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1" ref="svg">
+					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1" ref="svg" @click="SVGClickHandler($event)">
 						<image preserveAspectRatio="none" height="1" width="1" :href="clip.poster" />
 						<g v-for="(polygon, i) in polygons">
 							<polygon
@@ -1354,18 +1347,6 @@
 				return response;
 			}
 
-			function polygonClickListener(callback) {
-				return function click(event) {
-					const { left, top, width, height } = this.getBoundingClientRect();
-					const { clientX, clientY } = event;
-
-					const x = clientX - left;
-					const y = clientY - top;
-
-					callback(x / width, y / height);
-				}
-			}
-
 			const initVue = () => {
 				const formatHoursMinutes = (timestamp, timezoneOffset) => {
 					if (!timestamp)
@@ -1513,7 +1494,6 @@
 							],
 							checked_options: [],
 							polygons: [],
-							canAddPolygon: true,
 							showInstruction: false,
 							showEvents: false,
 							events: [],
@@ -1690,23 +1670,22 @@
 							void counter.offsetWidth; /* MAGIC */
 							counter.classList.add('highlight');
 						},
-						addPolygon() {
-							this.canAddPolygon = false;
-							this.collectPolygonPoints([], polygon => {
-								this.canAddPolygon = true;
-								this.polygons.push(polygon);
-								this.addEvent('polygon', {
-									text: 'Разметка урны',
-									value: polygon,
-								});
-							});
-						},
-						collectPolygonPoints(points, callback) {
-							this.$refs.player.getPolygonPoint((x, y) => {
-								const newPoints = points.concat([[x, y]]);
-								if (newPoints.length !== 4) this.collectPolygonPoints(newPoints, callback);
-								else callback(newPoints);
-							});
+						clickCallback() {
+							let points = [];
+
+							return (x, y) => {
+								points.push([x, y]);
+
+								if (points.length === 4) {
+									this.polygons.push(points);
+									this.addEvent('polygon', {
+										text: 'Разметка урны',
+										value: points,
+									});
+
+									points = [];
+								}
+							};
 						},
 					},
 					created() {
@@ -1758,6 +1737,10 @@
 							type: Boolean,
 							required: false,
 						},
+						clickCallback: {
+							type: Function,
+							default: () => 1,
+						},
 						polygons: {
 							type: Array,
 							required: false,
@@ -1793,17 +1776,18 @@
 							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
 							this.playbackRate = this.$refs.player.playbackRate;
 						},
-						getPolygonPoint(callback) {
-							const clickHandler = polygonClickListener((x, y) => {
-								this.$refs.svg.removeEventListener('click', clickHandler);
-								callback(x, y);
-							});
+						SVGClickHandler(event) {
+							const { left, top, width, height } = this.$refs.svg.getBoundingClientRect();
+							const { clientX, clientY } = event;
 
-							this.$refs.svg.addEventListener('click', clickHandler);
+							const x = clientX - left;
+							const y = clientY - top;
+
+							this.clickCallback(x / width, y / height);
 						},
 						formatColor(i, n = 8) {
 							return `hsl(${360 * (i % n) / n}, 50%, 50%)`;
-						}
+						},
 					},
 				};
 
