@@ -168,6 +168,11 @@
 			width: 10rem;
 			height: 10rem;
 		}
+
+		.polygon {
+			stroke-width: 0.002;
+			fill-opacity: 0.5;
+		}
 	</style>
 </head>
 
@@ -844,16 +849,15 @@
 				<div class="position-relative w-100 h-0" style="padding-bottom: 75%;">
 					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1" ref="svg">
 						<image preserveAspectRatio="none" height="1" width="1" :href="clip.poster" />
-						<g v-for="polygon in polygons">
+						<g v-for="(polygon, i) in polygons">
 							<polygon
-								fill-opacity="0.5"
-								stroke="red"
-								stroke-width="0.002"
+								class="polygon"
+								:stroke="formatColor(i)"
 								:points="polygon.map(pair => pair.join(',')).join(' ')" />
 							<circle
-								r="0.005"
-								fill="red"
 								v-for="([x, y]) in polygon"
+								r="0.005"
+								:fill="formatColor(i)"
 								:cx="x"
 								:cy="y"
 							></circle>
@@ -1797,6 +1801,9 @@
 
 							this.$refs.svg.addEventListener('click', clickHandler);
 						},
+						formatColor(i, n = 8) {
+							return `hsl(${360 * (i % n) / n}, 50%, 50%)`;
+						}
 					},
 				};
 
