@@ -844,12 +844,20 @@
 				<div class="position-relative w-100 h-0" style="padding-bottom: 75%;">
 					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1" ref="svg">
 						<image preserveAspectRatio="none" height="1" width="1" :href="clip.poster" />
-						<polygon
-							v-for="polygon in polygons"
-							fill-opacity="0.5"
-							stroke="red"
-							stroke-width="0.002"
-							:points="polygon.map(pair => pair.join(',')).join(' ')" />
+						<g v-for="polygon in polygons">
+							<polygon
+								fill-opacity="0.5"
+								stroke="red"
+								stroke-width="0.002"
+								:points="polygon.map(pair => pair.join(',')).join(' ')" />
+							<circle
+								r="0.005"
+								fill="red"
+								v-for="([x, y]) in polygon"
+								:cx="x"
+								:cy="y"
+							></circle>
+						</g>
 					</svg>
 				</div>
 
