@@ -323,7 +323,7 @@
 						:clip="clip"
 						:started.sync="started"
 						:completed.sync="completed"
-						:polygons="polygons"
+						:polygons="events.filter(e => e.type === 'polygon').map(e => e.value).reverse()"
 						:clickCallback="clickCallback()"
 						ref="player"
 						v-if="clip"
@@ -416,16 +416,16 @@
 							<div class="btn-group-toggle">
 								<label
 									class="btn btn-sm btn-secondary mb-1 mr-1"
-									:class="{ active: checked_options.includes(key)}"
-									:key="key"
-									v-for="([key, value]) in options"
+									:class="{ active: events.find(e => e.value === value)}"
+									:key="value"
+									v-for="([value, text]) in options"
 								>
 									<input
 										type="checkbox"
 										autocomplete="off"
-										:value="key"
-										@change="addEvent('polygon', { value: key, text: value })"
-										v-model="checked_options">{{ value }}
+										:value="value"
+										:checked="events.find(e => e.value === value)"
+										@change="addEvent('polygon_question', { value, text })">{{ text }}
 								</label>
 							</div>
 						</div>
@@ -1500,8 +1500,6 @@
 								['two_stations', 'Два участка в кадре'],
 								['image_bad_quality', 'Видно очень плохо / камеру заслонили или отвернули'],
 							],
-							checked_options: [],
-							polygons: [],
 							showInstruction: false,
 							showEvents: false,
 							events: [],
@@ -1633,7 +1631,7 @@
 								return;
 							}
 
-							if (type === 'polygon') {
+							if (type === 'polygon' || type === 'polygon_question') {
 								this.events.unshift({
 									type,
 									clip: this.clip.id,
@@ -1648,15 +1646,6 @@
 							this.highlightCounter();
 
 							this.events.splice(this.events.indexOf(event), 1);
-							if (event.type === 'polygon') {
-								if (Array.isArray(event.value)) {
-									const idx = this.polygons.indexOf(event.value);
-									if (idx !== -1) this.polygons.splice(idx, 1);
-								} else {
-									const idx = this.checked_options.indexOf(event.value);
-									if (idx !== -1) this.checked_options.splice(idx, 1);
-								}
-							}
 						},
 						keyDown(e) {
 							if (this.$route.name == 'vote' && this.$refs.note !== document.activeElement) {
@@ -1685,7 +1674,6 @@
 								points.push([x, y]);
 
 								if (points.length === 4) {
-									this.polygons.push(points);
 									this.addEvent('polygon', {
 										text: 'Разметка урны',
 										value: points,
