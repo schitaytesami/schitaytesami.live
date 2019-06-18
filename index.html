@@ -464,30 +464,38 @@
 							v-if="false"
 						>{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button>
 						<h6 class="lead">Контроль процедуры подсчёта голосов</h6>
-						<ul class="list-group">
-							<li class="list-group-item" v-for="(question, idx) in questions" >
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item" v-for="(question, idx) in questions">
 								<p class="mb-1">
-									<strong>{{1 + idx }}</strong>.
+									<strong>{{1 + idx }}.</strong>
 									<span v-html="question.question_text"></span>
 								</p>
 
-								<div class="form-check form-check-inline bg-secondary text-white mr-0 p-1" v-if="!question.hide_yes_no">
-									<input :id="'cannot' + idx" class="form-check-input" type="radio" :name="idx" checked v-model="question.yes_no">
-									<label :for="'cannot' + idx" class="form-check-label">Не могу ответить</label>
-								</div>
-								<div class="form-check form-check-inline bg-success text-white mr-0 p-1" v-if="!question.hide_yes_no">
-									<input :id="'yes' + idx" class="form-check-input" type="radio" :name="idx" value="yes" v-model="question.yes_no">
-									<label :for="'yes' + idx" class="form-check-label">Да</label>
-								</div>
-								<div class="form-check form-check-inline bg-danger text-white mr-0 mb-1 p-1" v-if="!question.hide_yes_no">
-									<input :id="'no' + idx" class="form-check-input" type="radio" :name="idx" value="no" v-model="question.yes_no">
-									<label :for="'no' + idx" class="form-check-label">Нет</label>
-								</div>
-								<div class="form-check-form-check-inline">
-									<input
-										class="w-100"
-										type="text"
-										placeholder="Введите в это поле время нарушения или комментарий" v-model="question.comment" />
+								<div class="form-row">
+									<div class="col-auto  bg-secondary text-white" v-if="!question.hide_yes_no">
+										<div class="form-check">
+											<input :id="'cannot' + idx" class="form-check-input" type="radio" :name="idx" checked v-model="question.yes_no">
+											<label :for="'cannot' + idx" class="form-check-label">Не могу ответить</label>
+										</div>
+									</div>
+									<div class="col-auto  bg-success text-white" v-if="!question.hide_yes_no">
+										<div class="form-check">
+											<input :id="'yes' + idx" class="form-check-input" type="radio" :name="idx" value="yes" v-model="question.yes_no">
+											<label :for="'yes' + idx" class="form-check-label">Да</label>
+										</div>
+									</div>
+									<div class="col-auto bg-danger text-white" v-if="!question.hide_yes_no">
+										<div class="form-check">
+											<input :id="'no' + idx" class="form-check-input" type="radio" :name="idx" value="no" v-model="question.yes_no">
+											<label :for="'no' + idx" class="form-check-label">Нет</label>
+										</div>
+									</div>
+									<div class="col mx-n1">
+										<input
+											class="form-control form-control-sm"
+											type="text"
+											placeholder="Введите в это поле время нарушения или комментарий" v-model="question.comment" />
+									</div>
 								</div>
 							</li>
 						</ul>
