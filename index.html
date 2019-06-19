@@ -323,7 +323,7 @@
 						:clip="clip"
 						:started.sync="started"
 						:completed.sync="completed"
-						:polygons="events.filter(e => e.type === 'polygon').map(e => e.value).reverse()"
+						:polygons="Object.values(events).filter(e => e.type === 'polygon').map(e => e.value)"
 						:clickCallback="clickCallback()"
 						ref="player"
 						v-if="clip"
@@ -356,11 +356,11 @@
 						>
 							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
 							<span class="h5 m-0 ml-1">{{ showEvents ? '▲' : '▼' }}</span>
-							<h2 class="m-0 ml-auto" ref="counter">{{ events.length }}</h2>
+							<h2 class="m-0 ml-auto" ref="counter">{{ Object.keys(events).length }}</h2>
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
-								<tr v-for="event in events">
+								<tr v-for="([key, event]) in Object.entries(events).reverse()">
 									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
 									<td class="text-left text-truncate">{{ event.text }}</td>
 									<td class="text-right pr-0">
@@ -368,7 +368,7 @@
 											type="button"
 											class="btn text-danger p-0"
 											title="Удалить"
-											@click="removeEvent(event)"
+											@click="removeEvent(key)"
 										>❌</button>
 									</td>
 								</tr>
@@ -416,16 +416,14 @@
 							<div class="btn-group-toggle">
 								<label
 									class="btn btn-sm btn-secondary mb-1 mr-1"
-									:class="{ active: events.find(e => e.value === value)}"
+									:class="{ active: events[value] }"
 									:key="value"
 									v-for="([value, text]) in options"
 								>
 									<input
 										type="checkbox"
-										autocomplete="off"
-										:value="value"
-										:checked="events.find(e => e.value === value)"
-										@change="addEvent('polygon_question', { value, text })">{{ text }}
+										:checked="events[value]"
+										@change="setPolygonQuestion(value, text, $event)">{{ text }}
 								</label>
 							</div>
 						</div>
@@ -443,7 +441,7 @@
 								<button
 									type="button"
 									class="btn btn-primary w-50"
-									@click.prevent="addEvent('note', { value: note, offset: $refs.player.currentTime })"
+									@click="addEvent('note', { value: note, offset: $refs.player.currentTime })"
 								>Добавить</button>
 							</div>
 							<div class="btn-group mt-2">
@@ -460,7 +458,7 @@
 						<button
 							class="btn btn-success w-100 mb-2"
 							:class="{ 'btn-danger': failed }"
-							@click.prevent="submitResults"
+							@click="submitResults"
 							v-if="false"
 						>{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button>
 						<h6 class="lead">Контроль процедуры подсчёта голосов</h6>
@@ -472,21 +470,42 @@
 								</p>
 
 								<div class="form-row">
-									<div class="col-auto  bg-secondary text-white" v-if="!question.hide_yes_no">
+									<div class="col-auto  bg-secondary text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
 										<div class="form-check">
-											<input :id="'cannot' + idx" class="form-check-input" type="radio" :name="idx" checked v-model="question.yes_no">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="-1"
+												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '-1' : false"
+												:id="'cannot' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
 											<label :for="'cannot' + idx" class="form-check-label">Не могу ответить</label>
 										</div>
 									</div>
-									<div class="col-auto  bg-success text-white" v-if="!question.hide_yes_no">
+									<div class="col-auto  bg-success text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
 										<div class="form-check">
-											<input :id="'yes' + idx" class="form-check-input" type="radio" :name="idx" value="yes" v-model="question.yes_no">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="1"
+												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '1' : false"
+												:id="'yes' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
 											<label :for="'yes' + idx" class="form-check-label">Да</label>
 										</div>
 									</div>
-									<div class="col-auto bg-danger text-white" v-if="!question.hide_yes_no">
+									<div class="col-auto bg-danger text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
 										<div class="form-check">
-											<input :id="'no' + idx" class="form-check-input" type="radio" :name="idx" value="no" v-model="question.yes_no">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="0"
+												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '0' : false"
+												:id="'no' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
 											<label :for="'no' + idx" class="form-check-label">Нет</label>
 										</div>
 									</div>
@@ -494,7 +513,9 @@
 										<input
 											class="form-control form-control-sm"
 											type="text"
-											placeholder="Введите в это поле время нарушения или комментарий" v-model="question.comment" />
+											placeholder="Введите в это поле время нарушения или комментарий"
+											:value="events['proc_question_' + idx] ? events['proc_question_' + idx].note : ''"
+											@change="setProcQuestion(idx, $event)">
 									</div>
 								</div>
 							</li>
@@ -1472,21 +1493,22 @@
 					data() {
 						return {
 							questions : [
-								{yes_no : '', comment : '', question_text : 'Подсчет и погашение неиспользованных бюллетеней началось сразу после окончания голосования и проводилось <strong>до подсчета</strong> по спискам избирателей' },
-								{yes_no : '', comment : '', question_text : 'Число погашенных бюллетеней было <strong>внесено в УФП</strong> сразу после подсчета, перед подсчетом по списку избирателей' },
-								{yes_no : '', comment : '', question_text : 'Данные подсчета по списку избирателей были <strong>оглашены</strong> и <strong>занесены</strong> в УФП <strong>до</strong> вскрытия переносных ящиков' },
-								{yes_no : '', comment : '', question_text : 'Был произведен отдельный подсчет числа бюллетеней из переносных ящиков, это число записано в УФП до вскрытия стационарных ящиков' },
-								{yes_no : '', comment : '', question_text : 'Сортировка бюллетеней производилась путем предъявления бюллетеней и оглашения отметки в нем' },
-								{yes_no : '', comment : '', question_text : 'Подсчет бюллетеней в рассортированных пачках производился поочередно по пачкам и путем перекладывания бюллетеней' },
-								{yes_no : '', comment : '', question_text : 'Всем желающим была обеспечена возможность видеть отметки в бюллетенях' },
-								{yes_no : '', comment : '', question_text : 'Данные подсчета по рассортированным пачкам были сразу внесены в УФП' },
-								{yes_no : '', comment : '', question_text : 'Бюллетени кандидатов были упакованы в отдельные пачки' },
-								{yes_no : '', comment : '', question_text : 'Состоялось итоговое заседание УИК' },
-								{yes_no : '', comment : '', question_text : 'Протокол об итогах голосования был предъявлен в одну из видеокамер, все данные из протокола были оглашены' },
-								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Попадают ли в зону видимости видеокамер все установленные инструкцией объекты (столы подсчета, УФП и пр. -см. Инструкцию)' },
-								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Оцените качество аудиозаписи (хорошо ли различимо оглашение данных, не было ли помех для аудиозаписи)' },
-								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Замеченные нарушения, не отраженные выше' },
+								{ yes_no: '', comment: '', question_text: 'Подсчет и погашение неиспользованных бюллетеней началось сразу после окончания голосования и проводилось <strong>до подсчета</strong> по спискам избирателей' },
+								{ yes_no: '', comment: '', question_text: 'Число погашенных бюллетеней было <strong>внесено в УФП</strong> сразу после подсчета, перед подсчетом по списку избирателей' },
+								{ yes_no: '', comment: '', question_text: 'Данные подсчета по списку избирателей были <strong>оглашены</strong> и <strong>занесены</strong> в УФП <strong>до</strong> вскрытия переносных ящиков' },
+								{ yes_no: '', comment: '', question_text: 'Был произведен отдельный подсчет числа бюллетеней из переносных ящиков, это число записано в УФП до вскрытия стационарных ящиков' },
+								{ yes_no: '', comment: '', question_text: 'Сортировка бюллетеней производилась путем предъявления бюллетеней и оглашения отметки в нем' },
+								{ yes_no: '', comment: '', question_text: 'Подсчет бюллетеней в рассортированных пачках производился поочередно по пачкам и путем перекладывания бюллетеней' },
+								{ yes_no: '', comment: '', question_text: 'Всем желающим была обеспечена возможность видеть отметки в бюллетенях' },
+								{ yes_no: '', comment: '', question_text: 'Данные подсчета по рассортированным пачкам были сразу внесены в УФП' },
+								{ yes_no: '', comment: '', question_text: 'Бюллетени кандидатов были упакованы в отдельные пачки' },
+								{ yes_no: '', comment: '', question_text: 'Состоялось итоговое заседание УИК' },
+								{ yes_no: '', comment: '', question_text: 'Протокол об итогах голосования был предъявлен в одну из видеокамер, все данные из протокола были оглашены' },
+								{ comment: '', question_text: 'Попадают ли в зону видимости видеокамер все установленные инструкцией объекты (столы подсчета, УФП и пр. -см. Инструкцию)' },
+								{ comment: '', question_text: 'Оцените качество аудиозаписи (хорошо ли различимо оглашение данных, не было ли помех для аудиозаписи)' },
+								{ comment: '', question_text: 'Замеченные нарушения, не отраженные выше' },
 							],
+							answers: {},
 							options: [
 								['box_small_hard', 'Ящик мелкий, сложно отметить'],
 								['box_missing_in_frame', 'Ящик не в кадре'],
@@ -1502,7 +1524,7 @@
 							],
 							showInstruction: false,
 							showEvents: false,
-							events: [],
+							events: {},
 							note: '',
 							started: false,
 							completed: false,
@@ -1558,8 +1580,8 @@
 									this.questions.map((q, i) => ({
 										offset: 0,
 										clip: this.clip.id,
-										type : `question${i}`,
-										value : JSON.stringify(q),
+										type: `question${i}`,
+										value: JSON.stringify(q),
 									})) : [];
 
 							if (!this.submitted && (this.failed || this.completed))
@@ -1609,43 +1631,43 @@
 							this.highlightCounter();
 
 							if (type === 'vote') {
-								this.events.unshift({
+								this.$set(this.events, `vote_${payload.offset}`, {
 									type,
-									clip: this.clip.id,
-									value: '',
-									text: '+1 Голос',
 									offset: Math.floor(payload.offset),
+									value: 1,
+									text: '+1 Голос',
+									clip: this.clip.id,
 								});
 								return;
 							}
 
 							if (type === 'note') {
-								this.events.unshift({
+								this.$set(this.events, `note_${payload.offset}`, {
 									type,
-									clip: this.clip.id,
+									offset: Math.floor(payload.offset),
 									value: payload.value,
 									text: payload.value,
-									offset: Math.floor(payload.offset),
+									clip: this.clip.id,
 								});
 								this.note = '';
 								return;
 							}
 
-							if (type === 'polygon' || type === 'polygon_question') {
-								this.events.unshift({
+							if (type === 'polygon') {
+								this.$set(this.events, payload.value, {
 									type,
-									clip: this.clip.id,
+									offset: 0,
 									value: payload.value,
 									text: payload.text,
-									offset: 0,
+									clip: this.clip.id,
 								});
 								return;
 							}
 						},
-						removeEvent(event) {
+						removeEvent(key) {
 							this.highlightCounter();
 
-							this.events.splice(this.events.indexOf(event), 1);
+							this.$delete(this.events, key);
 						},
 						keyDown(e) {
 							if (this.$route.name == 'vote' && this.$refs.note !== document.activeElement) {
@@ -1654,7 +1676,7 @@
 
 								if (e.keyCode == keycode_space) {
 									e.preventDefault();
-									this.addEvent(this.$refs.player.currentTime, 'vote');
+									this.addEvent('vote', { offset: this.$refs.player.currentTime });
 								} else if (e.keyCode == keycode_escape) {
 									e.preventDefault();
 									this.$refs.player.pause();
@@ -1682,6 +1704,50 @@
 									points = [];
 								}
 							};
+						},
+						getProcQuestionText(idx, value) {
+							let text = '';
+							if (value === '1') text = 'Да';
+							if (value === '0') text = 'Нет';
+							if (value === '-1') text = 'Не могу ответить';
+
+							return `${idx + 1} - ${text}`;
+						},
+						setProcQuestion(idx, event) {
+							const key = `proc_question_${idx}`;
+							const procQuestion = this.events[key] || {
+								type: 'proc_question',
+								clip: this.clip.id,
+								value: '',
+								note: '',
+								offset: 0,
+							};
+							const { type, value } = event.target;
+							const text = type === 'radio'
+								? this.getProcQuestionText(idx, value)
+								: this.getProcQuestionText(idx, procQuestion.value);
+
+							this.$set(this.events, key, {
+								...procQuestion,
+								value: type === 'radio' ? value : procQuestion.value,
+								note: type === 'text' ? value : procQuestion.note,
+								text,
+							});
+						},
+						setPolygonQuestion(value, text, event) {
+							const { checked } = event.target;
+							if (checked) {
+								this.$set(this.events, value, {
+									type: 'polygon_question',
+									offset: 0,
+									value,
+									text,
+									clip: this.clip.id,
+								});
+								return;
+							}
+
+							this.$delete(this.events, value);
 						},
 					},
 					created() {
