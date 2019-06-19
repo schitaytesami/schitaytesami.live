@@ -168,6 +168,11 @@
 			width: 10rem;
 			height: 10rem;
 		}
+
+		.polygon {
+			stroke-width: 0.002;
+			fill-opacity: 0.5;
+		}
 	</style>
 </head>
 
@@ -255,6 +260,15 @@
 					<p class="text-center text-light" v-else>Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
 				</div>
 
+				<h3 class="text-center lead">Мур Мяу</h3>
+				<template v-if="$root.user">
+					<button
+						type="submit"
+						class="btn btn-primary mb-2 mt-2 w-100"
+						@click="nextTask($event, { task: 'polygon', election_number: -1, region_number: -1, station_number: -1 })"
+					><h5 class="mb-0">Начать работу</h5></button>
+				</template>
+
 				<h3 class="text-center lead">Подсчёт явки</h3>
 				<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
 				<template v-if="$root.user">
@@ -309,6 +323,8 @@
 						:clip="clip"
 						:started.sync="started"
 						:completed.sync="completed"
+						:polygons="Object.values(events).filter(e => e.type === 'polygon').map(e => e.value)"
+						:clickCallback="clickCallback()"
 						ref="player"
 						v-if="clip"
 					>
@@ -331,7 +347,6 @@
 								<div><button class="btn btn-success" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button></div>
 							</div>
 						</div>
-
 					</app-clip-player>
 
 					<div v-if="clip">
@@ -341,15 +356,20 @@
 						>
 							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
 							<span class="h5 m-0 ml-1">{{ showEvents ? '▲' : '▼' }}</span>
-							<h2 class="m-0 ml-auto" ref="counter">{{ events.length }}</h2>
+							<h2 class="m-0 ml-auto" ref="counter">{{ Object.keys(events).length }}</h2>
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
-								<tr v-for="event in events">
+								<tr v-for="([key, event]) in Object.entries(events).reverse()">
 									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
-									<td class="text-left text-truncate">{{ event.value ? event.value : '+1 голос' }}</td>
+									<td class="text-left text-truncate">{{ event.text }}</td>
 									<td class="text-right pr-0">
-										<a href="#/task/vote" class="btn text-danger p-0" title="Удалить" @click.prevent="removeEvent(event)">❌</a>
+										<button
+											type="button"
+											class="btn text-danger p-0"
+											title="Удалить"
+											@click="removeEvent(key)"
+										>❌</button>
 									</td>
 								</tr>
 							</tbody>
@@ -367,6 +387,48 @@
 						<app-bookmark-button :clip="clip" class="flex-grow-1"/>
 					</div>
 
+					<template v-if="are_controls_polygon_shown">
+						<div class="btn-group-vertical w-100">
+							<div class="btn-group mb-3">
+								<button
+									type="submit"
+									class="btn btn-success w-50"
+									id="next_task_polygon"
+								>Готово, дальше! (пробел)</button>
+								<button
+									type="button"
+									class="btn btn-danger w-50"
+								>Удалить разметку (delete)</button>
+							</div>
+							<div class="btn-group mb-3">
+								<input
+									type="text"
+									class="form-control"
+									placeholder="Необычное? Опишите здесь!"
+									v-model.trim="note"
+									ref="note"/>
+								<button
+									type="button"
+									class="btn btn-primary w-50"
+									@click="addEvent('note', { value: note, offset: 0 })"
+								>Добавить</button>
+							</div>
+							<div class="btn-group-toggle">
+								<label
+									class="btn btn-sm btn-secondary mb-1 mr-1"
+									:class="{ active: events[value] }"
+									:key="value"
+									v-for="([value, text]) in options"
+								>
+									<input
+										type="checkbox"
+										:checked="events[value]"
+										@change="setPolygonQuestion(value, text, $event)">{{ text }}
+								</label>
+							</div>
+						</div>
+					</template>
+
 					<template v-if="are_controls_vote_shown">
 						<div class="btn-group-vertical w-100 mb-3">
 							<div class="btn-group">
@@ -375,18 +437,18 @@
 									class="form-control"
 									placeholder="Необычное? Опишите здесь!"
 									v-model.trim="note"
-									ref="note" />
+									ref="note"/>
 								<button
 									type="button"
-									class="btn btn-primary w-50 add_note"
-									@click.prevent="addEvent($refs.player.currentTime, 'note', note)"
+									class="btn btn-primary w-50"
+									@click="addEvent('note', { value: note, offset: $refs.player.currentTime })"
 								>Добавить</button>
 							</div>
 							<div class="btn-group mt-2">
 								<button
 									type="button"
 									class="btn btn-success w-100"
-									@click="addEvent($refs.player.currentTime, 'vote')"
+									@click="addEvent('vote', { offset: $refs.player.currentTime })"
 								>+1 голос (на клавиатуре <kbd>пробел</kbd>)</button>
 							</div>
 						</div>
@@ -396,34 +458,65 @@
 						<button
 							class="btn btn-success w-100 mb-2"
 							:class="{ 'btn-danger': failed }"
-							@click.prevent="submitResults"
+							@click="submitResults"
 							v-if="false"
 						>{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button>
 						<h6 class="lead">Контроль процедуры подсчёта голосов</h6>
-						<ul class="list-group">
-							<li class="list-group-item" v-for="(question, idx) in questions" >
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item" v-for="(question, idx) in questions">
 								<p class="mb-1">
-									<strong>{{1 + idx }}</strong>.
+									<strong>{{1 + idx }}.</strong>
 									<span v-html="question.question_text"></span>
 								</p>
 
-								<div class="form-check form-check-inline bg-secondary text-white mr-0 p-1" v-if="!question.hide_yes_no">
-									<input :id="'cannot' + idx" class="form-check-input" type="radio" :name="idx" checked v-model="question.yes_no">
-									<label :for="'cannot' + idx" class="form-check-label">Не могу ответить</label>
-								</div>
-								<div class="form-check form-check-inline bg-success text-white mr-0 p-1" v-if="!question.hide_yes_no">
-									<input :id="'yes' + idx" class="form-check-input" type="radio" :name="idx" value="yes" v-model="question.yes_no">
-									<label :for="'yes' + idx" class="form-check-label">Да</label>
-								</div>
-								<div class="form-check form-check-inline bg-danger text-white mr-0 mb-1 p-1" v-if="!question.hide_yes_no">
-									<input :id="'no' + idx" class="form-check-input" type="radio" :name="idx" value="no" v-model="question.yes_no">
-									<label :for="'no' + idx" class="form-check-label">Нет</label>
-								</div>
-								<div class="form-check-form-check-inline">
-									<input
-										class="w-100"
-										type="text"
-										placeholder="Введите в это поле время нарушения или комментарий" v-model="question.comment" />
+								<div class="form-row">
+									<div class="col-auto  bg-secondary text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
+										<div class="form-check">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="-1"
+												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '-1' : false"
+												:id="'cannot' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
+											<label :for="'cannot' + idx" class="form-check-label">Не могу ответить</label>
+										</div>
+									</div>
+									<div class="col-auto  bg-success text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
+										<div class="form-check">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="1"
+												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '1' : false"
+												:id="'yes' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
+											<label :for="'yes' + idx" class="form-check-label">Да</label>
+										</div>
+									</div>
+									<div class="col-auto bg-danger text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
+										<div class="form-check">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="0"
+												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '0' : false"
+												:id="'no' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
+											<label :for="'no' + idx" class="form-check-label">Нет</label>
+										</div>
+									</div>
+									<div class="col mx-n1">
+										<input
+											class="form-control form-control-sm"
+											type="text"
+											placeholder="Введите в это поле время нарушения или комментарий"
+											:value="events['proc_question_' + idx] ? events['proc_question_' + idx].note : ''"
+											@change="setProcQuestion(idx, $event)">
+									</div>
 								</div>
 							</li>
 						</ul>
@@ -433,9 +526,101 @@
 		</div>
 	</script>
 
+	<script type="text/x-template" id="app-task-polygon">
+		<app-task-base
+			:are_controls_polygon_shown="true"
+			:are_controls_vote_shown="false"
+			:are_controls_proc_shown="false"
+		>
+			<div slot="instruction">
+				<h1 class="lead text-center">Инструкция по разметке ящиков</h1>
+				<p>Это первый этап проекта, от аккуратности разметки ящиков для голосования (неформально – «урн») зависит выбор участков для ускорения видео и качество этого ускорения.</p>
+				<p>Мы просим вас отметить четырёхугольниками поверхности всех ящиков и выбрать атрибуты, которые справедливы хотя бы для одного из ящиков на предложенной картинке с участка.</p>
+				<p>Пожалуйста, внимательно прочитайте эту инструкцию, мы подробно с примерами обсуждаем все нюансы. Если появляются вопросы, <a href="mailto:schitaytesami+polygon@gmail.com">напишите нам письмо</a>. Мы постараемся ответить оперативно.</p>
+
+				<h5>Частые вопросы</h5>
+				<dl class="small">
+					<dt>Отмечать или нет "Ящик будет часто загорожен людьми" при сомнениях?</dt>
+					<dd>Не отмечать.</dd>
+					<dt>Один ящик виден, а второй не виден. Нужно ли отмечать первый?</dt>
+					<dd>Да, нужно отмечать. Но при этом нужно также отметить "Ящик не в кадре".</dd>
+					<dt>Виден только уголок ящика. Отмечать ли его поверхность?</dt>
+					<dd>Да, отмечать. Но при этом можно и отметить "Ящик не в кадре".</dd>
+				</dl>
+
+				<dl>
+					<dt>Разметка поверхностей и выбор атрибутов</dt>
+					<dd>
+						<p>Ваша цель – отметить верхнюю поверхность каждого ящика четырёхугольником. Для этого кликайте по углам поверхности. Одна поверхность – один четырёхугольник. Внимательно отметьте все ящики. Система подсветит каждый размеченный ящик своим цветом. Пример разметки:</p>
+						<img class="d-block w-100" alt="Пример интерфейса" src="/images/urn.jpg"></img>
+						<p>Атрибуты представлены <button class="btn btn-secondary btn-sm">серыми кнопками</button>. Нажмите на все кнпоки, атрибут на которых справедлив для предложенной картинки. Для справки под кадром есть две кнопки <button class="btn btn-dark btn-sm">чёрные кнопки</button>. Если они активны, наведите на них мышку, и появится другой вспомогательный кадр. Потом уберите мышку с этих кнопок и продолжайте разметку. Эти дополнительные кадры могут помочь выбрать правильные атрибуты в непонятных ситуациях (например, непонятно, все ли ящики видны на кадре).
+						</p>
+						<p>Если вы ошиблись, вы можете очистить разметку, нажав на <button class="btn btn-warning btn-sm">жёлтую кнопку</button> (или на клавишу <code>delete</code>). Для отправки разметки и получения нового задания нажмите на <button class="btn btn-success btn-sm">зелёную кнопку</button> (или на клавишу <code>пробел</code>). Отправка и получение нового задания займёт несколько секунд, пожалуйста, не нажимайте на другие кнопки в это время. Если атрибутов не хватает и считаете нужным добавить комментарий, пишите его в поле "Необычное?" и добавляйте комментарий, нажав на <button class="btn btn-primary btn-sm">синюю кнопку</button>.</p>
+						<p>Ниже мы обсуждаем атрибуты, которые мы просим выбрать. Принцип, по которому мы сформулировали атрибуты – помочь сформировать выборку
+						участков для автоматического ускорения видео. При разметке не забудьте выбрать все атрибуты, которые справедливы хотя бы для одного из ящиков на предложенной картинке с участка.</p>
+					</dd>
+					<dt>Ящик мелкий, сложно отметить</dt>
+					<dd>
+						Если поверхность ящика на картинке очень маленькая – до степени, что её было сложно размечать. Часто это бывает в случаях, когда ящики расположены
+						далеко от веб-камеры на участке: в конце коридора или в углу школьного спортзала. Иногда ящики стоят рядом и бывает сложно их отделить друг от друга. В таком случае можно выделить общую поверхность и отметить этот атрибут. Если ящики видно совсем плохо – не отмечайте ящики, мы не будем автоматически ускорять такие видео.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/2a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/2b.jpeg"></img>
+					</dd>
+					<dt>Ящик не в кадре</dt>
+					<dd>Виден край ящика, а поверхность ящика не видна на картинке. Или по номерам на ящиках видно, что какого-то ящика нет.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/3a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/3b.jpeg"></img>
+					</dd>
+					<dt>Ящик загорожен <u>не</u> людьми</dt>
+					<dd>Иногда ящик загорожен кабиной для голосования, дверью, люстрой, столом комиссии, флагом, сеткой в спортзале, меткой времени, чем-то ещё.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/4a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/4b.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/5a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/5b.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/6a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/6b.jpeg"></img>
+					</dd>
+					<dt>Ящик загорожен людьми</dt>
+					<dd>Поверхность ящика сложно выделить, потому что конкретно на этой картинке к ящику кто-то подошёл (чаще всего это избиратель).<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/7a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/7b.jpeg"></img>
+					</dd>
+					<dt>Ящик <u>будет часто</u> загорожен людьми</dt>
+					<dd>Ракурс камеры такой, что поверхность ящика будет явно часто загорожена избирателями, подходящими к комиссии или уходящими из участка.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/8a.jpeg"></img>
+					</dd>
+					<dt>Ящик ещё устанавливают</dt><dd>Видно, что ящик двигают, у ящика суетятся какие-то люди члены комиссии или полицейские.<br/>
+					<img class="instr-screenshot" alt="" src="/images/examples/9a.jpeg"></img>
+					</dd>
+					<dt>Ящики сильно перемещали</dt>
+					<dd>
+						Если кнопка <button class="btn btn-dark btn-sm">Вечер на этой камере</button> активна, наведите на неё. Появится кадр с этого же участка, но с вечера. Отметьте этот атрибут, если утром и вечером на кадре находятся в разных местах, или если ракурс камеры сильно изменился.
+					</dd>
+					<dt>Видна комиссия</dt>
+					<dd>Часто бывает, что даже на камере с ящиками видна комиссия и люди, которые подходят к комиссии.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/10a.jpeg"></img>
+					</dd>
+					<dt>Ящиков почти не видно</dt>
+					<dd>Когда на картинке почти не видно ящиков, зато видна избирательная комиссия. Это очень частая ситуация, потому что мы не знаем заранее, на какой камере в основном ящики, а на какой в основном комиссия.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/11a.jpeg"></img>
+					</dd>
+					<dt>Два участка в кадре</dt>
+					<dd>Когда очень похоже, что на картинке есть ящики от двух разных избирательных участков. Иногда такое происходит, когда с двух сторон спортзала находятся два разных участка, но на камере видны ящики от обоих.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/12a.jpeg"></img>
+					</dd>
+					<dt>Видно очень плохо / камеру заслонили или отвернули</dt>
+					<dd>Иногда изображение слишком тёмное и отметить ящики невозможно, или камеру отвернули в потолок или чем-то заслонили.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/13a.jpeg"></img>
+					</dd>
+				</dl>
+			</div>
+		</app-task-base>
+	</script>
+
 	<script type="text/x-template" id="app-task-vote">
 		<div>
 			<app-task-base
+				:are_controls_polygon_shown="false"
 				:are_controls_vote_shown="true"
 				:are_controls_proc_shown="false"
 			>
@@ -464,6 +649,7 @@
 	<script type="text/x-template" id="app-task-proc">
 		<div>
 			<app-task-base
+				:are_controls_polygon_shown="false"
 				:are_controls_vote_shown="false"
 				:are_controls_proc_shown="true"
 			>
@@ -473,7 +659,7 @@
 					<li>Ответы в анкету можно вписывать как во время просмотра (с приостановкой просмотра!), так и после просмотра. <br />Ответы можно давать в любой последовательности, но последовательность вопросов соответствует предусмотренной законом последовательности подсчета голосов.</li>
 					<li>Ответы вы даёте путем нажатия на одну из кнопок «Да», «Нет», «Не могу ответить». Вы должны нажать на одну из кнопок обязательно. Положительный ответ означает то, что предусмотренная законом процедура, в основном, была выполнена. <br/>Ответ «Нет» давайте только в том случае, если нарушение очевидно. Сомнения должны трактоваться в пользу УИК.</li>
 					<li>Вы можете написать комментарий к любому вопросу Анкеты. Если ответ на вопрос отрицательный, то впишите в поле «Комментарий» примерный интервал времени (по показаниям в левом верхнем углу видеозаписи) времени, когда было допущено нарушение. Другие записи в поле «Комментарий» также допустимы.</li>
-					<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи. </li>
+					<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи.</li>
 					<li>14-я строка Анкеты заполняется текстом в произвольной форме по желанию исследователя. (например, Вы заметили вброс бюллетеней перед или во время сортировки бюллетеней). При этом обязательно указывается время нарушения.</li>
 				</ol>
 			</app-task-base>
@@ -646,40 +832,66 @@
 				</span>
 			</h6>
 
-			<div class="position-relative">
-				<video
-					controls="controls"
-					class="w-100"
-					preload="auto"
-					ref="player"
-					:src="clip.video"
-					@timeupdate="currentTime = $event.target.currentTime"
-					@play.once="$emit('update:started', true)"
-					@ended="$emit('update:completed', true)"
-					@keyup="preventPause"
-				></video>
+			<template v-if="clip.video !== null">
+				<div class="position-relative">
+					<video
+						controls="controls"
+						class="w-100"
+						preload="auto"
+						ref="player"
+						:src="clip.video"
+						@timeupdate="currentTime = $event.target.currentTime"
+						@play.once="$emit('update:started', true)"
+						@ended="$emit('update:completed', true)"
+						@keyup="preventPause"
+					></video>
 
-				<slot name="intro"></slot>
-				<slot name="end"></slot>
-			</div>
-
-
-			<div class="btn-group btn-group-sm">
-				<div class="d-inline-flex align-items-center pr-1 bg-light">
-					<span class="font-weight-bold">Скорость {{ playbackRate.toFixed(1) }}x</span>
+					<slot name="intro"></slot>
+					<slot name="end"></slot>
 				</div>
-				<button
-					type="button"
-					class="btn btn-secondary"
-					@click.prevent="setPlaybackRate(-0.5)"
-				>Медленнее</button>
-				<button
-					type="button"
-					class="btn btn-secondary"
-					@click.prevent="setPlaybackRate(+0.5)"
-				>Быстрее</button>
-			</div>
 
+				<div class="btn-group btn-group-sm">
+					<div class="d-inline-flex align-items-center pr-1 bg-light">
+						<span class="font-weight-bold">Скорость {{ playbackRate.toFixed(1) }}x</span>
+					</div>
+					<button
+						type="button"
+						class="btn btn-secondary"
+						@click.prevent="setPlaybackRate(-0.5)"
+					>Медленнее</button>
+					<button
+						type="button"
+						class="btn btn-secondary"
+						@click.prevent="setPlaybackRate(+0.5)"
+					>Быстрее</button>
+				</div>
+			</template>
+
+			<template v-if="clip.video === null">
+				<div class="position-relative w-100 h-0" style="padding-bottom: 75%;">
+					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1" ref="svg" @click="SVGClickHandler($event)">
+						<image preserveAspectRatio="none" height="1" width="1" :href="clip.poster" />
+						<g v-for="(polygon, i) in polygons">
+							<polygon
+								class="polygon"
+								:stroke="formatColor(i)"
+								:points="polygon.map(pair => pair.join(',')).join(' ')" />
+							<circle
+								v-for="([x, y]) in polygon"
+								r="0.005"
+								:fill="formatColor(i)"
+								:cx="x"
+								:cy="y"
+							></circle>
+						</g>
+					</svg>
+				</div>
+
+				<div class="btn-group mt-1 w-100">
+					<button class="btn btn-dark mr-1 w-50">Вечер на этой камере</button>
+					<button class="btn btn-dark ml-1 w-50">Утро на другой камере</button>
+				</div>
+			</template>
 		</div>
 	</script>
 
@@ -1239,9 +1451,13 @@
 						async nextTask(event, params) {
 							const button = event.target.closest('button');
 
+							/* HACK: remove after we'll get API for polygon */
+							let { task } = params;
+							if (task === 'polygon') task = 'vote';
+
 							try {
 								button.disabled = true;
-								const clip = await nextTask(params);
+								const clip = await nextTask({ ...params, task });
 								this.$router.push({
 									name: params.task,
 									params: {
@@ -1261,6 +1477,10 @@
 
 				const appTaskBase = {
 					props: {
+						are_controls_polygon_shown: {
+							type: Boolean,
+							required: true,
+						},
 						are_controls_vote_shown: {
 							type: Boolean,
 							required: true,
@@ -1273,28 +1493,38 @@
 					data() {
 						return {
 							questions : [
-								{yes_no : '', comment : '', question_text : 'Подсчет и погашение неиспользованных бюллетеней началось сразу после окончания голосования и проводилось <strong>до подсчета</strong> по спискам избирателей' },
-								{yes_no : '', comment : '', question_text : 'Число погашенных бюллетеней было <strong>внесено в УФП</strong> сразу после подсчета, перед подсчетом по списку избирателей' },
-								{yes_no : '', comment : '', question_text : 'Данные подсчета по списку избирателей были <strong>оглашены</strong> и <strong>занесены</strong> в УФП <strong>до</strong> вскрытия переносных ящиков' },
-								{yes_no : '', comment : '', question_text : 'Был произведен отдельный подсчет числа бюллетеней из переносных ящиков, это число записано в УФП до вскрытия стационарных ящиков' },
-								{yes_no : '', comment : '', question_text : 'Сортировка бюллетеней производилась путем предъявления бюллетеней и оглашения отметки в нем' },
-								{yes_no : '', comment : '', question_text : 'Подсчет бюллетеней в рассортированных пачках производился поочередно по пачкам и путем перекладывания бюллетеней' },
-								{yes_no : '', comment : '', question_text : 'Всем желающим была обеспечена возможность видеть отметки в бюллетенях' },
-								{yes_no : '', comment : '', question_text : 'Данные подсчета по рассортированным пачкам были сразу внесены в УФП' },
-								{yes_no : '', comment : '', question_text : 'Бюллетени кандидатов были упакованы в отдельные пачки' },
-								{yes_no : '', comment : '', question_text : 'Состоялось итоговое заседание УИК' },
-								{yes_no : '', comment : '', question_text : 'Протокол об итогах голосования был предъявлен в одну из видеокамер, все данные из протокола были оглашены' },
-								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Попадают ли в зону видимости видеокамер все установленные инструкцией объекты (столы подсчета, УФП и пр. -см. Инструкцию)' },
-								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Оцените качество аудиозаписи (хорошо ли различимо оглашение данных, не было ли помех для аудиозаписи)' },
-								{hide_yes_no : true, yes_no : '', comment : '', question_text : 'Замеченные нарушения, не отраженные выше' },
+								{ yes_no: '', comment: '', question_text: 'Подсчет и погашение неиспользованных бюллетеней началось сразу после окончания голосования и проводилось <strong>до подсчета</strong> по спискам избирателей' },
+								{ yes_no: '', comment: '', question_text: 'Число погашенных бюллетеней было <strong>внесено в УФП</strong> сразу после подсчета, перед подсчетом по списку избирателей' },
+								{ yes_no: '', comment: '', question_text: 'Данные подсчета по списку избирателей были <strong>оглашены</strong> и <strong>занесены</strong> в УФП <strong>до</strong> вскрытия переносных ящиков' },
+								{ yes_no: '', comment: '', question_text: 'Был произведен отдельный подсчет числа бюллетеней из переносных ящиков, это число записано в УФП до вскрытия стационарных ящиков' },
+								{ yes_no: '', comment: '', question_text: 'Сортировка бюллетеней производилась путем предъявления бюллетеней и оглашения отметки в нем' },
+								{ yes_no: '', comment: '', question_text: 'Подсчет бюллетеней в рассортированных пачках производился поочередно по пачкам и путем перекладывания бюллетеней' },
+								{ yes_no: '', comment: '', question_text: 'Всем желающим была обеспечена возможность видеть отметки в бюллетенях' },
+								{ yes_no: '', comment: '', question_text: 'Данные подсчета по рассортированным пачкам были сразу внесены в УФП' },
+								{ yes_no: '', comment: '', question_text: 'Бюллетени кандидатов были упакованы в отдельные пачки' },
+								{ yes_no: '', comment: '', question_text: 'Состоялось итоговое заседание УИК' },
+								{ yes_no: '', comment: '', question_text: 'Протокол об итогах голосования был предъявлен в одну из видеокамер, все данные из протокола были оглашены' },
+								{ comment: '', question_text: 'Попадают ли в зону видимости видеокамер все установленные инструкцией объекты (столы подсчета, УФП и пр. -см. Инструкцию)' },
+								{ comment: '', question_text: 'Оцените качество аудиозаписи (хорошо ли различимо оглашение данных, не было ли помех для аудиозаписи)' },
+								{ comment: '', question_text: 'Замеченные нарушения, не отраженные выше' },
+							],
+							answers: {},
+							options: [
+								['box_small_hard', 'Ящик мелкий, сложно отметить'],
+								['box_missing_in_frame', 'Ящик не в кадре'],
+								['box_occluded_by_stuff', 'Ящик загорожен не людьми'],
+								['box_occluded_by_people', 'Ящик загорожен людьми'],
+								['box_occluded_by_people_future', 'Ящик будет часто загорожен людьми'],
+								['box_installation_ongoing', 'Ящик ещё устанавливают'],
+								['box_moved', 'Ящики сильно перемещали'],
+								['commission_well', 'Видна комиссия'],
+								['box_no', 'Ящиков почти не видно'],
+								['two_stations', 'Два участка в кадре'],
+								['image_bad_quality', 'Видно очень плохо / камеру заслонили или отвернули'],
 							],
 							showInstruction: false,
 							showEvents: false,
-							clip: {
-								...this.$root.stats.clips_dict[this.$route.params.id],
-								csrf: this.$route.params.csrf,
-							},
-							events: [],
+							events: {},
 							note: '',
 							started: false,
 							completed: false,
@@ -1305,6 +1535,21 @@
 					computed: {
 						user() {
 							return this.$root.user;
+						},
+						clip() {
+							const clip = {
+								...this.$root.stats.clips_dict[this.$route.params.id],
+								csrf: this.$route.params.csrf,
+							};
+
+							if (this.$route.name === 'polygon')
+									return {
+										...clip,
+										video: null,
+										poster: 'https://proverim.webcam/speedup_/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub_1521348900_1521392700.mp4.0008.mp4.jpg',
+									};
+
+							return clip;
 						},
 					},
 					methods: {
@@ -1335,8 +1580,8 @@
 									this.questions.map((q, i) => ({
 										offset: 0,
 										clip: this.clip.id,
-										type : `question${i}`,
-										value : JSON.stringify(q),
+										type: `question${i}`,
+										value: JSON.stringify(q),
 									})) : [];
 
 							if (!this.submitted && (this.failed || this.completed))
@@ -1382,14 +1627,47 @@
 								this.$root.errorHandler(err);
 							}
 						},
-						addEvent(offset, type, value = '') {
+						addEvent(type, payload) {
 							this.highlightCounter();
-							this.events.unshift({ offset: Math.floor(offset), clip: this.clip.id, value, type });
-							if (value) this.note = '';
+
+							if (type === 'vote') {
+								this.$set(this.events, `vote_${payload.offset}`, {
+									type,
+									offset: Math.floor(payload.offset),
+									value: 1,
+									text: '+1 Голос',
+									clip: this.clip.id,
+								});
+								return;
+							}
+
+							if (type === 'note') {
+								this.$set(this.events, `note_${payload.offset}`, {
+									type,
+									offset: Math.floor(payload.offset),
+									value: payload.value,
+									text: payload.value,
+									clip: this.clip.id,
+								});
+								this.note = '';
+								return;
+							}
+
+							if (type === 'polygon') {
+								this.$set(this.events, payload.value, {
+									type,
+									offset: 0,
+									value: payload.value,
+									text: payload.text,
+									clip: this.clip.id,
+								});
+								return;
+							}
 						},
-						removeEvent(event) {
+						removeEvent(key) {
 							this.highlightCounter();
-							this.events.splice(this.events.indexOf(event), 1);
+
+							this.$delete(this.events, key);
 						},
 						keyDown(e) {
 							if (this.$route.name == 'vote' && this.$refs.note !== document.activeElement) {
@@ -1398,7 +1676,7 @@
 
 								if (e.keyCode == keycode_space) {
 									e.preventDefault();
-									this.addEvent(this.$refs.player.currentTime, 'vote');
+									this.addEvent('vote', { offset: this.$refs.player.currentTime });
 								} else if (e.keyCode == keycode_escape) {
 									e.preventDefault();
 									this.$refs.player.pause();
@@ -1410,13 +1688,81 @@
 							counter.classList.remove('highlight');
 							void counter.offsetWidth; /* MAGIC */
 							counter.classList.add('highlight');
-						}
+						},
+						clickCallback() {
+							let points = [];
+
+							return (x, y) => {
+								points.push([x, y]);
+
+								if (points.length === 4) {
+									this.addEvent('polygon', {
+										text: 'Разметка урны',
+										value: points,
+									});
+
+									points = [];
+								}
+							};
+						},
+						getProcQuestionText(idx, value) {
+							let text = '';
+							if (value === '1') text = 'Да';
+							if (value === '0') text = 'Нет';
+							if (value === '-1') text = 'Не могу ответить';
+
+							return `${idx + 1} - ${text}`;
+						},
+						setProcQuestion(idx, event) {
+							const key = `proc_question_${idx}`;
+							const procQuestion = this.events[key] || {
+								type: 'proc_question',
+								clip: this.clip.id,
+								value: '',
+								note: '',
+								offset: 0,
+							};
+							const { type, value } = event.target;
+							const text = type === 'radio'
+								? this.getProcQuestionText(idx, value)
+								: this.getProcQuestionText(idx, procQuestion.value);
+
+							this.$set(this.events, key, {
+								...procQuestion,
+								value: type === 'radio' ? value : procQuestion.value,
+								note: type === 'text' ? value : procQuestion.note,
+								text,
+							});
+						},
+						setPolygonQuestion(value, text, event) {
+							const { checked } = event.target;
+							if (checked) {
+								this.$set(this.events, value, {
+									type: 'polygon_question',
+									offset: 0,
+									value,
+									text,
+									clip: this.clip.id,
+								});
+								return;
+							}
+
+							this.$delete(this.events, value);
+						},
 					},
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
 					},
 					template: '#app-task-base',
+				};
+
+				const appTaskPolygon = {
+					name: 'app-task-polygon',
+					components: {
+						'app-task-base': appTaskBase,
+					},
+					template: '#app-task-polygon',
 				};
 
 				const appTaskVote = {
@@ -1453,6 +1799,14 @@
 							type: Boolean,
 							required: false,
 						},
+						clickCallback: {
+							type: Function,
+							default: () => 1,
+						},
+						polygons: {
+							type: Array,
+							required: false,
+						},
 					},
 					name : 'app-clip-player',
 					template : '#app-clip-player',
@@ -1483,6 +1837,18 @@
 						setPlaybackRate(delta) {
 							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
 							this.playbackRate = this.$refs.player.playbackRate;
+						},
+						SVGClickHandler(event) {
+							const { left, top, width, height } = this.$refs.svg.getBoundingClientRect();
+							const { clientX, clientY } = event;
+
+							const x = clientX - left;
+							const y = clientY - top;
+
+							this.clickCallback(x / width, y / height);
+						},
+						formatColor(i, n = 8) {
+							return `hsl(${360 * (i % n) / n}, 50%, 50%)`;
 						},
 					},
 				};
@@ -1552,7 +1918,6 @@
 							({ full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов' })[clip_task] || clip_task,
 						formatClipInterval: formatClipInterval,
 						getTurnout(name) {
-							if (!this.station.turnout) return {};
 							const obj = this.station.turnout[name];
 							const orderList = this.$options.turnoutOrder;
 							return !obj
@@ -1851,6 +2216,11 @@
 						{ path: '/', name: 'index', component: appIndex },
 						{ path: '/task', name: 'task', component: appTask },
 						{
+							path: '/task/polygon/:id/:csrf',
+							name: 'polygon',
+							component: appTaskPolygon,
+						},
+						{
 							path: '/task/:id/:csrf/vote/election/:election_number/region/:region_number/station/:station_number',
 							name: 'vote',
 							component: appTaskVote,
@@ -1961,7 +2331,7 @@
 							.catch(this.errorHandler);
 					},
 					render(c) {
-						return c('div', { attrs: { class: 'h-100' }}, [
+						return c('div', { attrs: { class: 'd-flex flex-column h-100' }}, [
 							c('app-navigation-menu', { props: { logout: this.logout } }),
 							c('app-error', { props: { showError: this.showError } }, this.errorMessage),
 							c(
