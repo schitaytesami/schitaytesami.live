@@ -1637,6 +1637,8 @@
 									value: 1,
 									text: '+1 Голос',
 									clip: this.clip.id,
+									timestamp: Date.now(),
+									submitted: false,
 								});
 								return;
 							}
@@ -1648,6 +1650,8 @@
 									value: payload.value,
 									text: payload.value,
 									clip: this.clip.id,
+									timestamp: Date.now(),
+									submitted: false,
 								});
 								this.note = '';
 								return;
@@ -1660,6 +1664,8 @@
 									value: payload.value,
 									text: payload.text,
 									clip: this.clip.id,
+									timestamp: Date.now(),
+									submitted: false,
 								});
 								return;
 							}
@@ -1721,6 +1727,8 @@
 								value: '',
 								note: '',
 								offset: 0,
+								timestamp: Date.now(),
+								submitted: false,
 							};
 							const { type, value } = event.target;
 							const text = type === 'radio'
@@ -1743,6 +1751,8 @@
 									value,
 									text,
 									clip: this.clip.id,
+									timestamp: Date.now(),
+									submitted: false,
 								});
 								return;
 							}
