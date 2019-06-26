@@ -1689,10 +1689,26 @@
 								return;
 							}
 						},
-						removeEvent(key) {
+						async removeEvent(key) {
 							this.highlightCounter();
 
-							this.$delete(this.events, key);
+							/* where id comes from? */
+							const { id, submitted } = this.events[key];
+
+							if (submitted)
+								try {
+									// await sendEvents([{ id, remove: true }], {
+									// 	id: this.clip.id,
+									// 	csrf: this.clip.csrf,
+									// });
+									/* emulate submitting */
+									await new Promise(resolve => setTimeout(resolve, 1000));
+									this.$delete(this.events, key);
+								} catch (err) {
+									this.$root.errorHandler(err);
+								}
+							else this.$delete(this.events, key);
+
 						},
 						keyDown(e) {
 							if (this.$route.name == 'vote' && this.$refs.note !== document.activeElement) {
@@ -1761,7 +1777,7 @@
 								text,
 							});
 						},
-						setPolygonQuestion(value, text, event) {
+						async setPolygonQuestion(value, text, event) {
 							const { checked } = event.target;
 							if (checked) {
 								this.$set(this.events, value, {
@@ -1776,7 +1792,7 @@
 								return;
 							}
 
-							this.$delete(this.events, value);
+							await this.removeEvent(value);
 						},
 					},
 					created() {
