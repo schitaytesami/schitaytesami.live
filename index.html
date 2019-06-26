@@ -360,7 +360,7 @@
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
-								<tr v-for="([key, event]) in Object.entries(events).reverse()">
+								<tr v-for="([key, event]) in Object.entries(events).reverse()" :class="{ 'bg-success': event.submitted }">
 									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
 									<td class="text-left text-truncate">{{ event.text }}</td>
 									<td class="text-right pr-0">
