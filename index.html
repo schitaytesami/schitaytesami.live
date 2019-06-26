@@ -387,6 +387,14 @@
 						<app-bookmark-button :clip="clip" class="flex-grow-1"/>
 					</div>
 
+					<div class="mb-4">
+						<button
+							type="submit"
+							class="btn btn-block btn-success"
+							@click="saveEvents"
+						>Сохранить результаты</button>
+					</div>
+
 					<template v-if="are_controls_polygon_shown">
 						<div class="btn-group-vertical w-100">
 							<div class="btn-group mb-3">
@@ -1572,33 +1580,44 @@
 							const minutes = Math.floor(offset / 60), seconds = Math.floor(offset % 60);
 							return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 						},
-						async submitResults() {
-							const events =
-								this.$route.name == 'vote' ?
-								this.events :
-								this.$route.name == 'proc' ?
-									this.questions.map((q, i) => ({
-										offset: 0,
-										clip: this.clip.id,
-										type: `question${i}`,
-										value: JSON.stringify(q),
-									})) : [];
-
-							if (!this.submitted && (this.failed || this.completed))
-								await this.sendEvents(events);
-							else
-								await this.nextTask();
+						getNotSubmittedEvents() {
+							return Object.entries(this.events)
+								.map(([key, value]) => ({ ...value, key }))
+								.filter(value => !value.submitted);
 						},
-						async sendEvents(events) {
+						async submitResults() {
+							if (!this.completed) return;
+
+							const eventsToSubmit = this.getNotSubmittedEvents();
+
 							try {
-								await sendEvents(events, {
+								await sendEvents(eventsToSubmit, {
 									id: this.clip.id,
 									csrf: this.clip.csrf,
 								});
 								this.submitted = true;
 								this.failed = false;
+								await this.nextTask();
 							} catch (err) {
 								this.failed = true;
+								this.$root.errorHandler(err);
+							}
+						},
+						async saveEvents() {
+							const eventsToSubmit = this.getNotSubmittedEvents();
+
+							try {
+								// await sendEvents(eventsToSubmit, {
+								// 	id: this.clip.id,
+								// 	csrf: this.clip.csrf,
+								// });
+								/* emulate submitting */
+								await new Promise(resolve => setTimeout(resolve, 2000));
+
+								eventsToSubmit.forEach(({ key }) => {
+									this.events[key].submitted = true;
+								});
+							} catch (err) {
 								this.$root.errorHandler(err);
 							}
 						},
