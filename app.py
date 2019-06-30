@@ -233,6 +233,14 @@ def task_get(task_type, election_number, region_number, station_number, user, ac
 	return flask.Response(response = json.dumps(dict(id = clip.id, task = clip.task, thumbnail = clip.thumbnail, video = clip.video, clip_interval_start = clip.clip_interval_start, clip_interval_end = clip.clip_interval_end, csrf = clip.csrf, station = dict(id = clip.station_id, station_number = clip.station.station_number, station_address = clip.station.station_address, timezone_offset = clip.station.timezone_offset, election_number = clip.station.election_number)) if clip is not None else None, ensure_ascii = False), status = 200, mimetype = 'application/json')
 
 @user_must_be_active()
+def station_get(station_id, user):
+	station = Station.get_or_none(Station.id == station_id)
+	return flask.Response(response = json.dumps(
+		dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, clips = [c.id for c in station.clips]) if station is not None else None,
+		ensure_ascii = False),
+	status = 200, mimetype = 'application/json')
+
+@user_must_be_active()
 def user_access_station_post(user_id, station_id, user):
 	if user.is_admin or user_id == user.id:
 		StationAccess.create(station_id = station_id, user_id = user_id, granted = user.is_admin).save()
@@ -304,6 +312,7 @@ def serve(db_path, log_sql, gunicorn_args):
 	api.route('/task/<task_type>/election/<election_number>/region/<region_number>/station/<station_number>', methods = ['GET'])(task_get)
 	api.route('/events/<int:clip_id>', methods = ['POST'])(events_post)
 	api.route('/user/<int:user_id>/access/station/<int:station_id>', methods = ['POST'])(user_access_station_post)
+	api.route('/station/<int:station_id>', methods = ['GET'])(station_get)
 
 	def before_request():
 		if db.is_closed():
