@@ -1351,6 +1351,17 @@
 
 			const statsPromise = fetchStats();
 
+			async function getStation(id) {
+				const response = await fetch(`/station/${id}`);
+				if (!response.ok) throw makeNetworkError(response);
+
+				try {
+					return await response.json();
+				} catch (err) {
+					throw makeDataError(err);
+				}
+			}
+
 			async function sendEvents(events, { id, csrf }) {
 				const response = await fetch(`/events/${id}?csrf=${csrf}`, {
 					method: 'post',
