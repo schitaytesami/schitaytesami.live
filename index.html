@@ -1547,6 +1547,7 @@
 							showInstruction: false,
 							showEvents: false,
 							events: {},
+							clip: null,
 							note: '',
 							started: false,
 							completed: false,
@@ -1557,21 +1558,6 @@
 					computed: {
 						user() {
 							return this.$root.user;
-						},
-						clip() {
-							const clip = {
-								...this.$root.stats.clips_dict[this.$route.params.id],
-								csrf: this.$route.params.csrf,
-							};
-
-							if (this.$route.name === 'polygon')
-									return {
-										...clip,
-										video: null,
-										poster: 'https://proverim.webcam/speedup_/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub_1521348900_1521392700.mp4.0008.mp4.jpg',
-									};
-
-							return clip;
 						},
 					},
 					methods: {
@@ -1812,7 +1798,23 @@
 					created() {
 						document.removeEventListener('keydown', this.keyDown);
 						document.addEventListener('keydown', this.keyDown);
+
 						statsPromise.then(stats => {
+							let clip = {
+								...this.$root.stats.clips_dict[this.$route.params.id],
+								csrf: this.$route.params.csrf,
+							};
+
+							/* temporary polygon task for testing. */
+							if (this.$route.name === 'polygon')
+								clip =  {
+									...clip,
+									video: null,
+									poster: 'https://proverim.webcam/speedup_/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub_1521348900_1521392700.mp4.0008.mp4.jpg',
+								};
+
+							this.clip = clip;
+
 							getStation(this.clip.station_id).then(result => {
 								/* TODO: initialise events from the result
 									this.events = ...
