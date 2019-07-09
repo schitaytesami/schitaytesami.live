@@ -1710,7 +1710,7 @@
 
 						},
 						keyDown(e) {
-							if (this.$route.name == 'vote' && this.$refs.note !== document.activeElement) {
+							if (this.$route.name == 'vote' && document.activeElement.nodeName !== 'INPUT') {
 								const keycode_space = 32;
 								const keycode_escape = 27;
 
@@ -1795,8 +1795,10 @@
 							await this.removeEvent(value);
 						},
 					},
-					created() {
+					destroyed() {
 						document.removeEventListener('keydown', this.keyDown);
+					},
+					created() {
 						document.addEventListener('keydown', this.keyDown);
 
 						statsPromise.then(stats => {
