@@ -235,8 +235,9 @@ def task_get(task_type, election_number, region_number, station_number, user, ac
 @user_must_be_active()
 def station_get(station_id, user):
 	station = Station.get_or_none(Station.id == station_id)
+	events = [dict(id = ev.id, timestamp = ev.timestamp, value = ev.value, station_id = ev.station_id if ev.station is not None else ev.clip.station_id if ev.clip is not None else None) for ev in Event.select().where(Event.creator.id == user.id).prefetch(Clip)]
 	return flask.Response(response = json.dumps(
-		dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, clips = [c.id for c in station.clips]) if station is not None else None,
+		dict(id = station.id, station_id = station.station_id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, clips = [dict(id = c.id, events = [ev for ev in events if ev['station_id'] == station.id]) for c in station.clips]) if station is not None else None,
 		ensure_ascii = False),
 	status = 200, mimetype = 'application/json')
 
