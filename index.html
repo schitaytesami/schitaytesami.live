@@ -324,7 +324,7 @@
 						:clip="clip"
 						:started.sync="started"
 						:completed.sync="completed"
-						:polygons="Object.values(events).filter(e => e.type === 'polygon').map(e => e.value)"
+						:polygons="processEvents().polygons.map(e => e.value)"
 						:clickCallback="clickCallback()"
 						ref="player"
 						v-if="clip"
@@ -357,11 +357,11 @@
 						>
 							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
 							<span class="h5 m-0 ml-1">{{ showEvents ? '▲' : '▼' }}</span>
-							<h2 class="m-0 ml-auto" ref="counter">{{ Object.keys(events).length }}</h2>
+							<h2 class="m-0 ml-auto" ref="counter">{{ events.length }}</h2>
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
-								<tr v-for="([key, event]) in Object.entries(events).reverse()" :class="{ 'bg-success': event.submitted }">
+								<tr v-for="event in events.filter(e => !e.deleted)" :class="{ 'bg-success': event.submitted }">
 									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
 									<td class="text-left text-truncate">{{ event.text }}</td>
 									<td class="text-right pr-0">
@@ -369,7 +369,7 @@
 											type="button"
 											class="btn text-danger p-0"
 											title="Удалить"
-											@click="removeEvent(key)"
+											@click="removeEvent(event)"
 										>❌</button>
 									</td>
 								</tr>
@@ -425,14 +425,14 @@
 							<div class="btn-group-toggle">
 								<label
 									class="btn btn-sm btn-secondary mb-1 mr-1"
-									:class="{ active: events[value] }"
+									:class="{ active: processEvents().stationQuestions[value] && processEvents().stationQuestions[value].checked }"
 									:key="value"
-									v-for="([value, text]) in options"
+									v-for="([value, text]) in stationQuestions"
 								>
 									<input
 										type="checkbox"
-										:checked="events[value]"
-										@change="setPolygonQuestion(value, text, $event)">{{ text }}
+										:checked="processEvents().stationQuestions[value] && processEvents().stationQuestions[value].checked"
+										@change="setStationQuestion(value, text, $event)">{{ text }}
 								</label>
 							</div>
 						</div>
@@ -485,7 +485,7 @@
 												type="radio"
 												class="form-check-input"
 												:value="-1"
-												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '-1' : false"
+												:checked="processEvents().procQuestions[`proc_question_${idx}`].value === '-1'"
 												:id="'cannot' + idx"
 												:name="idx"
 												@change="setProcQuestion(idx, $event)">
@@ -498,7 +498,7 @@
 												type="radio"
 												class="form-check-input"
 												:value="1"
-												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '1' : false"
+												:checked="processEvents().procQuestions[`proc_question_${idx}`].value === '1'"
 												:id="'yes' + idx"
 												:name="idx"
 												@change="setProcQuestion(idx, $event)">
@@ -511,7 +511,7 @@
 												type="radio"
 												class="form-check-input"
 												:value="0"
-												:checked="events['proc_question_' + idx] ? events['proc_question_' + idx].value === '0' : false"
+												:checked="processEvents().procQuestions[`proc_question_${idx}`].value === '0'"
 												:id="'no' + idx"
 												:name="idx"
 												@change="setProcQuestion(idx, $event)">
@@ -523,7 +523,7 @@
 											class="form-control form-control-sm"
 											type="text"
 											placeholder="Введите в это поле время нарушения или комментарий"
-											:value="events['proc_question_' + idx] ? events['proc_question_' + idx].note : ''"
+											:value="processEvents().procQuestions[`proc_question_${idx}`].note"
 											@change="setProcQuestion(idx, $event)">
 									</div>
 								</div>
@@ -1530,7 +1530,7 @@
 								{ comment: '', question_text: 'Оцените качество аудиозаписи (хорошо ли различимо оглашение данных, не было ли помех для аудиозаписи)' },
 								{ comment: '', question_text: 'Замеченные нарушения, не отраженные выше' },
 							],
-							options: [
+							stationQuestions: [
 								['box_small_hard', 'Ящик мелкий, сложно отметить'],
 								['box_missing_in_frame', 'Ящик не в кадре'],
 								['box_occluded_by_stuff', 'Ящик загорожен не людьми'],
@@ -1545,7 +1545,7 @@
 							],
 							showInstruction: false,
 							showEvents: false,
-							events: {},
+							events: [],
 							clip: null,
 							note: '',
 							started: false,
@@ -1579,15 +1579,10 @@
 							const minutes = Math.floor(offset / 60), seconds = Math.floor(offset % 60);
 							return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 						},
-						getNotSubmittedEvents() {
-							return Object.entries(this.events)
-								.map(([key, value]) => ({ ...value, key }))
-								.filter(value => !value.submitted);
-						},
 						async submitResults() {
 							if (!this.completed) return;
 
-							const eventsToSubmit = this.getNotSubmittedEvents();
+							const eventsToSubmit = this.events.filter(e => !e.submitted);
 
 							try {
 								await sendEvents(eventsToSubmit, {
@@ -1603,18 +1598,22 @@
 							}
 						},
 						async saveEvents() {
-							const eventsToSubmit = this.getNotSubmittedEvents();
+							/* Should it uses this.processEvents() ? */
+							const eventsToSubmit = this.events.filter(e => !e.deleted && !e.submitted);
 
 							try {
-								// await sendEvents(eventsToSubmit, {
-								// 	id: this.clip.id,
-								// 	csrf: this.clip.csrf,
-								// });
-								/* emulate submitting */
+								/* Emulates submitting */
 								await new Promise(resolve => setTimeout(resolve, 2000));
 
-								eventsToSubmit.forEach(({ key }) => {
-									this.events[key].submitted = true;
+								/*
+									eventsToSubmit is a new object. It needs to update the current events list.
+									An another issue is while the async op is proccessing the current events list could change.
+								*/
+								eventsToSubmit.forEach(e => {
+									const idx = this.events.indexOf(e);
+									if (idx === -1) return;
+									/* Vue can't detect straightforward mutation using = operator */
+									this.events.splice(idx, 1, { ...e, submitted: true });
 								});
 							} catch (err) {
 								this.$root.errorHandler(err);
@@ -1649,64 +1648,60 @@
 							this.highlightCounter();
 
 							if (type === 'vote') {
-								this.$set(this.events, `vote_${payload.offset}`, {
+								this.events.push({
 									type,
-									offset: Math.floor(payload.offset),
 									value: 1,
+									deleted: false,
+									submitted: false,
 									text: '+1 Голос',
 									clip: this.clip.id,
-									timestamp: Date.now(),
-									submitted: false,
+									offset: Math.floor(payload.offset),
 								});
 								return;
 							}
 
 							if (type === 'note') {
-								this.$set(this.events, `note_${payload.offset}`, {
+								this.events.push({
 									type,
-									offset: Math.floor(payload.offset),
-									value: payload.value,
-									text: payload.value,
-									clip: this.clip.id,
-									timestamp: Date.now(),
+									deleted: false,
 									submitted: false,
+									clip: this.clip.id,
+									text: payload.value,
+									value: payload.value,
+									offset: Math.floor(payload.offset),
 								});
 								this.note = '';
 								return;
 							}
 
 							if (type === 'polygon') {
-								this.$set(this.events, payload.value, {
+								this.events.push({
 									type,
 									offset: 0,
-									value: payload.value,
-									text: payload.text,
-									clip: this.clip.id,
-									timestamp: Date.now(),
+									deleted: false,
 									submitted: false,
+									clip: this.clip.id,
+									text: payload.text,
+									value: payload.value,
 								});
 								return;
 							}
 						},
-						async removeEvent(key) {
+						async removeEvent(event) {
 							this.highlightCounter();
 
 							/* where id comes from? */
-							const { id, submitted } = this.events[key];
+							const idx = this.events.indexOf(event);
+							const { id, submitted } = this.events[idx];
 
 							if (submitted)
 								try {
-									// await sendEvents([{ id, remove: true }], {
-									// 	id: this.clip.id,
-									// 	csrf: this.clip.csrf,
-									// });
-									/* emulate submitting */
 									await new Promise(resolve => setTimeout(resolve, 1000));
-									this.$delete(this.events, key);
+									this.events.splice(idx, 1, { ...this.events[idx], deleted: true });
 								} catch (err) {
 									this.$root.errorHandler(err);
 								}
-							else this.$delete(this.events, key);
+							else this.events.splice(idx, 1);
 
 						},
 						keyDown(e) {
@@ -1755,44 +1750,78 @@
 						},
 						setProcQuestion(idx, event) {
 							const key = `proc_question_${idx}`;
-							const procQuestion = this.events[key] || {
-								type: 'proc_question',
-								clip: this.clip.id,
-								value: '',
-								idx,
-								note: '',
-								offset: 0,
-								timestamp: Date.now(),
-								submitted: false,
-							};
+							const procQuestion = this.processEvents().procQuestions[key];
 							const { type, value } = event.target;
+
+							/* Updates user text based on the type of control element. */
 							const text = type === 'radio'
 								? this.getProcQuestionText(idx, value)
 								: this.getProcQuestionText(idx, procQuestion.value);
 
-							this.$set(this.events, key, {
+							/*
+								Always pushes a new object instead of mutating the one is gotten
+								TODO: How to avoid it?
+							*/
+							this.events.push({
 								...procQuestion,
 								value: type === 'radio' ? value : procQuestion.value,
 								note: type === 'text' ? value : procQuestion.note,
 								text,
 							});
 						},
-						async setPolygonQuestion(value, text, event) {
+						setStationQuestion(value, text, event) {
 							const { checked } = event.target;
-							if (checked) {
-								this.$set(this.events, value, {
-									type: 'polygon_question',
-									offset: 0,
-									value,
-									text,
-									clip: this.clip.id,
-									timestamp: Date.now(),
-									submitted: false,
-								});
-								return;
-							}
 
-							await this.removeEvent(value);
+							this.events.push({
+								text,
+								value,
+								checked,
+								offset: 0,
+								deleted: false,
+								submitted: false,
+								clip: this.clip.id,
+								type: 'station_question',
+							});
+						},
+						processEvents() {
+							/*
+								Finds not deleted and not submitted events having 'proc_questions' type
+								Creates and fills an object to have access by key e.g. 'proc_question_3'
+								The object will have the last added values
+							*/
+							const procQuestions = this.events
+								.filter(e => e.type === 'proc_question' && !e.deleted && !e.submitted)
+								.reduce((acc, cur) => ({ ...acc, [`proc_question_${cur.idx}`]: cur }), {});
+
+							/*
+								Fills procQuestoins object with missing keys with a placeholder
+								TODO: should it be replaced somewhere?
+							*/
+							this.questions.forEach((q, idx) => {
+								if (!Object.hasOwnProperty.call(procQuestions, `proc_question_${idx}`))
+									procQuestions[`proc_question_${idx}`] = {
+										idx,
+										note: '',
+										offset: 0,
+										value: '',
+										deleted: false,
+										submitted: false,
+										clip: this.clip.id,
+										type: 'proc_question',
+									};
+							});
+
+							const stationQuestions = this.events
+								.filter(e => e.type === 'station_question' && !e.deleted && !e.submitted)
+								.reduce((acc, cur) => ({ ...acc, [cur.value]: cur }), {});
+
+							const polygons = this.events.filter(e => e.type === 'polygon' && !e.deleted);
+
+							return {
+								polygons,
+								procQuestions,
+								stationQuestions,
+							};
 						},
 					},
 					destroyed() {
@@ -1927,18 +1956,8 @@
 									},
 								];
 
-								events.forEach(event => {
-									let key = event.value;
-
-									if (event.type === 'vote') key = `vote_${event.offset}`;
-									if (event.type === 'note') key = `note_${event.offset}`;
-									if (event.type === 'polygon') key = event.value.toString();
-									if (event.type === 'proc_question') key = `proc_question_${event.idx}`;
-
-									this.$set(this.events, key, event);
-								});
-
 								this.isLoading = false;
+								this.events = events;
 							});
 						});
 					},
