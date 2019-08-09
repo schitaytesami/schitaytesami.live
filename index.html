@@ -712,7 +712,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="station in $root.stats.stations" :key="station.id">
+						<tr v-for="station in $root.stats.stations" v-if="station.turnout.progress > 0" :key="station.id">
 							<td>{{ formatElectionDate(station.election_number) }}</td>
 							<td>{{ formatRegionName(station.station_address) }}</td>
 							<td><router-link :to="{name: 'station', params: { id: station.station_id } }">{{ station.station_number }}</router-link></td>
