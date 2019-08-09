@@ -154,7 +154,7 @@ def aug_user(u):
 
 
 def stats_get():
-	stations, clips = list(Station.select().order_by(Station.election_number, Station.region_number, Station.station_number).prefetch(Event).prefetch(Clip)), list(Clip.select().where(Clip.task == 'vote').prefetch(Event).prefetch(Station))
+	stations, clips = list(Station.select().order_by(Station.election_number, Station.region_number, Station.station_number).prefetch(Event, Clip)), list(Clip.select().where(Clip.task == 'vote').prefetch(Event, Station))
 	clip_turnout = {clip.id : estimate_clip(clip) for clip in clips}
 	station_turnout = {station.id : estimate_station(station, clip_turnout) for station in stations}
 
@@ -297,7 +297,7 @@ def import_(db_path, clips_path, stations_path, batch_size, turnout = False, gol
 
 def export_(stations_path, db_path):
 	init_db(db_path)
-	json.dump([dict(id = station.id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, clips = [dict(camera_id = clip.camera_id, thumbnail = clip.thumbnail, task = clip.task, events = [dict(id = ev.id, timestamp = ev.timestamp, type = ev.type, offset = ev.offset, value = ev.value, creator = ev.creator.display, clip = ev.clip_id, station = ev.station_id) for ev in clip.events], completed = estimate_clip(clip)['completed']) for clip in station.clips]) for station in Station.select().prefetch(Clip).prefetch(Event).prefetch(User)], open(stations_path, 'w'), ensure_ascii = False, indent = 2, sort_keys = True)
+	json.dump([dict(id = station.id, station_number = station.station_number, region_number = station.region_number, election_number = station.election_number, station_address = station.station_address, timezone_offset = station.timezone_offset, station_interval_start = station.station_interval_start, station_interval_end = station.station_interval_end, clips = [dict(camera_id = clip.camera_id, thumbnail = clip.thumbnail, task = clip.task, events = [dict(id = ev.id, timestamp = ev.timestamp, type = ev.type, offset = ev.offset, value = ev.value, creator = ev.creator.display, clip = ev.clip_id, station = ev.station_id) for ev in clip.events], completed = estimate_clip(clip)['completed']) for clip in station.clips]) for station in Station.select().prefetch(Clip, Event, User)], open(stations_path, 'w'), ensure_ascii = False, indent = 2, sort_keys = True)
 
 def serve(db_path, log_sql, gunicorn_args):
 	db = init_db(db_path)
