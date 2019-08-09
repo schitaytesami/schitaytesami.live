@@ -1,28 +1,61 @@
-#! /bin/bash
+#!/bin/bash
 
-mkdir -p ./var/log
+LOGDIR="./var/log"
+NGINX_PID="$LOGDIR/pid.nginx"
+GUNICORN_PID="$LOGDIR/pid.gunicorn"
+
+print_status() {
+    if [ $? -eq 0 ]; then
+        echo "OK"
+    else
+        echo "FAIL"
+    fi
+}
+
+delete_file() {
+    [ -f $1 ] && rm -f $1
+}
+
+kill_program() {
+    ps -ax | grep $1 | awk '{print $1}' | sed '$d' | xargs -r kill
+}
+
+mkdir -p $LOGDIR
 
 if [ "$1" = "start" ]; then
-	if [ ! -f ./var/log/pid.nginx ]; then
-		echo Starting nginx
-		nginx -c nginx.conf -p .
-	fi
+    if [ ! -f $NGINX_PID ]; then
+        echo -ne "Starting nginx..."
+        nginx -c nginx.conf -p .
+        print_status
+    else
+        echo "nginx is already running"
+    fi
 
-	if [ ! -f ./var/log/pid.gunicorn ]; then
-		echo Starting gunicorn
-		python3 app.py serve --gunicorn_args --access-logfile ./var/log/http.access.log.gunicorn --error-logfile ./var/log/http.error.log.gunicorn --pid ./var/log/pid.gunicorn --timeout 600 --reload &
-	fi
+    if [ ! -f $GUNICORN_PID ]; then
+        echo -ne "Starting gunicorn..."
+        python3 app.py serve --gunicorn_args --access-logfile $LOGDIR/http.access.log.gunicorn --error-logfile $LOGDIR/http.error.log.gunicorn --pid $GUNICORN_PID --timeout 600 --reload &
+        print_status
+    else
+        echo "gunicorn is already running"
+    fi
 else
-	if [ -f ./var/log/pid.nginx ]; then
-		echo Stopping nginx
-		nginx -c nginx.conf -p . -s stop
-		rm ./var/log/pid.nginx
-		ps -ax | grep nginx | awk '{print $1}' | xargs kill
-	fi
+    if [ -f $NGINX_PID ]; then
+        echo -ne "Stopping nginx..."
+        nginx -c nginx.conf -p . -s stop
+        print_status
+        delete_file $NGINX_PID
+    else
+        echo "nginx is not running"
+    fi
+    kill_program nginx
 
-	if [ -f ./var/log/pid.gunicorn ]; then
-		echo Stopping gunicorn
-		kill -9 $(cat ./var/log/pid.gunicorn)
-		rm ./var/log/pid.gunicorn
-	fi
+    if [ -f $GUNICORN_PID ]; then
+        echo -ne "Stopping gunicorn..."
+        kill -9 $(cat $GUNICORN_PID)
+        print_status
+        delete_file $GUNICORN_PID
+    else
+        echo "gunicorn is not running"
+    fi
+    kill_program gunicorn
 fi
