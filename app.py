@@ -131,17 +131,17 @@ class StationAccess(pw.Model):
 # ================================================== #
 
 
-def build_response(data):
+def build_response_(data):
     return flask.Response(response=json.dumps(data, ensure_ascii=False),
                           status=200,
                           mimetype='application/json')
 
 
-def user_id_from_event(event):
+def user_id_from_event_(event):
     return event.creator_id
 
 
-def station_id_from_event(event):
+def station_id_from_event_(event):
     if event.station is not None:
         return event.station_id
     elif event.clip is not None:
@@ -218,9 +218,9 @@ def user_access_station_post(user_id, station_id, user):
         return flask.jsonify(success=False)
 
 
-def estimate_clip_turnout(clip):
-    vote_events = sorted(filter(lambda event: event.type == 'vote', clip.events), key=user_id_from_event)
-    votes = [len(list(g)) for k, g in itertools.groupby(vote_events, key=user_id_from_event)]
+def estimate_clip_turnout_(clip):
+    vote_events = sorted(filter(lambda event: event.type == 'vote', clip.events), key=user_id_from_event_)
+    votes = [len(list(g)) for k, g in itertools.groupby(vote_events, key=user_id_from_event_)]
     final_turnout = ([json.loads(event.value) for event in clip.events if event.type == 'turnout_estimate'] + [None])[0]
     average_turnout = int(sum(votes) / float(len(votes))) if len(votes) > 0 else None
     completed = len(votes) >= incomplete_task_threshold['vote']
@@ -228,8 +228,8 @@ def estimate_clip_turnout(clip):
     return clip_turnout
 
 
-def interval_turnout(station=None, clip_turnout=None, official=None, hours_begin=None, hours_end=None,
-                     timestamp_begin=None, timestamp_end=None, hours_baseline=8, normalize=True):
+def interval_turnout_(station=None, clip_turnout=None, official=None, hours_begin=None, hours_end=None,
+                      timestamp_begin=None, timestamp_end=None, hours_baseline=8, normalize=True):
     # Get interval's start and end timestamps.
     if hours_begin is not None and hours_end is not None:
         baseline_timestamp = station.station_interval_start - hours_baseline * 60 * 60
@@ -257,27 +257,27 @@ def interval_turnout(station=None, clip_turnout=None, official=None, hours_begin
     return None
 
 
-def estimate_station_turnout(station, clip_turnout):
+def estimate_station_turnout_(station, clip_turnout):
     # Calculate official turnout of the given station.
     official_turnout = [json.loads(event.value) for event in station.events if event.type == 'turnout_official']
     official_turnout = (official_turnout + [{}])[0]
     # Calculate estimate turnout of the given station.
-    estimate_turnout = {'10h': interval_turnout(station=station, clip_turnout=clip_turnout, official=official_turnout,
-                                                hours_begin=8, hours_end=10),
-                        '12h': interval_turnout(station=station, clip_turnout=clip_turnout, official=official_turnout,
-                                                hours_begin=10, hours_end=12),
-                        '15h': interval_turnout(station=station, clip_turnout=clip_turnout, official=official_turnout,
-                                                hours_begin=12, hours_end=15),
-                        '18h': interval_turnout(station=station, clip_turnout=clip_turnout, official=official_turnout,
-                                                hours_begin=15, hours_end=18),
-                        '20h': interval_turnout(station=station, clip_turnout=clip_turnout, official=official_turnout,
-                                                hours_begin=18, hours_end=20),
-                        'final': interval_turnout(station=station,
-                                                  clip_turnout=clip_turnout,
-                                                  official=official_turnout,
-                                                  timestamp_begin=station.station_interval_start,
-                                                  timestamp_end=station.station_interval_end,
-                                                  normalize=False)}
+    estimate_turnout = {'10h': interval_turnout_(station=station, clip_turnout=clip_turnout, official=official_turnout,
+                                                 hours_begin=8, hours_end=10),
+                        '12h': interval_turnout_(station=station, clip_turnout=clip_turnout, official=official_turnout,
+                                                 hours_begin=10, hours_end=12),
+                        '15h': interval_turnout_(station=station, clip_turnout=clip_turnout, official=official_turnout,
+                                                 hours_begin=12, hours_end=15),
+                        '18h': interval_turnout_(station=station, clip_turnout=clip_turnout, official=official_turnout,
+                                                 hours_begin=15, hours_end=18),
+                        '20h': interval_turnout_(station=station, clip_turnout=clip_turnout, official=official_turnout,
+                                                 hours_begin=18, hours_end=20),
+                        'final': interval_turnout_(station=station,
+                                                   clip_turnout=clip_turnout,
+                                                   official=official_turnout,
+                                                   timestamp_begin=station.station_interval_start,
+                                                   timestamp_end=station.station_interval_end,
+                                                   normalize=False)}
     # Calculate progress of the given station.
     clip_turnouts = [clip_turnout[clip.id] for clip in station.clips]
     progress = sum(1 if turnout['completed'] else 0 for turnout in clip_turnouts) / float(len(clip_turnouts))
@@ -287,14 +287,8 @@ def estimate_station_turnout(station, clip_turnout):
     return dict(estimate=estimate_turnout, official=official_turnout, comment=comment, progress=progress)
 
 
-def aug_user(user):
-    for key in ['notes', 'bookmarks', 'clips']:
-        user[key] = list(map(int, user[key].split(','))) if user[key] else []
-    return user
-
-
 # TODO: Refactor and simplify this.
-def select_by_election(stations):
+def build_task_selector_options_(stations):
     groupby = lambda stations, key: [(k, list(g)) for k, g in itertools.groupby(sorted(stations, key=key), key=key)]
     by_station = lambda stations: [('УИК #{}'.format(station.station_number), station.station_number)
                                    for station in sorted(stations, key=lambda station: station.station_number)]
@@ -312,8 +306,10 @@ def stats_get():
                     .order_by(Station.election_number, Station.region_number, Station.station_number)
                     .prefetch(Event, Clip))
     clips = list(Clip.select().where(Clip.task == 'vote').prefetch(Event, Station))
-    clip_turnout = {clip.id: estimate_clip_turnout(clip) for clip in clips}
-    station_turnout = {station.id: estimate_station_turnout(station, clip_turnout) for station in stations}
+
+    # Collect turnout counts.
+    clip_turnout = {clip.id: estimate_clip_turnout_(clip) for clip in clips}
+    station_turnout = {station.id: estimate_station_turnout_(station, clip_turnout) for station in stations}
 
     # Collect stations.
     stations_list = list()
@@ -351,7 +347,7 @@ def stats_get():
         bookmark_dict = dict(id=event.id,
                              timestamp=event.timestamp,
                              value=event.value,
-                             station_id=station_id_from_event(event))
+                             station_id=station_id_from_event_(event))
         bookmarks_list.append(bookmark_dict)
 
     # Collect notes.
@@ -360,7 +356,7 @@ def stats_get():
         notes_dict = dict(id=event.id,
                           timestamp=event.timestamp,
                           value=event.value,
-                          station_id=station_id_from_event(event))
+                          station_id=station_id_from_event_(event))
         notes_list.append(notes_dict)
 
     # Collect station accesses.
@@ -372,67 +368,80 @@ def stats_get():
         'ORDER BY granted ASC, timestamp DESC'
     )
     for station_access in station_accesses:
-        station_access_list.append(dict(user_id=station_access.user_id,
-                                        station_id=station_access.station_id,
-                                        timestamp=station_access.timestamp,
-                                        granted=1 if station_access.granted else 0))
+        station_access_dict = dict(user_id=station_access.user_id,
+                                   station_id=station_access.station_id,
+                                   timestamp=station_access.timestamp,
+                                   granted=1 if station_access.granted else 0)
+        station_access_list.append(station_access_dict)
+
+    # Collect users.
+    users_list = list()
+    users = User.raw(
+        'SELECT '
+        '   u.id, '
+        '   u.display, '
+        '   IFNULL(SUM(e.type == "vote"), 0) as num_votes, '
+        '	IFNULL(SUM(e.type == "note"), 0) as num_notes, '
+        '	IFNULL(COUNT(DISTINCT c.station_id), 0) as num_stations, '
+        '	SUM(IFNULL(c.clip_interval_end - c.clip_interval_start, 0)) as num_seconds, '
+        '	IFNULL(COUNT(DISTINCT e.clip_id), 0) as num_clips, '
+        '	IFNULL(GROUP_CONCAT(DISTINCT e.clip_id), "") as clips, '
+        '	IFNULL(GROUP_CONCAT(CASE e.type WHEN "note" THEN e.id ELSE NULL END, ","), "") as notes, '
+        '	IFNULL(GROUP_CONCAT(CASE e.type WHEN "bookmark" THEN e.id ELSE NULL END, ","), "") as bookmarks '
+        'FROM User u '
+        'LEFT OUTER JOIN Event e ON e.creator_id = u.id '
+        'LEFT OUTER JOIN Clip c ON e.clip_id = c.id '
+        'GROUP BY u.id, u.display '
+        'ORDER BY num_votes DESC'
+    )
+    for user_dict in users.dicts():
+        for key in ['notes', 'bookmarks', 'clips']:
+            user_dict[key] = list(map(int, user_dict[key].split(','))) if user_dict[key] else []
+        users_list.append(user_dict)
+
+    # Collect other stats.
+    num_stations_labeled = sum(1 for t in station_turnout.values() if t['estimate'].get('final') is not None),
+    num_seconds = Clip._meta.database.execute_sql(
+        'SELECT IFNULL(SUM(IFNULL(c.clip_interval_end, 0) - IFNULL(c.clip_interval_start, 0)), 0) '
+        'FROM Clip c '
+        'WHERE c.task == "vote"'
+    ).fetchone()[0]
+    num_seconds_labeled = Clip._meta.database.execute_sql(
+        'SELECT IFNULL(SUM(IFNULL(c.clip_interval_end, 0) - IFNULL(c.clip_interval_start, 0)), 0) '
+        'FROM Clip c '
+        'INNER JOIN Event e ON e.clip_id == c.id AND e.type == "vote" '
+        'WHERE c.task == "vote"'
+    ).fetchone()[0],
 
     # Merge all data into a single dict.
     stats_dict = dict(
         stations=stations_list,
         clips=clips_list,
-        num_stations_labeled=sum(
-            1 for turnout in station_turnout.values() if turnout['estimate'].get('final') is not None),
-        num_seconds=Clip._meta.database.execute_sql(
-            'SELECT IFNULL(SUM(IFNULL(c.clip_interval_end, 0) - IFNULL(c.clip_interval_start, 0)), 0) '
-            'FROM Clip c '
-            'WHERE c.task == "vote"'
-        ).fetchone()[0],
-        num_seconds_labeled=Clip._meta.database.execute_sql(
-            'SELECT IFNULL(SUM(IFNULL(c.clip_interval_end, 0) - IFNULL(c.clip_interval_start, 0)), 0) '
-            'FROM Clip c '
-            'INNER JOIN Event e ON e.clip_id == c.id AND e.type == "vote" '
-            'WHERE c.task == "vote"'
-        ).fetchone()[0],
         bookmarks=bookmarks_list,
         notes=notes_list,
-        users=list(map(aug_user, User.raw(
-            'SELECT '
-            '   u.id, '
-            '   u.display, '
-            '   IFNULL(SUM(e.type == "vote"), 0) as num_votes, '
-            '	IFNULL(SUM(e.type == "note"), 0) as num_notes, '
-            '	IFNULL(COUNT(DISTINCT c.station_id), 0) as num_stations, '
-            '	SUM(IFNULL(c.clip_interval_end - c.clip_interval_start, 0)) as num_seconds, '
-            '	IFNULL(COUNT(DISTINCT e.clip_id), 0) as num_clips, '
-            '	IFNULL(GROUP_CONCAT(DISTINCT e.clip_id), "") as clips, '
-            '	IFNULL(GROUP_CONCAT(CASE e.type WHEN "note" THEN e.id ELSE NULL END, ","), "") as notes, '
-            '	IFNULL(GROUP_CONCAT(CASE e.type WHEN "bookmark" THEN e.id ELSE NULL END, ","), "") as bookmarks '
-            'FROM User u '
-            'LEFT OUTER JOIN Event e ON e.creator_id = u.id '
-            'LEFT OUTER JOIN Clip c ON e.clip_id = c.id '
-            'GROUP BY u.id, u.display '
-            'ORDER BY num_votes DESC'
-        ).dicts())),
         station_access=station_access_list,
-        task_selector_options=select_by_election(stations)
+        users=users_list,
+        num_stations_labeled=num_stations_labeled,
+        num_seconds=num_seconds,
+        num_seconds_labeled=num_seconds_labeled,
+        task_selector_options=build_task_selector_options_(stations)
     )
-    return build_response(stats_dict)
+    return build_response_(stats_dict)
 
 
 @user_must_be_active()
 def station_get(station_id, user):
     station = Station.get_or_none(Station.id == station_id)
     if station is None:
-        return build_response(None)
+        return build_response_(None)
     # Collect all events for the given station and user.
     events = list()
     for event in Event.select().where(Event.creator.id == user.id).prefetch(Clip):
-        if station_id_from_event(event) == station.id:
+        if station_id_from_event_(event) == station.id:
             events.append(dict(id=event.id,
                                timestamp=event.timestamp,
                                value=event.value,
-                               station_id=station_id_from_event(event)))
+                               station_id=station.id))
     # Collect clips for the given station.
     # TODO: Is this really what we want? Copy ALL station events to individual clips?
     clips = [dict(id=clip.id, events=events) for clip in station.clips]
@@ -446,7 +455,7 @@ def station_get(station_id, user):
                         station_interval_start=station.station_interval_start,
                         station_interval_end=station.station_interval_end,
                         clips=clips)
-    return build_response(station_dict)
+    return build_response_(station_dict)
 
 
 def build_filter_sql_(election_number, region_number, station_number):
@@ -479,7 +488,7 @@ def task_get(task_type, election_number, region_number, station_number, user, li
         'c.clip_interval_start ASC, c.clip_interval_end ASC '
         'LIMIT ?',
         *([user.id, task_type] + filter_sql_args + [incomplete_task_threshold[task_type], limit_num])
-    )) or [None]
+    )) or []
     # Choose next task (clip) randomly.
     clip = random.choice(incomplete_tasks[:limit_num])
     station_dict = dict(id=clip.station_id,
@@ -495,20 +504,20 @@ def task_get(task_type, election_number, region_number, station_number, user, li
                      clip_interval_end=clip.clip_interval_end,
                      csrf=clip.csrf,
                      station=station_dict)
-    return build_response(task_dict)
+    return build_response_(task_dict)
 
 
 # ================================================== #
 
 
-def init_db(db_path):
+def init_db_(db_path):
     db = pw.SqliteDatabase(db_path, autocommit=False)
     db.bind([User, Station, Clip, Event, StationAccess])
     return db
 
 
 def setup(db_path):
-    db = init_db(db_path)
+    db = init_db_(db_path)
     db.connect()
     db.create_tables([User, Station, Clip, Event, StationAccess])
     print('DONE:', db_path)
@@ -533,7 +542,7 @@ def config(environment, hostname, root, resolvers, website_url, debug_user_email
 
 
 def serve(db_path, log_sql, gunicorn_args):
-    db = init_db(db_path)
+    db = init_db_(db_path)
     if log_sql:
         logger = logging.getLogger('peewee')
         logger.addHandler(logging.StreamHandler())
@@ -568,7 +577,7 @@ def serve(db_path, log_sql, gunicorn_args):
 
 
 def add_user(email, admin, db_path):
-    init_db(db_path)
+    init_db_(db_path)
     settings = json.loads(open(USER_REGISTRATION_CONF, 'r').read())
     user = User.create(email=email,
                        email_normalized=User.normalize_email(email),
@@ -585,7 +594,7 @@ def import_data(db_path, clips_path, stations_path, turnout, gold, batch_size):
         contents = open(uri, 'rb') if not uri.startswith('http') else urllib.request.urlopen(uri)
         return json.loads(contents.read().decode('utf-8'))
 
-    with init_db(db_path).atomic():
+    with init_db_(db_path).atomic():
         # Import clips.
         if clips_path is not None and turnout is False:
             clips_to_insert = list()
@@ -651,7 +660,7 @@ def import_data(db_path, clips_path, stations_path, turnout, gold, batch_size):
 
 
 def export_data(db_path, stations_path):
-    init_db(db_path)
+    init_db_(db_path)
     exported_stations = list()
     for station in Station.select().prefetch(Clip, Event, User):
         exported_clips = list()
@@ -670,7 +679,7 @@ def export_data(db_path, stations_path):
             clip_dict = dict(camera_id=clip.camera_id,
                              thumbnail=clip.thumbnail,
                              task=clip.task,
-                             completed=estimate_clip_turnout(clip)['completed'],
+                             completed=estimate_clip_turnout_(clip)['completed'],
                              events=exported_events)
             exported_clips.append(clip_dict)
         station_dict = dict(id=station.id,
