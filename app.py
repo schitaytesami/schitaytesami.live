@@ -400,7 +400,7 @@ def stats_get():
         users_list.append(user_dict)
 
     # Collect other stats.
-    num_stations_labeled = sum(1 for t in station_turnout.values() if t['estimate'].get('final') is not None),
+    num_stations_labeled = sum(1 for t in station_turnout.values() if t['estimate'].get('final') is not None)
     num_seconds = Clip._meta.database.execute_sql(
         'SELECT IFNULL(SUM(IFNULL(c.clip_interval_end, 0) - IFNULL(c.clip_interval_start, 0)), 0) '
         'FROM Clip c '
@@ -411,7 +411,7 @@ def stats_get():
         'FROM Clip c '
         'INNER JOIN Event e ON e.clip_id == c.id AND e.type == "vote" '
         'WHERE c.task == "vote"'
-    ).fetchone()[0],
+    ).fetchone()[0]
 
     # Merge all data into a single dict.
     stats_dict = dict(
