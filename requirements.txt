@@ -1,5 +1,5 @@
-peewee==3.5.2
-flask
-jinja2
-gunicorn
 bcrypt
+flask
+gunicorn
+jinja2
+peewee
