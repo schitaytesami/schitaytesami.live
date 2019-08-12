@@ -429,22 +429,33 @@ def stats_get():
     return build_response_(stats_dict)
 
 
+def verify_station_access_(station, user):
+    if user.is_admin:
+        return True
+    for access in StationAccess.select().where(StationAccess.station == station.id and StationAccess.user == user.id):
+        if access is not None and access.granted is True:
+            return True
+    return False
+
+
 @user_must_be_active()
 def station_get(station_id, user):
     station = Station.get_or_none(Station.id == station_id)
     if station is None:
         return build_response_(None)
-    # Collect all events for the given station and user.
+    # Collect all events for the given station and user. Verify access.
     events = list()
-    for event in Event.select().where(Event.creator.id == user.id).prefetch(Clip):
-        if station_id_from_event_(event) == station.id:
-            events.append(dict(id=event.id,
-                               timestamp=event.timestamp,
-                               value=event.value,
-                               station_id=station.id))
+    if verify_station_access_(station, user):
+        for event in Event.select().where(Event.creator.id == user.id).prefetch(Clip):
+            if station_id_from_event_(event) == station.id:
+                events.append(dict(id=event.id,
+                                   timestamp=event.timestamp,
+                                   value=event.value,
+                                   station_id=station.id))
     # Collect clips for the given station.
     # TODO: Is this really what we want? Copy ALL station events to individual clips?
     clips = [dict(id=clip.id, events=events) for clip in station.clips]
+    # Build response.
     station_dict = dict(id=station.id,
                         station_id=station.station_id,
                         station_number=station.station_number,
