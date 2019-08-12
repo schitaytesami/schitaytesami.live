@@ -17,7 +17,7 @@ delete_file() {
 }
 
 kill_program() {
-    ps -ax | grep $1 | awk '{print $1}' | sed '$d' | xargs -r kill
+    ps -ax | grep $1 | awk '{print $1}' | sed '$d' | xargs -r kill 2>/dev/null
 }
 
 mkdir -p $LOGDIR

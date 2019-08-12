@@ -141,6 +141,10 @@ def user_id_from_event_(event):
     return event.creator_id
 
 
+def clip_id_from_event_(event):
+    return event.clip_id
+
+
 def station_id_from_event_(event):
     if event.station is not None:
         return event.station_id
@@ -446,17 +450,17 @@ def station_get(station_id, user):
     # Collect all events for the given station and user. Verify access.
     events = list()
     if verify_station_access_(station, user):
-        for event in Event.select().where(Event.creator.id == user.id).prefetch(Clip):
+        for event in Event.select().where(Event.creator_id == user.id).prefetch(Clip):
             if station_id_from_event_(event) == station.id:
                 events.append(dict(id=event.id,
                                    timestamp=event.timestamp,
                                    value=event.value,
-                                   station_id=station.id))
+                                   station_id=station_id_from_event_(event),
+                                   clip_id=clip_id_from_event_(event)))
     # Collect clips for the given station.
     clips = list()
-    for clip in station.clips:
-        clip_events = [event for event in events if event.get('clip_id', '') == clip.id]
-        clips.append(dict(id=clip.id, events=clip_events))
+    for clip_id, clip_events_group in itertools.groupby(events, lambda x: x['clip_id']):
+        clips.append(dict(id=clip_id, events=list(clip_events_group)))
     # Build response.
     station_dict = dict(id=station.id,
                         station_id=station.station_id,
