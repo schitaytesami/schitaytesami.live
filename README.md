@@ -46,10 +46,10 @@ sudo /usr/sbin/nginx -t -p . -c nginx.conf
 python3 app.py setup
 
 # add user
-python3 app.py add_user
+python3 app.py adduser
 
 # add admin
-python3 app.py add_user --admin
+python3 app.py adduser --admin
 
 # import clips
 python3 app.py import --clips_path https://github.com/schitaytesami/schitaytesami.live/releases/download/data/clips.json --gold 5

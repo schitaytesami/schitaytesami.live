@@ -593,7 +593,7 @@ def serve(db_path, log_sql, gunicorn_args):
     print('DONE')
 
 
-def add_user(email, admin, db_path):
+def adduser(email, admin, db_path):
     init_db_(db_path)
     settings = json.loads(open(USER_REGISTRATION_CONF, 'r').read())
     user = User.create(email=email,
@@ -740,11 +740,11 @@ if __name__ == '__main__':
     cmd.add_argument('--gunicorn_args', nargs=argparse.REMAINDER, default=[])
     cmd.set_defaults(func=serve)
 
-    cmd = subparsers.add_parser('add_user')
+    cmd = subparsers.add_parser('adduser')
     cmd.add_argument('--db_path', default=DEFAULT_DB_PATH)
     cmd.add_argument('--email', default='{}@testuser.com'.format(random.randint(10, 100)))
     cmd.add_argument('--admin', action='store_true')
-    cmd.set_defaults(func=add_user)
+    cmd.set_defaults(func=adduser)
 
     cmd = subparsers.add_parser('import')
     cmd.add_argument('--db_path', default=DEFAULT_DB_PATH)
