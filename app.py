@@ -459,7 +459,7 @@ def station_get(station_id, user):
                                    clip_id=clip_id_from_event_(event)))
     # Collect clips for the given station.
     clips = list()
-    for clip_id, clip_events_group in itertools.groupby(events, lambda x: x['clip_id']):
+    for clip_id, clip_events in itertools.groupby(sorted(events, key=clip_id_from_event_), key=clip_id_from_event_):
         clips.append(dict(id=clip_id, events=list(clip_events_group)))
     # Build response.
     station_dict = dict(id=station.id,
