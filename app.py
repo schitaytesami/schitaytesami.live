@@ -453,8 +453,10 @@ def station_get(station_id, user):
                                    value=event.value,
                                    station_id=station.id))
     # Collect clips for the given station.
-    # TODO: Is this really what we want? Copy ALL station events to individual clips?
-    clips = [dict(id=clip.id, events=events) for clip in station.clips]
+    clips = list()
+    for clip in station.clips:
+        clip_events = [event for event in events if event.get('clip_id', '') == clip.id]
+        clips.append(dict(id=clip.id, events=clip_events))
     # Build response.
     station_dict = dict(id=station.id,
                         station_id=station.station_id,
