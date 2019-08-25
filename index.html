@@ -219,26 +219,6 @@
 		</header>
 	</script>
 
-	<script type="text/x-template" id="app-donate">
-		<div class="row">
-			<div class="col-md-6 offset-md-3">
-				<blockquote class="mb-0">
-					<p>Здесь Вы можете сами поучаствовать в определениии реальной явки и контроле процедуры подсчёта голосов на прошедших выборах. Выявленное расхождения в явке — верный признак фальсификации итогов голосования, которая является уголовным преступлением. Нарушения при подсчете голосов могут производиться для маскировки фальсификаций, за них предусмотрена административная ответсвенность.</p>
-					<p>Ваша помощь будет заключаться в просмотре фрагментов видео и заполнении кратких отчетов на нашем сайте. По результатам ваших отчетов наши юристы будут направлять заявления в следственный комитет или в прокуратуру.</p>
-					<p>Следите за нашими новостями в <a href="https://twitter.com/schitaytesami">Твиттере</a> или <router-link :to="{ name: 'about' }">свяжитесь с нами</router-link>.</p>
-				</blockquote>
-				<ul class="bg-light">
-					<li>Зарегистрировано: <span v-if="guard"><span>{{ $root.stats.users.length }}</span> пользователей</span><span v-else>загрузка...</span></li>
-					<li>Всего видео в системе: <span v-if="guard"><span>{{ $root.stats.stations.length }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds) }}</span> часов)</span><span v-else>загрузка...</span></li>
-					<li>Полностью размечено: <span v-if="guard"><span>{{ $root.stats.num_stations_labeled }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds_labeled) }}</span> часов)</span><span v-else>загрузка...</span></li>
-				</ul>
-				<router-link :to="{ name: 'task' }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
-				<div v-if="guard">
-					<img class="thumbnail" width="120" height="80" :src="clip_station.clip.thumbnail" :title="formatThumbnailTitle(clip_station.station, clip_station.clip)" :key="i" v-for="(clip_station, i) in thumbnails" />
-				</div>
-			</div>
-		</div>
-	</script>
 
 	<script type="text/x-template" id="app-task">
 		<div class="row">
@@ -1156,6 +1136,75 @@
 
 			<hr/>
 			<p class="text-center">Карта Сбербанка и счёт Яндекс.Деньги принадлежат <a href="http://tatobservers.ru/author/azat/">Азату Габдульвалееву</a>, нашему доверенному лицу и наблюдателю в Татарстане.</p>
+		</div>
+	</script>
+	<script type="text/x-template" id="app-donate">
+		<div class="col-md-6 offset-md-3">
+			<p><strong>Считайте Сами</strong> - это проект по записи выборных видео. В 2018 году мы успешно записали видео в день выборов президента РФ и в единый день голосования.</p>
+			<p>Друзья, нам очень нужна финансовая помощь. Все деньги идут на аренду техники для для хранения и обработки видео. Обещаем опубликовать отчёт о расходовании средств. </p>
+			<p>Если вы готовы поддержать нас другим способом, пожалуйста, напишите нам на <code>schitaytesami@gmail.com</code> - мы обязательно ответим.</p>
+			<div>
+				<h4 class="text-center lead">Карта</h4>
+				<div class="text-center">Номер карты Сбербанка - <strong>5336 6900 5589 7468</strong></div>
+			</div>
+
+			<div>
+				<h4 class="text-center lead mt-3">Яндекс.Деньги</h4>
+				<div class="text-center offset-md-3 w-50">
+					<div class="payment-form mb-3">
+						<form method="POST" action="https://money.yandex.ru/quickpay/confirm.xml" target="_blank">
+							<input name="receiver" value="410016070927938" type="hidden">
+							<input name="quickpay-form" value="shop" type="hidden">
+							<input name="targets" value="Считайте Сами - на технику" type="hidden">
+
+							<div class="form-row mb-3">
+								<div class="col auto">
+									<div class="payment-form__currency">
+										<input class="form-control form-control-sm" id="payment-form-sum" name="sum" value="500" maxlength="10" placeholder="Р">
+									</div>
+								</div>
+
+								<div class="col auto">
+									<div class="payment-form__radios">
+										<div class="payment-form__radio">
+											<input class="" value="PC" checked="checked" id="payment-form-pc" type="radio" name="paymentType">
+											<label class="payment-form__label" for="payment-form-pc">
+												<i class="icon pc"></i>
+											</label>
+										</div>
+										<div class="payment-form__radio">
+											<input class="" value="AC" id="payment-form-ac" type="radio" name="paymentType">
+											<label class="payment-form__label" for="payment-form-ac">
+												<i class="icon ac"></i>
+											</label>
+										</div>
+									</div>
+								</div>
+
+								<div class="row col no-gutters auto align-items-end">
+									<button style="background-color: #ffdb4d;" class="btn btn-sm" type="submit" autocomplete="off" tabindex="0">Пожертвовать</button>
+								</div>
+							</div>
+
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<hr/>
+			<p class="text-center">Карта Сбербанка и счёт Яндекс.Деньги принадлежат <a href="http://tatobservers.ru/author/azat/">Азату Габдульвалееву</a>, нашему доверенному лицу и наблюдателю в Татарстане.</p>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-error">
+		<div class="alert alert-danger" role="alert" v-if="showError">
+			<div class="container">
+				<div class="row">
+					<div class="col text-center">
+						<strong>Произошла ошибка!</strong> <slot></slot>. Обновите страницу или сообщите об ошибке нам на <code>schitaytesami@gmail.com</code>.</a>
+					</div>
+				</div>
+			</div>
 		</div>
 	</script>
 
