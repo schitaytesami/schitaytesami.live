@@ -1,0 +1,2570 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+
+<head prefix="og: http://ogp.me/ns#">
+	<title>Считайте Сами</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta property="og:title" content="Считайте Сами" />
+	<meta property="og:url" content="https://schitaytesami.live" />
+	<meta property="og:type" content="website" />
+	<meta property="og:description" content="Проверяем явку на выборах, используя краудсорсинг и ускоренные видео" />
+	<meta property="og:image" content="https://schitaytesami.live/images/logo.png" />
+	<meta name="description" content="Проверяем явку на выборах, используя краудсорсинг и ускоренные видео" />
+	<link href="https://schitaytesami.live/images/logo.png" rel="icon" type="image/png" />
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+	<style>
+		.btn:focus, .btn:active {outline: none !important; box-shadow: none;}
+		.toggle_clip_attribute.btn.active {outline: none !important; box-shadow: none !important; background-color: #5A6066 !important;}
+		.instruction_video, .events_submit {position: absolute; top: 0; opacity: 0.9}
+
+		html {
+			overflow-y:scroll;
+			position: relative;
+			min-height: 100%;
+		}
+
+		body {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			height: 100vh;
+		}
+
+		nav {
+			flex-shrink: 0;
+		}
+
+		main {
+			flex-grow: 1;
+		}
+
+		.instr-screenshot {
+			max-width: 49%;
+		}
+		.navbar-brand {
+			padding: 0;
+			line-height: 2.4rem;
+		}
+		.nav-link {
+			padding: 0;
+			line-height: 2.4rem;
+		}
+		.navbar {
+			padding: 0 1rem;
+		}
+		.navbar .nav-link {
+			border-radius: unset;
+		}
+		.login_link .bg-success {
+			background-color: #C2EABD !important;
+		}
+
+		.thumbnail {
+			display: inline-block;
+			width: 120px; /* 640 */
+			height: 90px; /* 480 */
+			padding: 2px;
+		}
+
+		.payment-form__currency {
+			position: relative;
+		}
+
+		.payment-form__currency::after {
+			content: '\20BD';
+			position: absolute;
+			right: 8px;
+			top: 3px;
+			color: #999;
+		}
+
+		.payment-form input[type=radio] {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			opacity: 0;
+			cursor: pointer;
+		}
+
+		.payment-form input[type=radio]:checked + label {
+			background-color: #ffeca6;
+		}
+
+		.payment-form__radios {
+			display: flex;
+			align-items: flex-end;
+			justify-content: center;
+			height: 100%;
+		}
+
+		.payment-form__radio {
+			position: relative;
+			border: 1px solid lightgray;
+			border-right-width: 0;
+		}
+
+		.payment-form__radio:first-child {
+			border-top-left-radius: 3px;
+			border-bottom-left-radius: 3px;
+		}
+
+		.payment-form__radio:last-child {
+			border-right-width: 1px;
+			border-top-right-radius: 3px;
+			border-bottom-right-radius: 3px;
+		}
+
+		.payment-form__label {
+			display: inline-block;
+			margin: 0;
+			padding: 0 1em 0.3em;
+			cursor: pointer;
+		}
+
+		.icon {
+			display: inline-block;
+			position: relative;
+			vertical-align: middle;
+			background-size: contain;
+			background-position: 50%;
+			background-repeat: no-repeat;
+		}
+
+		.icon.pc {
+			width: 16px;
+			height: 21px;
+			background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTYiIGhlaWdodD0iMjEiIHZpZXdCb3g9IjAgMCAxNiAyMSI+PGRlZnM+PHBhdGggaWQ9ImEiIGQ9Ik0wIC4wNjFoMTUuODg0djIwLjUzNUgweiIvPjwvZGVmcz48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxtYXNrIGlkPSJiIiBmaWxsPSIjZmZmIj48dXNlIHhsaW5rOmhyZWY9IiNhIi8+PC9tYXNrPjxwYXRoIGZpbGw9IiNGRkNGMDAiIGQ9Ik0wIDEwLjI0N2MwLTEuMTU0LjEtMS44ODUgMi41MjctMy42NjhDNC41MzcgNS4xMDQgMTAuOTgzLjA2MSAxMC45ODMuMDYxdjguNDJoNC45djEyLjExNkgxLjUzMmMtLjg0MiAwLTEuNTMtLjY4LTEuNTMtMS41MDZ2LTguODQ0eiIgbWFzaz0idXJsKCNiKSIvPjxwYXRoIGZpbGw9IiNEN0IwMDAiIGQ9Ik0xMS40OTEgOHY0LjkxOEwyIDE5bDEyLTMuNjczVjh6Ii8+PHBhdGggZmlsbD0iIzFEMUQxQiIgZD0iTTYuNTYxIDguNzYyYy42NDctLjcyIDEuNTktLjk3NSAyLjExLS41NjguNTE4LjQwNy40MTMgMS4zMjItLjIzMyAyLjA0My0uNjQ2LjcyMi0xLjU5Ljk3Ni0yLjEwOC41NjktLjUxOC0uNDA4LS40MTUtMS4zMjMuMjMxLTIuMDQ0Ii8+PC9nPjwvc3ZnPgo=")
+			/*background-image: url(https://money.yandex.ru/b/_/sqJ2MGna3IZGNFXC9k4QOrzUG-c.svg);*/
+		}
+
+		.icon.ac {
+			width: 19px;
+			height: 20px;
+			background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMyIgaGVpZ2h0PSIyMyIgdmlld0JveD0iMCAwIDIzIDIzIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wLTJoMjNWOUgweiIgb3BhY2l0eT0iLjQ4MSIvPjxwYXRoIGZpbGw9IiMyQzc5QkUiIGQ9Ik04IDdsMS4xNTQtN0gxMUw5Ljg0NiA3SDhtOS02LjcxNUE1LjU3IDUuNTcgMCAwIDAgMTUuMjA4IDBjLTEuOTc3IDAtMy4zNjguOTItMy4zOCAyLjIzOC0uMDEyLjk3NS45OTMgMS41MTggMS43NTEgMS44NDIuNzguMzMzIDEuMDQxLjU0NSAxLjAzOC44NDItLjAwNS40NTQtLjYyMi42NjItMS4xOTcuNjYyLS44IDAtMS4yMjUtLjEwMi0xLjg4My0uMzU1bC0uMjU3LS4xMDhMMTEgNi42MzljLjQ2Ni4xODkgMS4zMy4zNTMgMi4yMjguMzYxIDIuMTAxIDAgMy40NjYtLjkxIDMuNDgyLTIuMzE2LjAwNy0uNzczLS41MjYtMS4zNTktMS42OC0xLjg0My0uNjk4LS4zMTQtMS4xMjctLjUyMy0xLjEyMi0uODQgMC0uMjgzLjM2Mi0uNTg0IDEuMTQ2LS41ODRhMy45NDIgMy45NDIgMCAwIDEgMS40OTYuMjZsLjE4LjA3OC4yNy0xLjQ3TTIxLjY0OCAwaC0xLjI5MWMtLjQgMC0uNy4xMjQtLjg3Ni41OEwxNyA3aDEuNzU1cy4yODYtLjg2My4zNTEtMS4wNTNsMi4xNC4wMDRjLjA1LjI0NC4yMDMgMS4wNDkuMjAzIDEuMDQ5SDIzbC0xLjM1Mi03bS0yLjA2MSA0LjUxNGMuMTM4LS40MDMuNjY1LTEuOTU4LjY2NS0xLjk1OC0uMDEuMDE5LjEzOC0uNDA2LjIyMi0uNjY4bC4xMTMuNjA0LjM4NyAyLjAyMmgtMS4zODdNMS44MzguOTE0QTYuOTg2IDYuOTg2IDAgMCAwIDAgLjE0NUwuMDIzIDBoMi44MjFjLjM4LjAxNi42ODguMTQ3Ljc5My41OTFsLjYxMyAzLjIyLjE4NC45NzFMNi4xNDYuMDA1SDhMNS4yNDUgNi45OTkgMy4zOTQgNyAxLjgzOC45MTR6Ii8+PHBhdGggZmlsbD0iI0ZGNUYwMCIgZD0iTTkgMjJoNXYtOUg5eiIvPjxwYXRoIGZpbGw9IiNFQjAwMUIiIGQ9Ik05Ljg3NSAxNy41YzAtMS43NTUuODMxLTMuMzE3IDIuMTI1LTQuMzI0QTUuNTc4IDUuNTc4IDAgMCAwIDguNTYyIDEyQzUuNDkgMTIgMyAxNC40NjIgMyAxNy41UzUuNDkgMjMgOC41NjIgMjNjMS4yOTggMCAyLjQ5Mi0uNDQgMy40MzgtMS4xNzZBNS40NjkgNS40NjkgMCAwIDEgOS44NzUgMTcuNSIvPjxwYXRoIGZpbGw9IiNGNzlFMUIiIGQ9Ik0yMSAxNy41YzAgMy4wMzgtMi40OSA1LjUtNS41NjIgNS41QTUuNTc4IDUuNTc4IDAgMCAxIDEyIDIxLjgyNGE1LjQ2OSA1LjQ2OSAwIDAgMCAyLjEyNS00LjMyNEE1LjQ2NyA1LjQ2NyAwIDAgMCAxMiAxMy4xNzYgNS41NzggNS41NzggMCAwIDEgMTUuNDM4IDEyQzE4LjUxIDEyIDIxIDE0LjQ2MiAyMSAxNy41Ii8+PC9nPjwvc3ZnPgo=")
+			/*background-image: url(https://money.yandex.ru/b/_/znDCcGN9U__lRVsmiQ6akvmMXuE.svg);*/
+		}
+
+		@keyframes highlight {
+			from {
+				color: yellow;
+				background: lightyellow;
+			}
+
+			to {
+				color: currentColor;
+				background: inherit;
+			}
+		}
+
+		.highlight {
+			animation: highlight 1s ease-out;
+		}
+
+		.loader {
+			width: 10rem;
+			height: 10rem;
+		}
+
+		.polygon {
+			stroke-width: 0.002;
+			fill-opacity: 0.5;
+		}
+	</style>
+</head>
+
+<body id="tabparent">
+
+	<div id="app"></div>
+
+	<script type="text/x-template" id="app-navigation-menu">
+		<header>
+			<nav class="bg-dark">
+				<div class="navbar justify-content-start flex-nowrap">
+					<ul class="nav nav-pills w-100 navbar-dark">
+						<li class="nav-pill"><router-link class="navbar-brand" :to="{ name: 'index' }">Считайте Сами</router-link></li>
+						<!--<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'task' }">Участвовать</router-link></li>
+						<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'stations' }">Результаты</router-link></li>
+						<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'users' }">Рейтинг участников</router-link></li>-->
+						<li class="nav-pill navbar-nav"><router-link class="nav-link px-2" :to="{ name: 'about' }">О проекте</router-link></li>
+						<!--<li class="nav-pill navbar-nav">
+							<router-link class="nav-link px-2" :to="{ name: 'donate' }">
+								<abbr title="Техника дорогая!" style="border-bottom: 4px dotted">Помочь деньгами</abbr>
+							</router-link>
+						</li>
+						<li class="nav-pill navbar-nav" v-if="$root.user && $root.user.is_admin()">
+							<router-link class="nav-link px-2" :to="{ name: 'admin' }">Управление</router-link>
+						</li>
+						<template v-if="this.$root.user">
+							<li class="nav-pill navbar-nav ml-auto">
+								<router-link
+									class="nav-link px-2"
+									:to="{ name: 'user', params: { display: this.$root.user.display } }"
+								>{{ this.$root.user.display }}</router-link>
+							</li>
+							<li class="ml-1">
+								<button
+									type="button"
+									class="btn btn-link text-warning"
+									@click="logout"
+								>[выход]</button>
+							</li>
+						</template>-->
+					</ul>
+				</div>
+			</nav>
+		</header>
+	</script>
+
+	<script type="text/x-template" id="app-donate">
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				<blockquote class="mb-0">
+					<p>Здесь Вы можете сами поучаствовать в определениии реальной явки и контроле процедуры подсчёта голосов на прошедших выборах. Выявленное расхождения в явке — верный признак фальсификации итогов голосования, которая является уголовным преступлением. Нарушения при подсчете голосов могут производиться для маскировки фальсификаций, за них предусмотрена административная ответсвенность.</p>
+					<p>Ваша помощь будет заключаться в просмотре фрагментов видео и заполнении кратких отчетов на нашем сайте. По результатам ваших отчетов наши юристы будут направлять заявления в следственный комитет или в прокуратуру.</p>
+					<p>Следите за нашими новостями в <a href="https://twitter.com/schitaytesami">Твиттере</a> или <router-link :to="{ name: 'about' }">свяжитесь с нами</router-link>.</p>
+				</blockquote>
+				<ul class="bg-light">
+					<li>Зарегистрировано: <span v-if="guard"><span>{{ $root.stats.users.length }}</span> пользователей</span><span v-else>загрузка...</span></li>
+					<li>Всего видео в системе: <span v-if="guard"><span>{{ $root.stats.stations.length }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds) }}</span> часов)</span><span v-else>загрузка...</span></li>
+					<li>Полностью размечено: <span v-if="guard"><span>{{ $root.stats.num_stations_labeled }}</span> избирательных участков (<span>{{ formatHours($root.stats.num_seconds_labeled) }}</span> часов)</span><span v-else>загрузка...</span></li>
+				</ul>
+				<router-link :to="{ name: 'task' }" class="btn btn-primary mb-2 mt-2 w-100"><h3>Начать работу</h3></router-link>
+				<div v-if="guard">
+					<img class="thumbnail" width="120" height="80" :src="clip_station.clip.thumbnail" :title="formatThumbnailTitle(clip_station.station, clip_station.clip)" :key="i" v-for="(clip_station, i) in thumbnails" />
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-task">
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				<div class="mb-3" :class="{ 'bg-warning': !registered, 'bg-success': registered }" v-if="!$root.user">
+					<template v-if="!registered">
+						<h1 class="lead text-center">Для начала работы введите адрес эл. почты и зарегистрируйтесь</h1>
+						<div class="container">
+							<div class="row pl-2 pr-2">
+								<div class="form-group col pl-0">
+									<input type="text" class="form-control user_email" v-model="email" placeholder="Эл. почта" />
+								</div>
+								<div class="ml-auto">
+									<button class="btn btn-primary" @click.prevent="register">Зарегистрироваться</button>
+								</div>
+							</div>
+						</div>
+					</template>
+					<p class="text-center text-light" v-else>Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
+				</div>
+
+				<h3 class="text-center lead">Мур Мяу</h3>
+				<template v-if="$root.user">
+					<button
+						type="submit"
+						class="btn btn-primary mb-2 mt-2 w-100"
+						@click="nextTask($event, { task: 'polygon', election_number: -1, region_number: -1, station_number: -1 })"
+					><h5 class="mb-0">Начать работу</h5></button>
+				</template>
+
+				<h3 class="text-center lead">Подсчёт явки</h3>
+				<p>Мы предложим вам короткие <strong>3-4-минутные</strong> фрагменты ускоренного видео с избирательных участков. После изучения подробной инструкции нужно будет отмечать моменты, когда избиратель опускает бюллетень в избирательную урну.</p>
+				<template v-if="$root.user">
+					<app-selection
+						:options="$root.stats.task_selector_options"
+						v-if="$root.stats.task_selector_options"
+					>
+						<button
+							type="submit"
+							class="btn btn-primary mb-2 mt-2 w-100"
+							slot-scope="{ election_number, region_number, station_number }"
+							@click="nextTask($event, { task: 'vote', election_number, region_number, station_number })"
+						><h5 class="mb-0">Начать работу</h5></button>
+					</app-selection>
+				</template>
+				<h3 class="text-center lead mt-2">Проверка процедур подсчёта голосов</h3>
+				<p>Это задание более близко к реальному наблюдению на участке и требует изучения процедуры подсчёта голосов избирательной комиссии, изложенной в нашей инструкции. Мы попросим вас просмотреть <strong>3-4-часовые</strong> фрагменты и отметить, как избирательная комиссия выполнила требования закона о выборах.</p>
+				<template v-if="$root.user">
+					<app-selection
+						:options="$root.stats.task_selector_options"
+						v-if="$root.stats.task_selector_options"
+					>
+						<button
+							type="submit"
+							class="btn btn-primary mb-2 mt-2 w-100"
+							slot-scope="{ election_number, region_number, station_number }"
+							@click="nextTask($event, { task: 'proc', election_number, region_number, station_number })"
+						><h5 class="mb-0">Начать работу</h5></button>
+					</app-selection>
+				</template>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-task-base">
+		<div v-if="isLoading"><app-spinner /></div>
+		<div v-else>
+			<div class="row instruction" v-if="showInstruction">
+				<div class="col-md-6 offset-md-3">
+					<div>
+						<p>Эффективность проекта зависит от вашей аккуратности, пожалуйста, отнеситесь к отметкам ответственно. В данном случае полностью применим принцип «лучше меньше да лучше». Пожалуйста, внимательно прочитайте эту инструкцию. В случае возникновения вопросов напишите нам письмо на <code>schitaytesami@gmail.com</code>. Мы постараемся ответить оперативно.</p>
+						<p>Ваша цель – определить число опустивших бюллетени в ящики для голосования, в показываемом Вам фрагменте видео. Считать в уме ничего не придется, но придется внимательно, не отвлекаясь, просматривать видео.</p>
+					</div>
+					<slot name="instruction"></slot>
+				</div>
+			</div>
+
+			<div class="row mt-3">
+				<div class="col-md-5">
+					<app-clip-player
+						class="mb-2"
+						:verbose="false"
+						:clip="clip"
+						:started.sync="started"
+						:completed.sync="completed"
+						:polygons="processEvents().polygons.map(e => e.value)"
+						:clickCallback="clickCallback()"
+						ref="player"
+						v-if="clip"
+					>
+						<div
+							class="instruction_video w-100 text-center bg-light"
+							slot="intro"
+							v-if="!started"
+						>
+							<p>Продолжительность видео приблизительно 3-4 минуты.</p>
+							<p>Пожалуйста, сделайте работу до конца. <strong>Спасибо!</strong></p>
+						</div>
+
+						<div
+							class="events_submit w-100 h-100 text-center bg-light"
+							slot="end"
+							v-if="completed"
+						>
+							<div class="h-100 d-flex flex-column justify-content-center">
+								<h2>{{ formatTaskSubmitResultsButtonText(submitted, failed).message }}</h2>
+								<div><button class="btn btn-success" :class="{ 'btn-danger': failed }" @click.prevent="submitResults">{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button></div>
+							</div>
+						</div>
+					</app-clip-player>
+
+					<div v-if="clip">
+						<button
+							class="btn btn-sm btn-block btn-light d-flex align-items-center pr-0"
+							@click="showEvents = !showEvents"
+						>
+							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
+							<span class="h5 m-0 ml-1">{{ showEvents ? '▲' : '▼' }}</span>
+							<h2 class="m-0 ml-auto" ref="counter">{{ events.length }}</h2>
+						</button>
+						<table class="table table-sm table-striped mt-2">
+							<tbody v-if="showEvents">
+								<tr v-for="event in events.filter(e => !e.deleted)" :class="{ 'bg-success': event.submitted }">
+									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
+									<td class="text-left text-truncate">{{ event.text }}</td>
+									<td class="text-right pr-0">
+										<button
+											type="button"
+											class="btn text-danger p-0"
+											title="Удалить"
+											@click="removeEvent(event)"
+										>❌</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="col-md-7">
+					<div class="btn-group w-100 mb-4" role="group">
+						<button
+							type="button"
+							class="btn btn-info w-50"
+							@click="showInstruction = !showInstruction"
+						>{{ formatInstructionToggleText(showInstruction) }}</button>
+						<app-bookmark-button :clip="clip" class="w-50"/>
+					</div>
+
+					<div class="mb-4">
+						<button
+							type="submit"
+							class="btn btn-block btn-success"
+							@click="saveEvents"
+						>Сохранить результаты</button>
+					</div>
+
+					<template v-if="are_controls_polygon_shown">
+						<div class="btn-group-vertical w-100">
+							<div class="btn-group mb-3">
+								<button
+									type="submit"
+									class="btn btn-success w-50"
+									id="next_task_polygon"
+								>Готово, дальше! (пробел)</button>
+								<button
+									type="button"
+									class="btn btn-danger w-50"
+								>Удалить разметку (delete)</button>
+							</div>
+							<div class="btn-group mb-3">
+								<input
+									type="text"
+									class="form-control"
+									placeholder="Необычное? Опишите здесь!"
+									v-model.trim="note"
+									ref="note"/>
+								<button
+									type="button"
+									class="btn btn-primary w-50"
+									@click="addEvent('note', { value: note, offset: 0 })"
+								>Добавить</button>
+							</div>
+							<div class="btn-group-toggle">
+								<label
+									class="btn btn-sm btn-secondary mb-1 mr-1"
+									:class="{ active: processEvents().stationQuestions[value] && processEvents().stationQuestions[value].checked }"
+									:key="value"
+									v-for="([value, text]) in stationQuestions"
+								>
+									<input
+										type="checkbox"
+										:checked="processEvents().stationQuestions[value] && processEvents().stationQuestions[value].checked"
+										@change="setStationQuestion(value, text, $event)">{{ text }}
+								</label>
+							</div>
+						</div>
+					</template>
+
+					<template v-if="are_controls_vote_shown">
+						<div class="btn-group-vertical w-100 mb-3">
+							<div class="btn-group">
+								<input
+									type="text"
+									class="form-control"
+									placeholder="Необычное? Опишите здесь!"
+									v-model.trim="note"
+									ref="note"/>
+								<button
+									type="button"
+									class="btn btn-primary w-50"
+									@click="addEvent('note', { value: note, offset: $refs.player.currentTime })"
+								>Добавить</button>
+							</div>
+							<div class="btn-group mt-2">
+								<button
+									type="button"
+									class="btn btn-success w-100"
+									@click="addEvent('vote', { offset: $refs.player.currentTime })"
+								>+1 голос (на клавиатуре <kbd>пробел</kbd>)</button>
+							</div>
+						</div>
+					</template>
+
+					<template class="mt-2" v-if="are_controls_proc_shown">
+						<button
+							class="btn btn-success w-100 mb-2"
+							:class="{ 'btn-danger': failed }"
+							@click="submitResults"
+							v-if="false"
+						>{{ formatTaskSubmitResultsButtonText(submitted, failed).button }}</button>
+						<h6 class="lead">Контроль процедуры подсчёта голосов</h6>
+						<ul class="list-group list-group-flush">
+							<li class="list-group-item" v-for="(question, idx) in questions">
+								<p class="mb-1">
+									<strong>{{1 + idx }}.</strong>
+									<span v-html="question.question_text"></span>
+								</p>
+
+								<div class="form-row">
+									<div class="col-auto  bg-secondary text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
+										<div class="form-check">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="-1"
+												:checked="processEvents().procQuestions[`proc_question_${idx}`].value === '-1'"
+												:id="'cannot' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
+											<label :for="'cannot' + idx" class="form-check-label">Не могу ответить</label>
+										</div>
+									</div>
+									<div class="col-auto  bg-success text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
+										<div class="form-check">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="1"
+												:checked="processEvents().procQuestions[`proc_question_${idx}`].value === '1'"
+												:id="'yes' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
+											<label :for="'yes' + idx" class="form-check-label">Да</label>
+										</div>
+									</div>
+									<div class="col-auto bg-danger text-white" v-if="Object.hasOwnProperty.call(question, 'yes_no')">
+										<div class="form-check">
+											<input
+												type="radio"
+												class="form-check-input"
+												:value="0"
+												:checked="processEvents().procQuestions[`proc_question_${idx}`].value === '0'"
+												:id="'no' + idx"
+												:name="idx"
+												@change="setProcQuestion(idx, $event)">
+											<label :for="'no' + idx" class="form-check-label">Нет</label>
+										</div>
+									</div>
+									<div class="col mx-n1">
+										<input
+											class="form-control form-control-sm"
+											type="text"
+											placeholder="Введите в это поле время нарушения или комментарий"
+											:value="processEvents().procQuestions[`proc_question_${idx}`].note"
+											@change="setProcQuestion(idx, $event)">
+									</div>
+								</div>
+							</li>
+						</ul>
+					</template>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-task-polygon">
+		<app-task-base
+			:are_controls_polygon_shown="true"
+			:are_controls_vote_shown="false"
+			:are_controls_proc_shown="false"
+		>
+			<div slot="instruction">
+				<h1 class="lead text-center">Инструкция по разметке ящиков</h1>
+				<p>Это первый этап проекта, от аккуратности разметки ящиков для голосования (неформально – «урн») зависит выбор участков для ускорения видео и качество этого ускорения.</p>
+				<p>Мы просим вас отметить четырёхугольниками поверхности всех ящиков и выбрать атрибуты, которые справедливы хотя бы для одного из ящиков на предложенной картинке с участка.</p>
+				<p>Пожалуйста, внимательно прочитайте эту инструкцию, мы подробно с примерами обсуждаем все нюансы. Если появляются вопросы, <a href="mailto:schitaytesami+polygon@gmail.com">напишите нам письмо</a>. Мы постараемся ответить оперативно.</p>
+
+				<h5>Частые вопросы</h5>
+				<dl class="small">
+					<dt>Отмечать или нет "Ящик будет часто загорожен людьми" при сомнениях?</dt>
+					<dd>Не отмечать.</dd>
+					<dt>Один ящик виден, а второй не виден. Нужно ли отмечать первый?</dt>
+					<dd>Да, нужно отмечать. Но при этом нужно также отметить "Ящик не в кадре".</dd>
+					<dt>Виден только уголок ящика. Отмечать ли его поверхность?</dt>
+					<dd>Да, отмечать. Но при этом можно и отметить "Ящик не в кадре".</dd>
+				</dl>
+
+				<dl>
+					<dt>Разметка поверхностей и выбор атрибутов</dt>
+					<dd>
+						<p>Ваша цель – отметить верхнюю поверхность каждого ящика четырёхугольником. Для этого кликайте по углам поверхности. Одна поверхность – один четырёхугольник. Внимательно отметьте все ящики. Система подсветит каждый размеченный ящик своим цветом. Пример разметки:</p>
+						<img class="d-block w-100" alt="Пример интерфейса" src="/images/urn.jpg"></img>
+						<p>Атрибуты представлены <button class="btn btn-secondary btn-sm">серыми кнопками</button>. Нажмите на все кнпоки, атрибут на которых справедлив для предложенной картинки. Для справки под кадром есть две кнопки <button class="btn btn-dark btn-sm">чёрные кнопки</button>. Если они активны, наведите на них мышку, и появится другой вспомогательный кадр. Потом уберите мышку с этих кнопок и продолжайте разметку. Эти дополнительные кадры могут помочь выбрать правильные атрибуты в непонятных ситуациях (например, непонятно, все ли ящики видны на кадре).
+						</p>
+						<p>Если вы ошиблись, вы можете очистить разметку, нажав на <button class="btn btn-warning btn-sm">жёлтую кнопку</button> (или на клавишу <code>delete</code>). Для отправки разметки и получения нового задания нажмите на <button class="btn btn-success btn-sm">зелёную кнопку</button> (или на клавишу <code>пробел</code>). Отправка и получение нового задания займёт несколько секунд, пожалуйста, не нажимайте на другие кнопки в это время. Если атрибутов не хватает и считаете нужным добавить комментарий, пишите его в поле "Необычное?" и добавляйте комментарий, нажав на <button class="btn btn-primary btn-sm">синюю кнопку</button>.</p>
+						<p>Ниже мы обсуждаем атрибуты, которые мы просим выбрать. Принцип, по которому мы сформулировали атрибуты – помочь сформировать выборку
+						участков для автоматического ускорения видео. При разметке не забудьте выбрать все атрибуты, которые справедливы хотя бы для одного из ящиков на предложенной картинке с участка.</p>
+					</dd>
+					<dt>Ящик мелкий, сложно отметить</dt>
+					<dd>
+						Если поверхность ящика на картинке очень маленькая – до степени, что её было сложно размечать. Часто это бывает в случаях, когда ящики расположены
+						далеко от веб-камеры на участке: в конце коридора или в углу школьного спортзала. Иногда ящики стоят рядом и бывает сложно их отделить друг от друга. В таком случае можно выделить общую поверхность и отметить этот атрибут. Если ящики видно совсем плохо – не отмечайте ящики, мы не будем автоматически ускорять такие видео.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/2a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/2b.jpeg"></img>
+					</dd>
+					<dt>Ящик не в кадре</dt>
+					<dd>Виден край ящика, а поверхность ящика не видна на картинке. Или по номерам на ящиках видно, что какого-то ящика нет.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/3a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/3b.jpeg"></img>
+					</dd>
+					<dt>Ящик загорожен <u>не</u> людьми</dt>
+					<dd>Иногда ящик загорожен кабиной для голосования, дверью, люстрой, столом комиссии, флагом, сеткой в спортзале, меткой времени, чем-то ещё.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/4a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/4b.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/5a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/5b.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/6a.jpeg"></img>
+					<img class="instr-screenshot" alt="" src="/images/examples/6b.jpeg"></img>
+					</dd>
+					<dt>Ящик загорожен людьми</dt>
+					<dd>Поверхность ящика сложно выделить, потому что конкретно на этой картинке к ящику кто-то подошёл (чаще всего это избиратель).<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/7a.jpeg"></img>
+						<img class="instr-screenshot" alt="" src="/images/examples/7b.jpeg"></img>
+					</dd>
+					<dt>Ящик <u>будет часто</u> загорожен людьми</dt>
+					<dd>Ракурс камеры такой, что поверхность ящика будет явно часто загорожена избирателями, подходящими к комиссии или уходящими из участка.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/8a.jpeg"></img>
+					</dd>
+					<dt>Ящик ещё устанавливают</dt><dd>Видно, что ящик двигают, у ящика суетятся какие-то люди члены комиссии или полицейские.<br/>
+					<img class="instr-screenshot" alt="" src="/images/examples/9a.jpeg"></img>
+					</dd>
+					<dt>Ящики сильно перемещали</dt>
+					<dd>
+						Если кнопка <button class="btn btn-dark btn-sm">Вечер на этой камере</button> активна, наведите на неё. Появится кадр с этого же участка, но с вечера. Отметьте этот атрибут, если утром и вечером на кадре находятся в разных местах, или если ракурс камеры сильно изменился.
+					</dd>
+					<dt>Видна комиссия</dt>
+					<dd>Часто бывает, что даже на камере с ящиками видна комиссия и люди, которые подходят к комиссии.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/10a.jpeg"></img>
+					</dd>
+					<dt>Ящиков почти не видно</dt>
+					<dd>Когда на картинке почти не видно ящиков, зато видна избирательная комиссия. Это очень частая ситуация, потому что мы не знаем заранее, на какой камере в основном ящики, а на какой в основном комиссия.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/11a.jpeg"></img>
+					</dd>
+					<dt>Два участка в кадре</dt>
+					<dd>Когда очень похоже, что на картинке есть ящики от двух разных избирательных участков. Иногда такое происходит, когда с двух сторон спортзала находятся два разных участка, но на камере видны ящики от обоих.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/12a.jpeg"></img>
+					</dd>
+					<dt>Видно очень плохо / камеру заслонили или отвернули</dt>
+					<dd>Иногда изображение слишком тёмное и отметить ящики невозможно, или камеру отвернули в потолок или чем-то заслонили.<br/>
+						<img class="instr-screenshot" alt="" src="/images/examples/13a.jpeg"></img>
+					</dd>
+				</dl>
+			</div>
+		</app-task-base>
+	</script>
+
+	<script type="text/x-template" id="app-task-vote">
+		<div>
+			<app-task-base
+				:are_controls_polygon_shown="false"
+				:are_controls_vote_shown="true"
+				:are_controls_proc_shown="false"
+			>
+				<dl slot="instruction">
+					<dt>Опускание бюллетеня</dt>
+					<dd>Каждый раз, когда подошедший к урне избиратель опускает в урну свой первый бюллетень, Вам необходимо или кликнуть на <button href="#" class="btn btn-success btn-sm">зелёную кнопку</button> под окном видео, или нажать на пробел (строго одно из двух). Пожалуйста, старайтесь не допускать слишком большого запаздывания (запаздывание в 1-2 секунды допустимо). Не нажимайте на кнопку/пробел заранее, дождитесь момента, когда бюллетень опустится в прорезь ящика для голосования.</dd>
+
+					<dd><i>В случае, когда подошедший к урне избиратель опускает в урну два и более бюллетеней, Вам необходимо реагировать только на первое опускание бюллетеня (опускание нескольких бюллетеней всего скорее связано с совмещением выборов разных уровней). Исключение составляет случай, когда несколько людей (например, семейная пара) подходят к урне вместе, и один человек опускает бюллетени за всех.	В этом случае реагируйте на опускание двух или более бюллетеней (по числу людей подошедших вместе).</i></dd>
+
+					<dt>Пауза в работе</dt>
+					<dd>Вы можете приостановить видео, кликнув по нему в центре или нажав <kbd>escape</kbd> на клавиатуре. Возобновить работу можно, снова кликнув по видео в центре.</dd>
+
+					<dt>Исправление ошибок</dt>
+					<dd>Вы можете удалить ошибочные отметки из списка вручную, нажав на красный крест <a class="text-danger">❌</a>.</dd>
+
+					<dt>Нештатные ситуации</dt>
+					<dd>При наблюдении любой нештатной ситуации, на которую Вы хотели бы обратить наше внимание, введите краткое описание ситуации и нажмите на <button href="#" class="btn btn-primary btn-sm">синюю кнопку</button>. Таким же образом нужно дать нам знать об ошибках системы (например о систематической ускоренной перемотке через момент опускания бюллетеня).</dd>
+
+					<dt>Досрочное окончание работы</dt>
+					<dd>Фрагменты видео, не досмотренные до конца, не учитываются и не участвуют в дальнейшей обработке.</dd>
+				</dl>
+			</app-task-base>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-task-proc">
+		<div>
+			<app-task-base
+				:are_controls_polygon_shown="false"
+				:are_controls_vote_shown="false"
+				:are_controls_proc_shown="true"
+			>
+				<ol slot="instruction">
+					<li>Перед просмотром внимательно прочитайте Анкету (она представляет собой отчет, который будет затем автоматически обрабатываться). Анкета содержит вопросы о выполнении процедур, которые прописаны в законе. При чтении Анкеты вы должны определить, понятен ли вам вопрос. Вопросы составлены так, что положительный ответ на вопрос – это и есть требование закона.</li>
+					<li>Перед просмотром заполните верхнюю часть Анкеты.</li>
+					<li>Ответы в анкету можно вписывать как во время просмотра (с приостановкой просмотра!), так и после просмотра. <br />Ответы можно давать в любой последовательности, но последовательность вопросов соответствует предусмотренной законом последовательности подсчета голосов.</li>
+					<li>Ответы вы даёте путем нажатия на одну из кнопок «Да», «Нет», «Не могу ответить». Вы должны нажать на одну из кнопок обязательно. Положительный ответ означает то, что предусмотренная законом процедура, в основном, была выполнена. <br/>Ответ «Нет» давайте только в том случае, если нарушение очевидно. Сомнения должны трактоваться в пользу УИК.</li>
+					<li>Вы можете написать комментарий к любому вопросу Анкеты. Если ответ на вопрос отрицательный, то впишите в поле «Комментарий» примерный интервал времени (по показаниям в левом верхнем углу видеозаписи) времени, когда было допущено нарушение. Другие записи в поле «Комментарий» также допустимы.</li>
+					<li>Ответы на вопросы 12 и 13 относятся не к процедурам подсчета, а к качеству видеозаписи.</li>
+					<li>14-я строка Анкеты заполняется текстом в произвольной форме по желанию исследователя. (например, Вы заметили вброс бюллетеней перед или во время сортировки бюллетеней). При этом обязательно указывается время нарушения.</li>
+				</ol>
+			</app-task-base>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-notes">
+		<table class="table table-sm">
+			<thead>
+				<tr>
+					<th>Дата голосования</th>
+					<th>Регион</th>
+					<th>УИК</th>
+					<th>Комментарий</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="note in notes.sort(sorter)">
+					<td>{{ formatElectionDate(note.election_number) }}</td>
+					<td>{{ formatRegionName(note.station_address) }}</td>
+					<td><router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(note.station_id) } }">{{ note.station_number }}</router-link></td>
+					<td class="w-50" :title="'Добавлено ' + formatTimestamp(note.timestamp)">{{ note.value }}</td>
+				</tr>
+			</tbody>
+		</table>
+	</script>
+
+	<script type="text/x-template" id="app-stations">
+		<div class="row">
+			<div class="col-md-12">
+				<table class="table table-striped mt-2">
+					<thead>
+						<tr>
+							<th>Дата голосования</th>
+							<th>Регион</th>
+							<th>УИК</th>
+							<th>Явка, официальная</th>
+							<th style="border-right: 2px solid black">Явка, видеоподсчет</th>
+							<th class="text-muted">Прогресс</th>
+							<th class="text-muted">Комментарии</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="station in $root.stats.stations" v-if="station.turnout.progress > 0" :key="station.id">
+							<td>{{ formatElectionDate(station.election_number) }}</td>
+							<td>{{ formatRegionName(station.station_address) }}</td>
+							<td><router-link :to="{name: 'station', params: { id: station.station_id } }">{{ station.station_number }}</router-link></td>
+							<td>{{ station.turnout.official.final }}</td>
+							<td style="border-right: 2px solid black">{{ station.turnout.estimate.final }}</td>
+							<td class="text-muted">{{ formatPercent(station.turnout.progress) }}</td>
+							<td class="text-muted text-truncate">{{ station.turnout.comment }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-station">
+		<div class="row" id="station">
+			<div class="col-md-6 offset-md-3">
+				<app-clip-player :clip="current_clip" :verbose="true" v-if="current_clip" />
+			</div>
+			<div class="col-md-12">
+				<div>
+					<h3 class="text-center lead">Явка по официальным интервалам</h3>
+					<table class="table-bordered table-striped w-100 mb-3">
+						<tbody>
+							<tr>
+								<th></th><th>Окончательная</th><th>8:00-10:00</th><th>10:00-12:00</th><th>12:00-15:00</th><th>15:00-18:00</th>
+							</tr>
+							<tr>
+								<th>Явка, официальная</th>
+								<td v-for="d in getTurnout('official')">{{ d }}</td>
+							</tr>
+							<tr>
+								<th>Явка, видеоподсчет</th>
+								<td v-for="d in getTurnout('estimate')">{{ d }}</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h3 class="text-center lead">Явка по ускоренным сегментам</h3>
+					<figure>
+						<div class="row no-gutters">
+							<div class="col" v-for="segment in segments">
+								<table class="table table-sm table-bordered table-striped w-100">
+									<thead>
+										<tr><th scope="col">Интервал</th><th>Явка, видеоподсчет</th></tr>
+									</thead>
+									<tbody>
+										<tr v-for="(clip, i) in segment" :key="i">
+											<td>
+												<button class="btn btn-link btn-sm w-100 p-0 text-left" type="button" @click="current_clip = clip">{{ formatClipInterval(clip, station) }}</button>
+											</td>
+											<td :class="{ 'text-muted': !clip.turnout.estimate && clip.turnout.average }"
+												>{{ clip.turnout.estimate || (clip.turnout.average && (clip.turnout.average + '*')) || '' }}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<figcaption>
+							<p class="text-muted text-right">* предварительный результат</p>
+						</figcaption>
+					</figure>
+
+					<div class="row no-gutters mt-3">
+						<div class="col">
+							<h3 class="text-center lead">Комментарии</h3>
+							<app-notes :notes="notes" v-if="notes.length > 0" />
+							<h6 class="text-center" v-if="notes.length == 0">Нет открытых комментариев.</h6>
+						</div>
+					</div>
+
+					<div class="mt-3" v-if="$root.user">
+						<h3 class="text-center lead">Дополнительно</h3>
+						<div class="row no-gutters mb-2">
+							<div class="col text-center">
+								<app-access-button :station_id="station.id" :user_id="$root.user.id" />
+							</div>
+						</div>
+						<div
+							class="row no-gutters mb-2"
+							v-if="$root.checkStationAccess(station.id) === 1"
+						>
+							<div class="col text-center">
+								<table class="table table-sm table-bordered table-striped w-100">
+									<thead>
+										<tr>
+											<th>Тип задания</th>
+											<th v-for="(camera_id, i) in tasks.camera_ids" :title="camera_id">Интервал (камера #{{ i + 1 }})</th>
+										</tr>
+									</thead>
+									<template v-for="t in tasks.tasks">
+										<tr v-for="(_, i) in Array(t.max_num_clips).fill()">
+											<td>{{ formatClipTask(t.task) }}</td>
+											<td v-for="camera_id in tasks.camera_ids">
+												<button
+													type="button"
+													class="btn btn-link btn-sm w-100 p-0"
+													@click="current_clip = t.clips[camera_id][i]"
+													>{{ formatClipInterval(t.clips[camera_id][i], station) }}</button>
+												</button>
+											</td>
+										</tr>
+									</template>
+								</table>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-clip-player">
+		<div>
+			<h3 :title="station.station_address">
+				<router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(station.id) } }">УИК {{ station.station_number }}</router-link>
+				<span class="float-right">{{ formatClipInterval(clip, station, true) }}</span>
+			</h3>
+			<h6><span
+				>{{ verbose ? station.station_address : formatRegionName(station.station_address) }}</span><span
+					class="float-right"
+					v-if="verbose"
+				>UTC+<span
+					>{{ formatTimezoneOffset(station.timezone_offset) }}</span>
+				</span>
+			</h6>
+
+			<template v-if="clip.video !== null">
+				<div class="position-relative">
+					<video
+						controls="controls"
+						class="w-100"
+						preload="auto"
+						ref="player"
+						:src="clip.video"
+						@timeupdate="currentTime = $event.target.currentTime"
+						@play.once="$emit('update:started', true)"
+						@ended="$emit('update:completed', true)"
+						@keyup="preventPause"
+					></video>
+
+					<slot name="intro"></slot>
+					<slot name="end"></slot>
+				</div>
+
+				<div class="btn-group btn-group-sm">
+					<div class="d-inline-flex align-items-center pr-1 bg-light">
+						<span class="font-weight-bold">Скорость {{ playbackRate.toFixed(1) }}x</span>
+					</div>
+					<button
+						type="button"
+						class="btn btn-secondary"
+						@click.prevent="setPlaybackRate(-0.5)"
+					>Медленнее</button>
+					<button
+						type="button"
+						class="btn btn-secondary"
+						@click.prevent="setPlaybackRate(+0.5)"
+					>Быстрее</button>
+				</div>
+			</template>
+
+			<template v-if="clip.video === null">
+				<div class="position-relative w-100 h-0" style="padding-bottom: 75%;">
+					<svg class="position-absolute w-100 h-100" preserveAspectRatio="none" viewBox="0 0 1 1" ref="svg" @click="SVGClickHandler($event)">
+						<image preserveAspectRatio="none" height="1" width="1" :href="clip.poster" />
+						<g v-for="(polygon, i) in polygons">
+							<polygon
+								class="polygon"
+								:stroke="formatColor(i)"
+								:points="polygon.map(pair => pair.join(',')).join(' ')" />
+							<circle
+								v-for="([x, y]) in polygon"
+								r="0.005"
+								:fill="formatColor(i)"
+								:cx="x"
+								:cy="y"
+							></circle>
+						</g>
+					</svg>
+				</div>
+
+				<div class="btn-group mt-1 w-100">
+					<button class="btn btn-dark mr-1 w-50">Вечер на этой камере</button>
+					<button class="btn btn-dark ml-1 w-50">Утро на другой камере</button>
+				</div>
+			</template>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-users">
+		<div class="row">
+			<div class="col-md-12">
+				<table class="table table-striped mt-2">
+					<thead>
+						<tr>
+							<th class="text-muted">#</th>
+							<th>Имя</th>
+							<th>Избиратели</th>
+							<th>Участки</th>
+							<th>Просмотрено минут</th>
+							<th>Сегменты</th>
+							<th>Комментарии</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr
+							v-for="(user, index) in $root.stats.users"
+							:key="user.id"
+							:class="{ 'bg-success': $root.user && $root.user.id === user.id }"
+						>
+							<td class="text-muted">{{ index + 1 }}</td>
+							<td>
+								<router-link :to="{ name: 'user', params: { display: user.display } }">{{ user.display }}</router-link>
+							</td>
+							<td>{{ user.num_votes }}</td>
+							<td>{{ user.num_stations }}</td>
+							<td>{{ formatMinutes(user.num_seconds) }}</td>
+							<td>{{ user.num_clips }}</td>
+							<td>{{ user.num_notes }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-user">
+		<div v-if="!this.$root.showError">
+			<div class="row mb-2 justify-content-center">
+				<div class="col-12">
+					<h4 class="text-center lead">{{ user.display }}</h4>
+				</div>
+
+				<div class="col-lg-4">
+					<table class="table table-sm table-borderless">
+						<tbody>
+							<tr>
+								<th scope="row">Избиратели</th>
+								<td>{{ user.num_votes }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Участки</th>
+								<td>{{ user.num_stations }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Просмотрено минут</th>
+								<td>{{ user.num_seconds !== undefined ? (user.num_seconds / 60).toFixed(0) : '' }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Сегменты</th>
+								<td>{{ user.num_clips }}</td>
+							</tr>
+							<tr>
+								<th scope="row">Комментарии</th>
+								<td>{{ user.num_notes }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<template v-if="$root.user && $route.params.display === $root.user.display">
+				<div class="row mb-2 justify-content-center">
+					<div class="col-lg-12">
+						<h5 class="text-center">Закладки</h5>
+						<table class="table table-sm" v-if="bookmarks.length > 0">
+							<thead>
+								<th scope="col">Дата голосования</th>
+								<th scope="col">Регион</th>
+								<th scope="col">УИК</th>
+								<th scope="col">Ссылка</th>
+							</thead>
+							<tbody>
+								<tr v-for="bookmark in bookmarks">
+									<td>{{ formatElectionDate(bookmark.election_number) }}</td>
+									<td>{{ formatRegionName(bookmark.station_address) }}</td>
+									<td>
+										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(bookmark.station_id) }}">
+											{{ bookmark.station_number }}
+										</router-link>
+									</td>
+									<td class="w-50">
+										<a :title="'Добавлено ' + formatTimestamp(bookmark.timestamp)" :href="bookmark.value">Перейти</a>
+									</td>
+								</tr>
+	 						</tbody>
+						</table>
+						<h6 class="text-center" v-if="bookmarks.length == 0">Вы ещё не добавили закладки.</h6>
+					</div>
+				</div>
+
+				<div class="row mb-2 justify-content-center">
+					<div class="col-lg-12">
+						<h5 class="text-center">Комментарии</h5>
+						<app-notes :notes="notes" v-if="notes.length > 0" />
+						<h6 class="text-center" v-if="notes.length == 0">Вы ещё не добавили комментариев.</h6>
+					</div>
+				</div>
+
+				<div class="row mb-2 justify-content-center">
+					<div class="col-lg-12">
+						<h5 class="text-center">Доступ</h5>
+						<table class="table table-sm" v-if="station_access.length > 0">
+							<thead>
+								<th scope="col">Дата голосования</th>
+								<th scope="col">Регион</th>
+								<th scope="col">УИК</th>
+								<th scope="col">Статус</th>
+							</thead>
+							<tbody>
+								<tr v-for="sa in station_access">
+									<td>{{ formatElectionDate(sa.election_number) }}</td>
+									<td>{{ formatRegionName(sa.station_address) }}</td>
+									<td>
+										<router-link :to="{ name: 'station', params: { id: $root.stats.formatStationIdFull(sa.id) }}">
+											{{ sa.station_number }}
+										</router-link>
+									</td>
+									<td class="w-50">
+										<app-access-button
+											:title="formatTimestamp(sa.timestamp)"
+											:station_id="sa.id"
+											:user_id="user.id"/>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<h6 class="text-center" v-if="station_access.length == 0">Вы ещё не запрашивали полный доступ к видео.</h6>
+					</div>
+				</div>
+			</template>
+
+
+			<div class="row">
+				<div class="col">
+					<div>
+						<router-link :to="{name: 'station', params: { id: thumb.id } }" v-for="thumb in thumbnails">
+							<img class="img-thumbnail thumbnail" width="120" height="90" :src="thumb.src" :title="thumb.title" :key="thumb.id" />
+						</router-link>
+					</div>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-about">
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				<dl id="about">
+					<dt>Контакты</dt>
+					<dd>
+						Электронная почта: <code>schitaytesami@gmail.com</code><br />
+						Twitter: <a href="https://twitter.com/schitaytesami">https://twitter.com/schitaytesami</a><br />
+						GitHub: <a href="https://github.com/schitaytesami">https://github.com/schitaytesami</a>
+
+						<p><br />Подробности, комментарии экспертов, эксклюзивную и достоверную информацию из первых рук можно получить по указанным выше контактам.</p>
+						<p><mark>Для получения полных неофициальных видео пришлите письмо на <code>schitaytesami@gmail.com</code>, указав регион, номер участка и причину запроса.</mark></p>
+					</dd>
+
+					<dt><a>Зачем всё это нужно?</a></dt>
+					<dd>
+						<p>Анализ волонтёров <a href="https://www.golosinfo.org/ru/articles/142771">движения Голос</a> и <a href="https://a-gabdulvaleev.livejournal.com/33076.html">наблюдателей Татарстана</a> показал, что количество избирателей, пришедших голосовать на выборах в марте 2018 года, в некоторых регионах на видео разительно отличается от того, что было опубликовано на сайтах избиркомов. Чтобы развеять или укрепить подозрения о фальсификации явки, мы предоставляем платформу, на которой добровольцы смогут проверить реальную явку на большом количестве участков.</p>
+						<p>В 2012-м году мы работали над первой версией этой платформы, расположенной на сайте <a href="https://echo.msk.ru/programs/echonet/885456-echo/">schitaytesami.org</a>.</p>
+					</dd>
+					<dt><a>По какому принципу вы отбираете участки для разметки?</a></dt>
+					<dd>Мы в полном объеме записали видео из многих регионов РФ. Некоторые регионы – это участки с «аномально» высокой явкой, но у нас также есть регионы, из которых поступало мало сообщений о нарушениях. Такие участки включены, чтобы контролировать нашу систему.</dd>
+					<dt><a>Все ли участки, прошедшие разметку, публикуются в разделе результатов?</a></dt>
+					<dd>Мы проверяем поступившую разметку статистическими методами, чтобы злоумышленники не внесли значимых отклонений. В частности, нам помогает то, что каждый видео-фрагмент размечается несколькими волонтерами. Все результаты на участках с разметкой, прошедшей проверку, мы публикуем.</dd>
+					<dt><a>Я слышал, что современные системы компьютерного зрения могут автоматически посчитать количество голосовавших. Почему не посчитать всё автоматически?</a></dt>
+					<dd>Точность существующих полностью автоматических систем, к сожалению, ограничена, и нам эти ограничения хорошо известны. Полученная разметка поможет создать автоматическую систему, адаптированную для выборных видео. Мы собираемся разработать такую систему, оценить качество её работы и обнародовать результаты.</dd>
+					<dt><a>А почему и зачем видео в вашей системе играется так быстро?</a></dt>
+					<dd>Мы решили не отказываться от идеи компьютерного подсчета совсем и применили алгоритмы компьютерного зрения, чтобы выявить участки видео, где кто-то подходит к урне. После этого мы обрабатываем видео, ускоренно проматывая участки, где к урне никто не подходит. Делается это только для того, чтобы сэкономить труд волонтеров. При этом иногда система всё равно замедляет видео, когда к урне никто не подходит, такие ошибки явку не искажают. Исходный код ускоряющей программы мы публикуем на нашем <a href="https://github.com/schitaytesami/tools/blob/master/speedup_video.py">GitHub</a>.</dd>
+					<dt><a>А кто вы такие? Кто вас финансирует?</a></dt>
+					<dd>
+						<p>Мы группа российских граждан, включающая программистов, математиков, исследователей в области компьютерного зрения и специалистов по наблюдению за выборами. У нас разные политические взгляды, но мы все хотели бы, чтобы выборы в нашей стране проходили честно.</p>
+						<p>На данный момент проект финансируется нами самими. Расходы на серверы значительные, поэтому будем благодарны <router-link :to="{ name: 'donate' }">финансовой помощи</router-link>.</p>
+					</dd>
+					<dt><a>А как еще вам помочь?</a></dt>
+					<dd>Прежде всего для проекта нет ничего более ценного, чем работа волонтеров-разметчиков. Пожалуйста, разметьте несколько видео. Будет совсем здорово, если Вы расскажете о проекте друзьям, напишите и распространите пост, твит, анекдот, сагу или любое другое сообщение о нашем проекте. Мы также благодарны всем, кто выявляет ошибки или несуразности и присылает сообщения о них к нам на <code>schitaytesami@gmail.com</code> .</dd>
+				</dl>
+				<hr />
+				<p class="mb-5">Нам помогали <a href="https://golosinfo.org">Движение «Голос»</a>, <a href="https://spbelect.org/">Наблюдатели Петербурга</a>, <a href="http://tatobservers.ru">Ассоциация наблюдателей Татарстана</a>. Выражаем благодарность <a href="https://podmoskovnik.livejournal.com/">Сергею Шпилькину</a> за предоставление данных о явке, скачанных с сайта ЦИК.</p>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-index">
+		<div class="col-md-6 offset-md-3">
+			<p><strong>Считайте Сами</strong> - это проект по записи выборных видео. В 2018 году мы успешно записали видео в день выборов президента РФ и в единый день голосования.</p>
+			<p>Друзья, нам очень нужна финансовая помощь. Все деньги идут на аренду техники для для хранения и обработки видео. Обещаем опубликовать отчёт о расходовании средств. </p>
+			<p>Если вы готовы поддержать нас другим способом, пожалуйста, напишите нам на <code>schitaytesami@gmail.com</code> - мы обязательно ответим.</p>
+			<div>
+				<h4 class="text-center lead">Карта</h4>
+				<div class="text-center">Номер карты Сбербанка - <strong>5336 6900 5589 7468</strong></div>
+			</div>
+
+			<div>
+				<h4 class="text-center lead mt-3">Яндекс.Деньги</h4>
+				<div class="text-center offset-md-3 w-50">
+					<div class="payment-form mb-3">
+						<form method="POST" action="https://money.yandex.ru/quickpay/confirm.xml" target="_blank">
+							<input name="receiver" value="410016070927938" type="hidden">
+							<input name="quickpay-form" value="shop" type="hidden">
+							<input name="targets" value="Считайте Сами - на технику" type="hidden">
+
+							<div class="form-row mb-3">
+								<div class="col auto">
+									<div class="payment-form__currency">
+										<input class="form-control form-control-sm" id="payment-form-sum" name="sum" value="500" maxlength="10" placeholder="Р">
+									</div>
+								</div>
+
+								<div class="col auto">
+									<div class="payment-form__radios">
+										<div class="payment-form__radio">
+											<input class="" value="PC" checked="checked" id="payment-form-pc" type="radio" name="paymentType">
+											<label class="payment-form__label" for="payment-form-pc">
+												<i class="icon pc"></i>
+											</label>
+										</div>
+										<div class="payment-form__radio">
+											<input class="" value="AC" id="payment-form-ac" type="radio" name="paymentType">
+											<label class="payment-form__label" for="payment-form-ac">
+												<i class="icon ac"></i>
+											</label>
+										</div>
+									</div>
+								</div>
+
+								<div class="row col no-gutters auto align-items-end">
+									<button style="background-color: #ffdb4d;" class="btn btn-sm" type="submit" autocomplete="off" tabindex="0">Пожертвовать</button>
+								</div>
+							</div>
+
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<hr/>
+			<p class="text-center">Карта Сбербанка и счёт Яндекс.Деньги принадлежат <a href="http://tatobservers.ru/author/azat/">Азату Габдульвалееву</a>, нашему доверенному лицу и наблюдателю в Татарстане.</p>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-error">
+		<div class="alert alert-danger" role="alert" v-if="showError">
+			<div class="container">
+				<div class="row">
+					<div class="col text-center">
+						<strong>Произошла ошибка!</strong> <slot></slot>. Обновите страницу или сообщите об ошибке нам на <code>schitaytesami@gmail.com</code>.</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-selection">
+		<form>
+			<div class="form-group row">
+				<div class="col-md-6 mb-3 mb-md-0">
+					<select id="election" class="form-control form-control-sm" v-model="election_number">
+						<option v-for="[ n, v ] in election_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
+					</select>
+				</div>
+				<div class="col-md-6">
+					<input type="text" class="form-control form-control-sm" placeholder="Фильтр" v-model="election_filter">
+				</div>
+			</div>
+			<div class="form-group row">
+				<div class="col-md-6 mb-3 mb-md-0">
+					<select id="region" class="form-control form-control-sm"v-model="region_number">
+						<option v-for="[ n, v ] in region_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
+					</select>
+				</div>
+				<div class="col-md-6">
+					<input type="text" class="form-control form-control-sm" placeholder="Фильтр" v-model="region_filter">
+				</div>
+			</div>
+			<div class="form-group row">
+				<div class="col-md-6 mb-3 mb-md-0">
+					<select id="station" class="form-control form-control-sm" v-model="station_number">
+						<option v-for="[ n, v ] in station_list" :value="v" :disabled="v === 'disabled'">{{ n }}</option>
+					</select>
+				</div>
+				<div class="col-md-6">
+					<input type="text" class="form-control form-control-sm" placeholder="Фильтр" v-model="station_filter">
+				</div>
+			</div>
+			<slot
+				:election_number="election_number"
+				:region_number="region_number"
+				:station_number="station_number"
+			></slot>
+		</form>
+	</script>
+
+	<script type="text/x-template" id="app-bookmark-button">
+		<button
+			type="button"
+			class="btn"
+			:class="{ 'btn-success': submitted, 'btn-primary' : !submitted }"
+			:disabled="submitted"
+			@click="submit"
+		>{{ submitted ? 'Добавлено' : 'Добавить в закладки' }}</button>
+	</script>
+
+	<script type="text/x-template" id="app-access-button">
+		<button
+			class="btn btn-sm" :class="{ 'btn-success': granted, 'btn-light': !granted }"
+			:disabled="granted !== -1"
+			@click="submit"
+		>{{ formatAccessButtonText(granted) }}</button>
+	</script>
+
+	<script type="text/x-template" id="app-spinner">
+		<div class="d-flex flex-column justify-content-center align-items-center h-100">
+			<div class="loader spinner-grow text-primary" role="status">
+				<span class="sr-only">Загрузка...</span>
+			</div>
+			<p class="lead text-muted">Загрузка...</p>
+		</div>
+	</script>
+
+	<script type="text/x-template" id="app-admin">
+		<div class="pt-2">
+			<table class="table table-sm">
+				<thead>
+					<tr>
+						<th>Дата голосования</th>
+						<th>Регион</th>
+						<th>УИК</th>
+						<th>Участник</th>
+						<th>Доступ</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="sa in station_access">
+						<td>{{ formatElectionDate(sa.station.election_number) }}</td>
+						<td>{{ formatRegionName(sa.station.station_address) }}</td>
+						<td>
+							<router-link :to="{name: 'station', params: { id: $root.stats.formatStationIdFull(sa.station_id) } }">{{ sa.station.station_number }}</router-link>
+						</td>
+						<td>
+							<router-link :to="{ name: 'user', params: { display: sa.user.display } }">{{ sa.user.display }}</router-link>
+						</td>
+						<td>
+							<button
+								type="button"
+								class="btn btn-sm"
+								:class="{
+									'btn-danger': sa.granted === 1,
+									'btn-success': sa.granted !== 1,
+								}"
+							>{{ sa.granted === 1 ? 'Запретить' : 'Разрешить' }}</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</script>
+
+	<script src="https://unpkg.com/vue@2.5.17/dist/vue.min.js"></script>
+	<script src="https://unpkg.com/vue-router@3.0.1/dist/vue-router.min.js"></script>
+
+	<script type="text/javascript">
+
+		(function () {
+			function makeNetworkError(err) {
+				console.error(err);
+
+				const status = err.status ? `${err.status}: ` : '';
+				const message = err.statusText || 'Что-то пошло не так';
+				return new Error(`${status}${message}`);
+			};
+
+			function makeDataError(err) {
+				console.error(err);
+
+				let message = err.message;
+				/* more appropriate error message for a user. */
+				if (err.name === 'SyntaxError')
+					message = 'Ошибка при обработке данных';
+
+				return new Error(message);
+			}
+
+			async function fetchStats() {
+				const response = await fetch('/stats');
+				if (!response.ok) throw makeNetworkError(response);
+
+				let data;
+				try {
+					data = await response.json();
+				} catch (err) {
+					throw makeDataError(err);
+				}
+
+				const stats = {
+						...data,
+						clips_dict: {},
+						stations_dict: {},
+						stations_dict_station_id: {},
+					};
+
+				data.clips.forEach(clip => {
+					stats.clips_dict[clip.id] = clip;
+				});
+				data.stations.forEach(station => {
+					stats.stations_dict[station.id] = station;
+					stats.stations_dict_station_id[station.station_id] = station;
+				});
+
+				stats.bookmarks_dict = stats.bookmarks.reduce((acc, event) => ({
+					[event.id]: {...stats.stations_dict[event.station_id], ...event},
+					...acc,
+				}), {});
+
+				stats.notes_dict = stats.notes.reduce((acc, event) => ({
+					[event.id]: {...stats.stations_dict[event.station_id], ...event},
+					...acc,
+				}), {});
+
+			  stats.formatStationIdFull = station_id => stats.stations_dict[station_id].station_id;
+
+			  return stats;
+			}
+
+			//const statsPromise = fetchStats();
+
+			async function getStation(id) {
+				const response = await fetch(`/station/${id}`);
+				if (!response.ok) throw makeNetworkError(response);
+
+				try {
+					return await response.json();
+				} catch (err) {
+					throw makeDataError(err);
+				}
+			}
+
+			async function sendEvents(events, { id, csrf }) {
+				const response = await fetch(`/events/${id}?csrf=${csrf}`, {
+					method: 'post',
+					headers: {'Content-type': 'application/json'},
+					body: JSON.stringify(events),
+				});
+				if (!response.ok) throw makeNetworkError(response);
+
+				return response;
+			}
+
+			async function nextTask({ task, election_number, region_number, station_number }) {
+				const response = await
+					fetch(`/task/${task}/election/${election_number}/region/${region_number}/station/${station_number}`);
+				if (!response.ok) throw makeNetworkError(response);
+
+				try {
+					return await response.json();
+				} catch (err) {
+					throw makeDataError(err);
+				}
+			}
+
+			async function sendAccess({ user_id, station_id }) {
+				const response = await fetch(`/user/${user_id}/access/station/${station_id}`, {
+					method: 'POST',
+					headers: {'Content-type': 'application/json'},
+				});
+				if (!response.ok) throw makeNetworkError(response);
+
+				return response;
+			}
+
+			const initVue = () => {
+				const formatHoursMinutes = (timestamp, timezoneOffset) => {
+					if (!timestamp)
+						return '';
+					const time = new Date(1000 * (timestamp + timezoneOffset * 60));
+					const hours = time.getUTCHours(), minutes = time.getUTCMinutes();
+					return `${hours}:${minutes < 10 ? "0" : "" }${minutes}`;
+				};
+
+				const formatHours = seconds => seconds ? (seconds / 3600).toFixed(0) : 0;
+
+				const formatMinutes = seconds => (seconds / 60).toFixed(0);
+
+				const formatTimestamp = timestamp => new Date(timestamp * 1000).toLocaleString('ru-RU');
+
+				const formatElectionDate = election_number => {
+					const date = String(election_number);
+					return date ? `${date.substr(6)}/${date.substr(4, 2)}/${date.substr(0, 4)}` : '';
+				};
+
+				const formatClipInterval = (clip, station, full) => (full == true ? formatElectionDate(station.election_number) + ', ' : '') + `${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)} - ${formatHoursMinutes(clip.clip_interval_end, station.timezone_offset)}`;
+
+				const formatRegionName = station_address => station_address.split(',')[0];
+
+				const formatThumbnailTitle = (station, clip) =>
+					`${formatRegionName(station.station_address)}, ${formatElectionDate(station.election_number)}, УИК ${station.station_number}`+
+					(typeof(clip) === 'number' ?
+						`, Сегментов: ${clip}.` :
+						` ${formatHoursMinutes(clip.clip_interval_start, station.timezone_offset)}-${formatHoursMinutes(clip.clip_interval_end, station.timezone_offset)}`);
+
+				const formatPercent = fraction => `${(fraction * 100).toFixed(0)}%`;
+
+				const sorterNewFirst = (a, b) => b.timestamp - a.timestamp;
+
+				const appIndex = {
+					methods: {
+						formatHours: formatHours,
+						formatThumbnailTitle: formatThumbnailTitle
+					},
+					computed: {
+						guard() {
+							return this.$root.stats.stations && !this.$root.showError;
+						},
+						thumbnails() {
+							return Array(Math.min(this.$root.stats.clips.length, 5))
+								.fill()
+								.map(_ => {
+									const id = Math.floor(Math.random() * this.$root.stats.clips.length);
+									const clip = this.$root.stats.clips_dict[id];
+									const station = this.$root.stats.stations_dict[clip.station_id];
+									return { clip, station };
+								});
+						},
+					},
+					template: '#app-index',
+				};
+
+				const appTask = {
+					data() {
+						return {
+							email: '',
+							registered: false,
+						}
+					},
+					methods : {
+						async register() {
+							try {
+								this.registered = await this.$root.register(this.email);
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
+						},
+						async nextTask(event, params) {
+							const button = event.target.closest('button');
+
+							/* HACK: remove after we'll get API for polygon */
+							let { task } = params;
+							if (task === 'polygon') task = 'vote';
+
+							try {
+								button.disabled = true;
+								const clip = await nextTask({ ...params, task });
+
+								this.$router.push({
+									name: params.task,
+									params: {
+										...params,
+										id: clip.id,
+										csrf: clip.csrf,
+									},
+								});
+							} catch (err) {
+								button.disabled = false;
+								this.$root.errorHandler(err);
+							}
+						},
+					},
+					template: '#app-task'
+				};
+
+				const appTaskBase = {
+					props: {
+						are_controls_polygon_shown: {
+							type: Boolean,
+							required: true,
+						},
+						are_controls_vote_shown: {
+							type: Boolean,
+							required: true,
+						},
+						are_controls_proc_shown: {
+							type: Boolean,
+							required: true,
+						},
+					},
+					data() {
+						return {
+							isLoading: true,
+							questions : [
+								{ yes_no: '', comment: '', question_text: 'Подсчет и погашение неиспользованных бюллетеней началось сразу после окончания голосования и проводилось <strong>до подсчета</strong> по спискам избирателей' },
+								{ yes_no: '', comment: '', question_text: 'Число погашенных бюллетеней было <strong>внесено в УФП</strong> сразу после подсчета, перед подсчетом по списку избирателей' },
+								{ yes_no: '', comment: '', question_text: 'Данные подсчета по списку избирателей были <strong>оглашены</strong> и <strong>занесены</strong> в УФП <strong>до</strong> вскрытия переносных ящиков' },
+								{ yes_no: '', comment: '', question_text: 'Был произведен отдельный подсчет числа бюллетеней из переносных ящиков, это число записано в УФП до вскрытия стационарных ящиков' },
+								{ yes_no: '', comment: '', question_text: 'Сортировка бюллетеней производилась путем предъявления бюллетеней и оглашения отметки в нем' },
+								{ yes_no: '', comment: '', question_text: 'Подсчет бюллетеней в рассортированных пачках производился поочередно по пачкам и путем перекладывания бюллетеней' },
+								{ yes_no: '', comment: '', question_text: 'Всем желающим была обеспечена возможность видеть отметки в бюллетенях' },
+								{ yes_no: '', comment: '', question_text: 'Данные подсчета по рассортированным пачкам были сразу внесены в УФП' },
+								{ yes_no: '', comment: '', question_text: 'Бюллетени кандидатов были упакованы в отдельные пачки' },
+								{ yes_no: '', comment: '', question_text: 'Состоялось итоговое заседание УИК' },
+								{ yes_no: '', comment: '', question_text: 'Протокол об итогах голосования был предъявлен в одну из видеокамер, все данные из протокола были оглашены' },
+								{ comment: '', question_text: 'Попадают ли в зону видимости видеокамер все установленные инструкцией объекты (столы подсчета, УФП и пр. -см. Инструкцию)' },
+								{ comment: '', question_text: 'Оцените качество аудиозаписи (хорошо ли различимо оглашение данных, не было ли помех для аудиозаписи)' },
+								{ comment: '', question_text: 'Замеченные нарушения, не отраженные выше' },
+							],
+							stationQuestions: [
+								['box_small_hard', 'Ящик мелкий, сложно отметить'],
+								['box_missing_in_frame', 'Ящик не в кадре'],
+								['box_occluded_by_stuff', 'Ящик загорожен не людьми'],
+								['box_occluded_by_people', 'Ящик загорожен людьми'],
+								['box_occluded_by_people_future', 'Ящик будет часто загорожен людьми'],
+								['box_installation_ongoing', 'Ящик ещё устанавливают'],
+								['box_moved', 'Ящики сильно перемещали'],
+								['commission_well', 'Видна комиссия'],
+								['box_no', 'Ящиков почти не видно'],
+								['two_stations', 'Два участка в кадре'],
+								['image_bad_quality', 'Видно очень плохо / камеру заслонили или отвернули'],
+							],
+							showInstruction: false,
+							showEvents: false,
+							events: [],
+							clip: null,
+							note: '',
+							started: false,
+							completed: false,
+							submitted: false,
+							failed: false,
+						};
+					},
+					computed: {
+						user() {
+							return this.$root.user;
+						},
+					},
+					methods: {
+						formatInstructionToggleText: showInstruction => showInstruction ? 'Убрать инструкцию ▼' : 'Показать инструкцию ▲',
+						formatTaskSubmitResultsButtonText(submitted, failed) {
+							let message = 'Разметка этого видео закончена. Спасибо!';
+							let button = 'Отправить результаты';
+
+							if (submitted)
+								button = 'Перейти к разметке следующего видео';
+
+							if (failed) {
+								message = 'При отправке результатов возникла ошибка!';
+								button = 'Отправить результаты снова';
+							}
+
+							return { message, button };
+						},
+						formatEventTime(offset) {
+							const minutes = Math.floor(offset / 60), seconds = Math.floor(offset % 60);
+							return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+						},
+						async submitResults() {
+							if (!this.completed) return;
+
+							const eventsToSubmit = this.events.filter(e => !e.submitted);
+
+							try {
+								await sendEvents(eventsToSubmit, {
+									id: this.clip.id,
+									csrf: this.clip.csrf,
+								});
+								this.submitted = true;
+								this.failed = false;
+								await this.nextTask();
+							} catch (err) {
+								this.failed = true;
+								this.$root.errorHandler(err);
+							}
+						},
+						async saveEvents() {
+							/* Should it uses this.processEvents() ? */
+							const eventsToSubmit = this.events.filter(e => !e.deleted && !e.submitted);
+
+							try {
+								/* Emulates submitting */
+								await new Promise(resolve => setTimeout(resolve, 2000));
+
+								/*
+									eventsToSubmit is a new object. It needs to update the current events list.
+									An another issue is while the async op is proccessing the current events list could change.
+								*/
+								eventsToSubmit.forEach(e => {
+									const idx = this.events.indexOf(e);
+									if (idx === -1) return;
+									/* Vue can't detect straightforward mutation using = operator */
+									this.events.splice(idx, 1, { ...e, submitted: true });
+								});
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
+						},
+						async nextTask() {
+							try {
+								const clip = await nextTask({
+									task: this.$route.name,
+									...this.$route.params,
+								});
+
+								this.clip = clip;
+								this.events = [];
+								this.submitted = false;
+								this.completed = false;
+								this.failed = false;
+
+								this.$router.push({
+									name: this.$router.task,
+									params: {
+										...this.$route.params,
+										id: clip.id,
+										csrf: clip.csrf,
+									},
+								});
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
+						},
+						addEvent(type, payload) {
+							this.highlightCounter();
+
+							if (type === 'vote') {
+								this.events.push({
+									type,
+									value: 1,
+									deleted: false,
+									submitted: false,
+									text: '+1 Голос',
+									clip: this.clip.id,
+									offset: Math.floor(payload.offset),
+								});
+								return;
+							}
+
+							if (type === 'note') {
+								this.events.push({
+									type,
+									deleted: false,
+									submitted: false,
+									clip: this.clip.id,
+									text: payload.value,
+									value: payload.value,
+									offset: Math.floor(payload.offset),
+								});
+								this.note = '';
+								return;
+							}
+
+							if (type === 'polygon') {
+								this.events.push({
+									type,
+									offset: 0,
+									deleted: false,
+									submitted: false,
+									clip: this.clip.id,
+									text: payload.text,
+									value: payload.value,
+								});
+								return;
+							}
+						},
+						async removeEvent(event) {
+							this.highlightCounter();
+
+							/* where id comes from? */
+							const idx = this.events.indexOf(event);
+							const { id, submitted } = this.events[idx];
+
+							if (submitted)
+								try {
+									await new Promise(resolve => setTimeout(resolve, 1000));
+									this.events.splice(idx, 1, { ...this.events[idx], deleted: true });
+								} catch (err) {
+									this.$root.errorHandler(err);
+								}
+							else this.events.splice(idx, 1);
+
+						},
+						keyDown(e) {
+							if (this.$route.name == 'vote' && document.activeElement.nodeName !== 'INPUT') {
+								const keycode_space = 32;
+								const keycode_escape = 27;
+
+								if (e.keyCode == keycode_space) {
+									e.preventDefault();
+									this.addEvent('vote', { offset: this.$refs.player.currentTime });
+								} else if (e.keyCode == keycode_escape) {
+									e.preventDefault();
+									this.$refs.player.pause();
+								}
+							}
+						},
+						highlightCounter() {
+							const { counter } = this.$refs;
+							counter.classList.remove('highlight');
+							void counter.offsetWidth; /* MAGIC */
+							counter.classList.add('highlight');
+						},
+						clickCallback() {
+							let points = [];
+
+							return (x, y) => {
+								points.push([x, y]);
+
+								if (points.length === 4) {
+									this.addEvent('polygon', {
+										text: 'Разметка урны',
+										value: points,
+									});
+
+									points = [];
+								}
+							};
+						},
+						getProcQuestionText(idx, value) {
+							let text = '';
+							if (value === '1') text = 'Да';
+							if (value === '0') text = 'Нет';
+							if (value === '-1') text = 'Не могу ответить';
+
+							return `${idx + 1} - ${text}`;
+						},
+						setProcQuestion(idx, event) {
+							const key = `proc_question_${idx}`;
+							const procQuestion = this.processEvents().procQuestions[key];
+							const { type, value } = event.target;
+
+							/* Updates user text based on the type of control element. */
+							const text = type === 'radio'
+								? this.getProcQuestionText(idx, value)
+								: this.getProcQuestionText(idx, procQuestion.value);
+
+							/*
+								Always pushes a new object instead of mutating the one is gotten
+								TODO: How to avoid it?
+							*/
+							this.events.push({
+								...procQuestion,
+								value: type === 'radio' ? value : procQuestion.value,
+								note: type === 'text' ? value : procQuestion.note,
+								text,
+							});
+						},
+						setStationQuestion(value, text, event) {
+							const { checked } = event.target;
+
+							this.events.push({
+								text,
+								value,
+								checked,
+								offset: 0,
+								deleted: false,
+								submitted: false,
+								clip: this.clip.id,
+								type: 'station_question',
+							});
+						},
+						processEvents() {
+							/*
+								Finds not deleted and not submitted events having 'proc_questions' type
+								Creates and fills an object to have access by key e.g. 'proc_question_3'
+								The object will have the last added values
+							*/
+							const procQuestions = this.events
+								.filter(e => e.type === 'proc_question' && !e.deleted && !e.submitted)
+								.reduce((acc, cur) => ({ ...acc, [`proc_question_${cur.idx}`]: cur }), {});
+
+							/*
+								Fills procQuestoins object with missing keys with a placeholder
+								TODO: should it be replaced somewhere?
+							*/
+							this.questions.forEach((q, idx) => {
+								if (!Object.hasOwnProperty.call(procQuestions, `proc_question_${idx}`))
+									procQuestions[`proc_question_${idx}`] = {
+										idx,
+										note: '',
+										offset: 0,
+										value: '',
+										deleted: false,
+										submitted: false,
+										clip: this.clip.id,
+										type: 'proc_question',
+									};
+							});
+
+							const stationQuestions = this.events
+								.filter(e => e.type === 'station_question' && !e.deleted && !e.submitted)
+								.reduce((acc, cur) => ({ ...acc, [cur.value]: cur }), {});
+
+							const polygons = this.events.filter(e => e.type === 'polygon' && !e.deleted);
+
+							return {
+								polygons,
+								procQuestions,
+								stationQuestions,
+							};
+						},
+					},
+					destroyed() {
+						document.removeEventListener('keydown', this.keyDown);
+					},
+					created() {
+						document.addEventListener('keydown', this.keyDown);
+
+						statsPromise.then(stats => {
+							let clip = {
+								...this.$root.stats.clips_dict[this.$route.params.id],
+								csrf: this.$route.params.csrf,
+							};
+
+							/* temporary polygon task for testing. */
+							if (this.$route.name === 'polygon')
+								clip =  {
+									...clip,
+									video: null,
+									poster: 'https://proverim.webcam/speedup_/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub/09157444-127a-aaaa-aaaa-64db8b2b4aba-sub_1521348900_1521392700.mp4.0008.mp4.jpg',
+								};
+
+							this.clip = clip;
+
+							getStation(this.clip.station_id).then(result => {
+								/* example */
+								const events = [
+									{
+										"type": "polygon_question",
+										"offset": 0,
+										"value": "image_bad_quality",
+										"text": "Видно очень плохо / камеру заслонили или отвернули",
+										"clip": 127,
+										"timestamp": 1562650894044,
+										"submitted": true,
+									},
+									{
+										"type": "polygon_question",
+										"offset": 0,
+										"value": "box_occluded_by_stuff",
+										"text": "Ящик загорожен не людьми",
+										"clip": 127,
+										"timestamp": 1562650896032,
+										"submitted": true,
+									},
+									{
+										"type": "polygon_question",
+										"offset": 0,
+										"value": "box_no",
+										"text": "Ящиков почти не видно",
+										"clip": 127,
+										"timestamp": 1562650905240,
+										"submitted": true,
+									},
+									{
+										"type": "vote",
+										"offset": 0,
+										"value": 1,
+										"text": "+1 Голос",
+										"clip": 126,
+										"timestamp": 1562651251779,
+										"submitted": true,
+									},
+									{
+										"type": "vote",
+										"offset": 49,
+										"value": 1,
+										"text": "+1 Голос",
+										"clip": 126,
+										"timestamp": 1562651254657,
+										"submitted": true,
+									},
+									{
+										"type": "vote",
+										"offset": 93,
+										"value": 1,
+										"text": "+1 Голос",
+										"clip": 126,
+										"timestamp": 1562651258087,
+										"submitted": true,
+									},
+									{
+										"type": "note",
+										"offset": 6,
+										"value":  "a shit",
+										"text": "a shit",
+										"clip": 126,
+										"timestamp": 1562652467019,
+										"submitted": true,
+									},
+									{
+										"type": "polygon",
+										"offset": 0,
+										"value": [[0.4451718494271686,0.8082924168030551],[0.4176759410801964,0.7594108019639935],[0.46873977086743046,0.7367157665030005],[0.49230769230769234,0.7751227495908347]],
+										"text": "Разметка урны",
+										"clip": 128,
+										"timestamp": 1562652661145,
+										"submitted": true,
+									},
+									{
+										"type": "proc_question",
+										"clip": 129,
+										"value": "1",
+										"idx": 0,
+										"note": "1 - 41",
+										"offset": 0,
+										"timestamp": 1562652930792,
+										"submitted": true,
+										"text": "1 - Да",
+									},
+									{
+										"type": "proc_question",
+										"clip": 129,
+										"value": "0",
+										"idx": 1,
+										"note": "2:34",
+										"offset": 0,
+										"timestamp": 1562652931621,
+										"submitted": true,
+										"text": "2 - Нет",
+									},
+									{
+										"type": "proc_question",
+										"clip": 129,
+										"value":"-1",
+										"idx": 2,
+										"note": "Фигня!",
+										"offset": 0,
+										"timestamp": 1562652932486,
+										"submitted": true,
+										"text": "3 - Не могу ответить",
+									},
+								];
+
+								this.isLoading = false;
+								this.events = events;
+							});
+						});
+					},
+					name: 'app-task-base',
+					template: '#app-task-base',
+				};
+
+				const appTaskPolygon = {
+					name: 'app-task-polygon',
+					components: {
+						'app-task-base': appTaskBase,
+					},
+					template: '#app-task-polygon',
+				};
+
+				const appTaskVote = {
+					name: 'app-task-vote',
+					components: {
+						'app-task-base': appTaskBase,
+					},
+					template: '#app-task-vote',
+				};
+
+				const appTaskProc = {
+					name: 'app-task-proc',
+					components: {
+						'app-task-base': appTaskBase,
+					},
+					template: '#app-task-proc',
+				};
+
+				const appClipPlayer = {
+					props: {
+						clip: {
+							type: Object,
+							required: true,
+						},
+						verbose: {
+							type: Boolean,
+							required: true,
+						},
+						started: {
+							type: Boolean,
+							required: false,
+						},
+						completed: {
+							type: Boolean,
+							required: false,
+						},
+						clickCallback: {
+							type: Function,
+							default: () => 1,
+						},
+						polygons: {
+							type: Array,
+							required: false,
+						},
+					},
+					name : 'app-clip-player',
+					template : '#app-clip-player',
+					data() {
+						return {
+							playbackRate : 1.0,
+							currentTime: 0,
+						};
+					},
+					computed: {
+						station() {
+							const { station_id } = this.$root.stats.clips_dict[this.clip.id];
+							const station = this.$root.stats.stations_dict[station_id];
+							return station;
+						},
+					},
+					methods : {
+						formatTimezoneOffset: timezone_offset => (timezone_offset / 60.0).toFixed(1).replace('.0', ''),
+						formatClipInterval: formatClipInterval,
+						formatRegionName: formatRegionName,
+						pause() {
+							this.$refs.player.pause();
+						},
+						preventPause(event) {
+							const { player } = this.$refs;
+							if (event.code === 'Space') setTimeout(player.play.bind(player), 0);
+						},
+						setPlaybackRate(delta) {
+							this.$refs.player.playbackRate = Math.max(this.$refs.player.playbackRate + delta, 0.5);
+							this.playbackRate = this.$refs.player.playbackRate;
+						},
+						SVGClickHandler(event) {
+							const { left, top, width, height } = this.$refs.svg.getBoundingClientRect();
+							const { clientX, clientY } = event;
+
+							const x = clientX - left;
+							const y = clientY - top;
+
+							this.clickCallback(x / width, y / height);
+						},
+						formatColor(i, n = 8) {
+							return `hsl(${360 * (i % n) / n}, 50%, 50%)`;
+						},
+					},
+				};
+
+				const appStation = {
+					turnoutOrder: ['final', '10h', '12h', '15h', '18h'],
+					name: 'app-station',
+					data() {
+						return {
+							current_clip: null,
+						};
+					},
+					computed: {
+						station() {
+								return this.$root.stats.stations_dict_station_id[this.$route.params.id];
+						},
+						clips() {
+							const clips = this.station.clips.map(clip_id => this.$root.stats.clips_dict[clip_id]);
+							if (this.current_clip === null) this.current_clip = clips[0];
+							return clips;
+						},
+						notes() {
+							if (!this.$root.user) return [];
+
+							const user = this.$root.stats.users.find(u => u.id === this.$root.user.id);
+							const user_access = this.$root.stats.station_access
+								.find(x => x.station_id === this.station.id && x.user_id === user.id) || {};
+
+							if (user_access.granted === 1)
+								return this.$root.stats.notes
+									.filter(note => note.station_id === this.station.id)
+									.map(note => this.$root.stats.notes_dict[note.id])
+
+							const user_notes = (!user || !user.notes) ? [] : user.notes
+								.map(id => this.$root.stats.notes_dict[id])
+								.filter(note => note.station_id === this.station.id);
+
+							return user_notes;
+						},
+						segments() {
+							const num_columns = 4;
+							const chunk = Math.ceil(this.clips.length / num_columns);
+							return Array(num_columns).fill().map((_, k) => this.clips.slice(k * chunk, (k + 1) * chunk));
+						},
+						tasks() {
+							const clips = this.clips;
+							const camera_ids = Array.from(new Set(clips.map(c => c.camera_id))).sort();
+							const task_types = Array.from(new Set(clips.map(c => c.task))).sort();
+							const fromEntries = arr => Object.assign({}, ...Array.from(arr, ([k, v]) => ({[k]: v}) ));
+							return {
+								camera_ids: camera_ids,
+								tasks: task_types.map(task_type => {
+									const camera_id2clips = camera_ids.map(camera_id =>
+										[camera_id, clips.filter(c => c.task == task_type && c.camera_id == camera_id)]);
+
+									return {
+										task : task_type,
+										max_num_clips : Math.max(...camera_id2clips.map(c => c[1].length)),
+										clips : fromEntries(camera_id2clips),
+									};
+								}),
+							};
+						}
+					},
+					methods: {
+						formatClipTask: clip_task =>
+							({ full : 'Полное видео', vote : 'Контроль явки', proc : 'Процедура подсчёта голосов' })[clip_task] || clip_task,
+						formatClipInterval: formatClipInterval,
+						getTurnout(name) {
+							const obj = this.station.turnout[name];
+							const orderList = this.$options.turnoutOrder;
+							return !obj
+								? []
+								: Object.keys(obj).reduce(
+									(acc, cur) => (
+										orderList.includes(cur) && (acc[orderList.indexOf(cur)] = obj[cur]),
+										acc
+									),
+									[]
+								);
+						},
+					},
+					template: '#app-station',
+				};
+
+				const appUser = {
+					name: 'app-user',
+					methods : {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatTimestamp: formatTimestamp,
+					},
+					computed: {
+						user() {
+							return this.$root.stats.users.find(u => u.display === this.$route.params.display);
+						},
+						thumbnails() {
+							const clipsByStation = this.user.clips.reduce((acc, clip_id) => {
+								const clip = this.$root.stats.clips_dict[clip_id];
+								const station = this.$root.stats.stations_dict[clip.station_id];
+								acc[clip.station_id] = acc[clip.station_id] || [];
+								acc[clip.station_id].push(clip);
+								return acc;
+							}, {});
+
+							return Object.keys(clipsByStation).map(id => ({
+									id: this.$root.stats.stations_dict[id].station_id,
+									src: clipsByStation[id][0].thumbnail,
+									title: formatThumbnailTitle(this.$root.stats.stations_dict[id], clipsByStation[id].length)
+								})
+							);
+						},
+						bookmarks() {
+							return this.user.bookmarks
+								.map(id => this.$root.stats.bookmarks_dict[id])
+								.sort(sorterNewFirst);
+						},
+						notes() {
+							return this.user.notes.map(id => this.$root.stats.notes_dict[id]);
+						},
+						station_access() {
+							return this.$root.stats.station_access
+								.filter(x => x.user_id === this.user.id)
+								.sort(sorterNewFirst)
+								.map(station_access => ({
+									...station_access,
+									...this.$root.stats.stations_dict[station_access.station_id]
+							}));
+						},
+					},
+					template: '#app-user'
+				};
+
+				const appSelection = {
+					name: 'app-selection',
+					props: {
+						options: {
+							type: Array,
+							required: true,
+						},
+					},
+					data() {
+						return {
+							/* the options prop must contain the value for election_number */
+							election_number: this.options[0][1],
+							region_number: this.options[0][2][0][1],
+							station_number: this.options[0][2][0][2][0][1],
+							election_filter: '',
+							region_filter: '',
+							station_filter: '',
+						};
+					},
+					computed: {
+						election_list() {
+							return this.filter(this.options, 'election');
+						},
+						region_list() {
+							return this.filter(this.getList([this.election_number]), 'region');
+						},
+						station_list() {
+							return this.filter(this.getList([this.election_number, this.region_number]), 'station');
+						},
+					},
+					methods: {
+						filter(list, value) {
+							const filtered_special = list.filter(opt => opt[1] < 0);
+							const filtered = list.filter(opt =>
+								opt[1] >= 0 &&
+								String(opt[0]).toLowerCase().includes(this[value + '_filter'].toLowerCase())
+							);
+
+							if (filtered_special.length > 0 && filtered.length > 0)
+								filtered_special.push(['━━━━━━━━━━━━', 'disabled']);
+
+							if (this[value + '_filter'] !== '')
+								this[value + '_number'] = filtered.length > 0 ?
+									filtered[0][1] :
+									filtered_special.length > 0 ?
+									filtered_special[0][1] :
+									list[0][1];
+
+							return filtered_special.length + filtered.length > 0 ?
+								filtered_special.concat(filtered) :
+								list;
+						},
+						getList(values) {
+							return values.reduce((list, value) =>
+								list.find(opt => opt[1] === value)[2], this.options);
+						},
+					},
+					watch: {
+						/* reset the subselects not only visually but also in data */
+						election_number() {
+							this.region_number = this.getList([this.election_number])[0][1];
+						},
+						region_number() {
+							this.station_number = this.getList([this.election_number, this.region_number])[0][1];
+						},
+					},
+					template: '#app-selection',
+				};
+
+				const appBookmarkButton = {
+					name: 'bookmark-button',
+					props: {
+						clip: {
+							type: Object,
+							required: true,
+						},
+					},
+					data() {
+						return {
+							submitted: false,
+							failed: false,
+						};
+					},
+					methods: {
+						async submit() {
+							const event = {
+								type: 'bookmark',
+								offset: 0,
+								value: window.location.href,
+								clip: this.clip.id,
+							};
+
+							try {
+								await sendEvents([event], {
+									id: this.clip.id,
+									csrf: this.clip.csrf,
+								});
+								this.submitted = true;
+								this.failed = false;
+							} catch (err) {
+								this.failed = true;
+								this.$root.errorHandler(err);
+							}
+						},
+				  },
+				  template: '#app-bookmark-button',
+				};
+
+				const appAccessButton = {
+				  name: 'access-button',
+				  props: ['station_id', 'user_id'],
+				  data() {
+						return {
+							granted: -2,
+						};
+					},
+					computed: {
+						// When the component is mounted probably there is no this.$root.stats.station_access
+						station_access() {
+							return this.$root.stats.station_access;
+						},
+					},
+					methods: {
+						formatAccessButtonText: granted => ({
+							'1': 'Доступ разрешен',
+							'0': 'Доступ запрошен',
+							'-1': 'Запросить доступ',
+						})[granted] || 'Загрузка...',
+						async submit() {
+							try {
+								const { user_id, station_id } = this;
+								await sendAccess({ user_id, station_id });
+								this.granted = 0;
+							} catch (err) {
+								this.$root.errorHandler(err);
+							}
+						},
+						set_state() {
+							if (this.station_access == null) {
+								this.granted = -2;
+								return;
+							}
+
+							this.granted = this.$root.checkStationAccess(this.station_id);
+						}
+					},
+					watch: {
+						// the watcher is good for async op like getting $root.stats
+						// we use this if stats is NOT loaded
+						station_access() {
+							this.set_state();
+						},
+					},
+					// we use this if stats is loaded
+					mounted() {
+						this.set_state();
+					},
+					template: '#app-access-button',
+				};
+
+				const appUsers = {
+					methods: { formatMinutes: formatMinutes },
+					template: '#app-users',
+				};
+
+				const appStations = {
+					methods: {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatPercent: formatPercent,
+					},
+					template: '#app-stations',
+				};
+
+				const appNotes = {
+					methods: {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatTimestamp: formatTimestamp,
+						sorter: sorterNewFirst,
+					},
+					props: ['notes'],
+					template: '#app-notes',
+				};
+
+				const appLoader = {
+					exclude: ['index', 'polygon', 'vote', 'proc', 'about'],
+					data() {
+						return {
+							isLoaded: false,
+						};
+					},
+					components: {
+						'app-spinner': { template: '#app-spinner' },
+					},
+					created() {
+						statsPromise.then(() => (this.isLoaded = true));
+					},
+					render(h) {
+						if (this.isLoaded || this.$options.exclude.includes(this.$route.name))
+							return h('div', this.$slots.default);
+
+						return h('app-spinner');
+					}
+				};
+
+				const appAdmin = {
+					computed: {
+						station_access() {
+							const { station_access, stations_dict, users } = this.$root.stats;
+
+							return station_access
+								.map(sa => ({
+									...sa,
+									station: stations_dict[sa.station_id],
+									user: users.find(user => user.id === sa.user_id),
+								}))
+								.sort((a, b) => b.timestamp - a.timestamp);
+						},
+					},
+					methods: {
+						formatElectionDate: formatElectionDate,
+						formatRegionName: formatRegionName,
+						formatTimestamp: formatTimestamp,
+					},
+					template: '#app-admin',
+				};
+
+				const router = new VueRouter({
+					linkActiveClass: 'active',
+					routes: [
+						{ path: '/', name: 'index', component: appIndex },
+						{ path: '/task', name: 'task', component: appTask },
+						{
+							path: '/task/polygon/:id/:csrf',
+							name: 'polygon',
+							component: appTaskPolygon,
+						},
+						{
+							path: '/task/:id/:csrf/vote/election/:election_number/region/:region_number/station/:station_number',
+							name: 'vote',
+							component: appTaskVote,
+						},
+						{
+							path: '/task/:id/:csrf/proc/election/:election_number/region/:region_number/station/:station_number',
+							name: 'proc',
+							component: appTaskProc,
+						},
+						{ path: '/stations', name: 'stations', component: appStations },
+						{ path: '/stations/:id', name: 'station', component: appStation },
+						{ path: '/users', name: 'users', component: appUsers },
+						{ path: '/user/:display', name: 'user', component: appUser },
+						{ path: '/about', name: 'about', component: { template: '#app-about' }},
+						{ path: '/donate', name: 'donate', component: { template: '#app-donate' }},
+						{ path: '/admin', name: 'admin', component: appAdmin },
+						{
+							path: '/login/:token',
+							component: {
+								render(c) {
+									return c();
+								},
+								beforeRouteEnter(to, from, next) {
+									next(
+										vm => (vm.$root.login(vm.$route.params.token), vm.$router.push({ name: 'index' }))
+									);
+								},
+							},
+						},
+					],
+				});
+
+				Vue.component('app-selection', appSelection);
+				Vue.component('app-bookmark-button', appBookmarkButton);
+				Vue.component('app-access-button', appAccessButton);
+				Vue.component('app-notes', appNotes);
+				Vue.component('app-clip-player', appClipPlayer);
+				Vue.component('app-spinner', { template: '#app-spinner' });
+
+				const app = new Vue({
+					el: '#app',
+					router,
+					data: {
+						stats: {},
+						user: null,
+						showError: false,
+						errorMessage: '',
+					},
+					methods: {
+						errorHandler(err) {
+							this.showError = true;
+							this.errorMessage = err.message;
+						},
+						login(token) {
+							const userToken = token != null ? token : (document.cookie.match(/user_token=([^;^$]+)/) || [, ''])[1];
+							this.user = userToken ? { ...JSON.parse(atob(userToken)), is_admin : function() { return this.role.includes('admin'); } } : null;
+							document.cookie = 'user_token=' + userToken + ';';
+						},
+						logout() {
+							this.login('');
+							this.$router.push({ name: 'index' });
+							window.location.reload();
+						},
+						async register(email) {
+							const response = await fetch('/user', {
+								method: 'post',
+								headers: { 'Content-type': 'text/plain' },
+								body: email,
+							});
+
+							if (!response.ok) throw makeNetworkError(response);
+
+							return true;
+						},
+						checkStationAccess(station_id) {
+							const { station_access } = this.stats;
+
+							if (station_access == null || this.user === null) return -1;
+
+							const user_access =	station_access.find(sa =>
+								sa.station_id === station_id && sa.user_id === this.user.id);
+
+							if (user_access == null) return -1;
+
+							return user_access.granted;
+						},
+					},
+					components: {
+						'app-navigation-menu': {
+							template: '#app-navigation-menu',
+							props: ['logout'],
+						},
+						'app-error' : {
+							template: '#app-error',
+							props: ['showError']
+						},
+						'app-loader': appLoader,
+					},
+					beforeMount() {
+						if(!this.user) this.login();
+
+						statsPromise
+							.then(stats => {
+								this.stats = {
+									...this.stats,
+									...stats,
+								};
+							})
+							.catch(this.errorHandler);
+					},
+					render(c) {
+						return c('div', { attrs: { class: 'd-flex flex-column h-100' }}, [
+							c('app-navigation-menu', { props: { logout: this.logout } }),
+							c('app-error', { props: { showError: this.showError } }, this.errorMessage),
+							c(
+								'main', {
+									attrs: {
+										role: 'main',
+										class: 'container-fluid tab-content mt-2 h-100',
+									},
+								},
+								[
+									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-base', 'app-task-vote', 'app-task-proc'] }}, [
+										c('app-loader', [c('router-view')]),
+									]),
+								]
+							),
+						]);
+					},
+				});
+
+				return app;
+			};
+
+			document.addEventListener('DOMContentLoaded', initVue);
+		}());
+	</script>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-125315998-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'UA-125315998-1');
+	</script>
+</body>
+
+</html>
