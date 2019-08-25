@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Inspired by https://commons.wikimedia.org/wiki/File:Anamorphic-digital_sound.jpg -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   viewBox="0 0 128 128"
+   id="svg2"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="C:\Users\user\schitaytesami\logo.png"
+   inkscape:export-xdpi="300.01099"
+   inkscape:export-ydpi="300.01099">
+  <metadata
+     id="metadata55">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1280"
+     inkscape:window-height="657"
+     id="namedview53"
+     showgrid="false"
+     inkscape:zoom="2.4876847"
+     inkscape:cx="64"
+     inkscape:cy="59.229046"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs4">
+    <rect
+       id="hole"
+       width="10"
+       height="7"
+       rx="2"
+       ry="2"
+       fill="black" />
+    <rect
+       id="frame"
+       width="84"
+       height="67"
+       rx="2"
+       ry="2"
+       fill="white" />
+    <mask
+       id="film_holes"
+       maskContentUnits="userSpaceOnUse">
+      <g
+         id="g9">
+        <rect
+           x="0"
+           y="0"
+           width="128"
+           height="128"
+           fill="white"
+           id="rect11" />
+        <use
+           xlink:href="#hole"
+           x="9"
+           y="1"
+           id="use13" />
+        <use
+           xlink:href="#hole"
+           x="9"
+           y="18"
+           id="use15" />
+        <use
+           xlink:href="#hole"
+           x="9"
+           y="35"
+           id="use17" />
+        <use
+           xlink:href="#hole"
+           x="9"
+           y="52"
+           id="use19" />
+        <use
+           xlink:href="#hole"
+           x="9"
+           y="69"
+           id="use21" />
+        <use
+           xlink:href="#hole"
+           x="9"
+           y="86"
+           id="use23" />
+        <use
+           xlink:href="#hole"
+           x="9"
+           y="103"
+           id="use25" />
+        <use
+           xlink:href="#hole"
+           x="9"
+           y="120"
+           id="use27" />
+        <use
+           xlink:href="#hole"
+           x="109"
+           y="1"
+           id="use29" />
+        <use
+           xlink:href="#hole"
+           x="109"
+           y="18"
+           id="use31" />
+        <use
+           xlink:href="#hole"
+           x="109"
+           y="35"
+           id="use33" />
+        <use
+           xlink:href="#hole"
+           x="109"
+           y="52"
+           id="use35" />
+        <use
+           xlink:href="#hole"
+           x="109"
+           y="69"
+           id="use37" />
+        <use
+           xlink:href="#hole"
+           x="109"
+           y="86"
+           id="use39" />
+        <use
+           xlink:href="#hole"
+           x="109"
+           y="103"
+           id="use41" />
+        <use
+           xlink:href="#hole"
+           x="109"
+           y="120"
+           id="use43" />
+      </g>
+    </mask>
+  </defs>
+  <rect
+     x="2"
+     y="0"
+     width="124"
+     height="128"
+     fill="black"
+     mask="url(#film_holes)"
+     id="rect45" />
+  <use
+     xlink:href="#frame"
+     x="22"
+     y="-37"
+     id="use47" />
+  <use
+     xlink:href="#frame"
+     x="22"
+     y="31"
+     id="use49" />
+  <use
+     xlink:href="#frame"
+     x="22"
+     y="99"
+     id="use51" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:45px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:tb-rl;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+     x="52.067799"
+     y="66.169495"
+     id="text3391"
+     sodipodi:linespacing="125%"><tspan
+       sodipodi:role="line"
+       id="tspan3393"
+       x="66.169495"
+       y="52.067799" /></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:60px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:tb-rl;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+     x="44.217823"
+     y="66.89901"
+     id="text3395"
+     sodipodi:linespacing="125%"><tspan
+       sodipodi:role="line"
+       id="tspan3397"
+       x="66.89901"
+       y="44.217823" /></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:76.18408203px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="43.368469"
+     y="90.258896"
+     id="text3399"
+     sodipodi:linespacing="125%"
+     transform="scale(0.97455144,1.0261131)"><tspan
+       sodipodi:role="line"
+       id="tspan3401"
+       x="43.368469"
+       y="90.258896">4</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:76.18408203px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="43.848885"
+     y="25.054832"
+     id="text3399-5"
+     sodipodi:linespacing="125%"
+     transform="scale(0.97455144,1.0261131)"><tspan
+       sodipodi:role="line"
+       id="tspan3401-8"
+       x="43.848885"
+       y="25.054832">1</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:76.18408203px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="42.784176"
+     y="157.77713"
+     id="text3399-54"
+     sodipodi:linespacing="125%"
+     transform="scale(0.97455144,1.0261131)"><tspan
+       sodipodi:role="line"
+       id="tspan3401-4"
+       x="42.784176"
+       y="157.77713">6</tspan></text>
+</svg>
