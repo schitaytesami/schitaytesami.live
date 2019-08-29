@@ -1489,8 +1489,9 @@
 									},
 								});
 							} catch (err) {
-								button.disabled = false;
 								this.$root.errorHandler(err);
+							} finally {
+								button.disabled = false;
 							}
 						},
 					},
