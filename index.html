@@ -723,12 +723,14 @@
 						</tr>
 					</tbody>
 				</table>
+				<app-spinner v-if="$root.isLoading"/>
 			</div>
 		</div>
 	</script>
 
 	<script type="text/x-template" id="app-station">
-		<div class="row" id="station">
+		<app-spinner v-if="$root.isLoading"/>
+		<div class="row" v-else>
 			<div class="col-md-6 offset-md-3">
 				<app-clip-player :clip="current_clip" :verbose="true" v-if="current_clip" />
 			</div>
@@ -937,12 +939,14 @@
 						</tr>
 					</tbody>
 				</table>
+				<app-spinner v-if="$root.isLoading" />
 			</div>
 		</div>
 	</script>
 
 	<script type="text/x-template" id="app-user">
-		<div v-if="!this.$root.showError">
+		<app-spinner v-if="$root.isLoading"/>
+		<div v-else>
 			<div class="row mb-2 justify-content-center">
 				<div class="col-12">
 					<h4 class="text-center lead">{{ user.display }}</h4>
@@ -2372,27 +2376,6 @@
 					template: '#app-notes',
 				};
 
-				const appLoader = {
-					exclude: ['index', 'polygon', 'vote', 'proc'],
-					data() {
-						return {
-							isLoaded: false,
-						};
-					},
-					components: {
-						'app-spinner': { template: '#app-spinner' },
-					},
-					created() {
-						statsPromise.then(() => (this.isLoaded = true));
-					},
-					render(h) {
-						if (this.isLoaded || this.$options.exclude.includes(this.$route.name))
-							return h('div', this.$slots.default);
-
-						return h('app-spinner');
-					}
-				};
-
 				const appAdmin = {
 					computed: {
 						station_access() {
@@ -2471,6 +2454,7 @@
 					data: {
 						stats: {},
 						user: null,
+						isLoading: true,
 						showError: false,
 						errorMessage: '',
 					},
@@ -2522,13 +2506,13 @@
 							template: '#app-error',
 							props: ['showError']
 						},
-						'app-loader': appLoader,
 					},
 					beforeMount() {
 						if(!this.user) this.login();
 
 						statsPromise
 							.then(stats => {
+								this.isLoading = false;
 								this.stats = {
 									...this.stats,
 									...stats,
@@ -2549,7 +2533,7 @@
 								},
 								[
 									c('keep-alive', { props: { exclude: ['app-station', 'app-user', 'app-task-base', 'app-task-vote', 'app-task-proc'] }}, [
-										c('app-loader', [c('router-view')]),
+										c('router-view'),
 									]),
 								]
 							),
