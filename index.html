@@ -1604,13 +1604,12 @@
 							const eventsToSubmit = this.events.filter(e => !e.deleted && !e.submitted);
 
 							try {
-								/* Emulates submitting */
-								await new Promise(resolve => setTimeout(resolve, 2000));
+								/* It should contain IDs for the events */
+								const submittedEvents = await sendEvents(eventsToSubmit, {
+									id: this.clip.id,
+									csrf: this.clip.csrf,
+								});
 
-								/*
-									eventsToSubmit is a new object. It needs to update the current events list.
-									An another issue is while the async op is proccessing the current events list could change.
-								*/
 								eventsToSubmit.forEach(e => {
 									const idx = this.events.indexOf(e);
 									if (idx === -1) return;
