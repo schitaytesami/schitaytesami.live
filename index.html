@@ -1691,16 +1691,37 @@
 						async removeEvent(event) {
 							this.highlightCounter();
 
-							/* where id comes from? */
+							let deleteEvent = {};
 							const idx = this.events.indexOf(event);
 							const { id, submitted } = this.events[idx];
 
 							if (submitted)
 								try {
-									await new Promise(resolve => setTimeout(resolve, 1000));
+									/* As a delete event will be created anyway,
+										we hide this event from a user to prevent duplications of delete events */
 									this.events.splice(idx, 1, { ...this.events[idx], deleted: true });
+
+									deleteEvent = {
+										type: 'delete',
+										value: id,
+										deleted: true,
+										submitted: false,
+										clip: this.clip.id,
+										offset: this.events[idx].offset,
+									};
+									await sendEvents([deleteEvent], {
+										id: this.clip.id,
+										csrf: this.clip.csrf,
+									});
+
+									/* Prevents following submitting */
+									deleteEvent.submitted = true;
 								} catch (err) {
 									this.$root.errorHandler(err);
+								} finally {
+									/* An error might occur while events submitting.
+									Thus, it needs to try again at a following submit */
+									this.events.push(deleteEvent);
 								}
 							else this.events.splice(idx, 1);
 
