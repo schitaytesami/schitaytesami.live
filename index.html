@@ -357,7 +357,7 @@
 						>
 							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
 							<span class="h5 m-0 ml-1">{{ showEvents ? '▲' : '▼' }}</span>
-							<h2 class="m-0 ml-auto" ref="counter">{{ events.length }}</h2>
+							<h2 class="m-0 ml-auto" ref="counter">{{ events.filter(e => !e.deleted).length }}</h2>
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
