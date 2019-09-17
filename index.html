@@ -1801,7 +1801,7 @@
 
 							return `${idx + 1} - ${text}`;
 						},
-						setProcQuestion(idx, event) {
+						async setProcQuestion(idx, event) {
 							const key = `proc_question_${idx}`;
 							const procQuestion = this.processEvents().procQuestions[key];
 							const { type, value } = event.target;
@@ -1811,16 +1811,35 @@
 								? this.getProcQuestionText(idx, value)
 								: this.getProcQuestionText(idx, procQuestion.value);
 
-							/*
-								Always pushes a new object instead of mutating the one is gotten
-								TODO: How to avoid it?
-							*/
-							this.events.push({
-								...procQuestion,
-								value: type === 'radio' ? value : procQuestion.value,
-								note: type === 'text' ? value : procQuestion.note,
-								text,
-							});
+							/* if it was not checked */
+							if (procQuestion.value === '' && procQuestion.note === '')
+								this.events.push({
+									...procQuestion,
+									value: type === 'radio' ? value : procQuestion.value,
+									note: type === 'text' ? value : procQuestion.note,
+									text,
+								});
+							else if (!procQuestion.submitted) {
+								/* if it wasn't submitted then it mutates the event */
+								const idx = this.events.indexOf(procQuestion);
+								this.events.splice(idx, 1, {
+									...procQuestion,
+									value: type === 'radio' ? value : procQuestion.value,
+									note: type === 'text' ? value : procQuestion.note,
+									text,
+								});
+							} else {
+								/* if it was checked and it was submitted then
+								submits the remove event and pushes the new one */
+								await this.removeEvent(procQuestion);
+								this.events.push({
+									...procQuestion,
+									value: type === 'radio' ? value : procQuestion.value,
+									note: type === 'text' ? value : procQuestion.note,
+									submitted: false,
+									text,
+								});
+							}
 						},
 						setStationQuestion(value, text, event) {
 							const { checked } = event.target;
@@ -1843,12 +1862,12 @@
 						},
 						processEvents() {
 							/*
-								Finds not deleted and not submitted events having 'proc_questions' type
+								Finds not deleted events having 'proc_questions' type
 								Creates and fills an object to have access by key e.g. 'proc_question_3'
 								The object will have the last added values
 							*/
 							const procQuestions = this.events
-								.filter(e => e.type === 'proc_question' && !e.deleted && !e.submitted)
+								.filter(e => e.type === 'proc_question' && !e.deleted)
 								.reduce((acc, cur) => ({ ...acc, [`proc_question_${cur.idx}`]: cur }), {});
 
 							/*
