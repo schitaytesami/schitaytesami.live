@@ -1824,16 +1824,21 @@
 						setStationQuestion(value, text, event) {
 							const { checked } = event.target;
 
-							this.events.push({
-								text,
-								value,
-								checked,
-								offset: 0,
-								deleted: false,
-								submitted: false,
-								clip: this.clip.id,
-								type: 'station_question',
-							});
+							if (checked)
+								this.events.push({
+									text,
+									value,
+									checked,
+									offset: 0,
+									deleted: false,
+									submitted: false,
+									clip: this.clip.id,
+									type: 'station_question',
+								});
+							else {
+								const event = this.processEvents().stationQuestions[value];
+								this.removeEvent(event);
+							}
 						},
 						processEvents() {
 							/*
