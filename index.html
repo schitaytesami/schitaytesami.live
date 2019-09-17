@@ -714,8 +714,22 @@
 					<thead>
 						<tr>
 							<th>Дата голосования</th>
-							<th>Регион</th>
-							<th>УИК</th>
+							<th>
+								<form class="form-inline m-0">
+									<div class="form-group">
+									  <label for="filter_region">Регион</label>
+									  <input type="text" class="form-control form-control-sm ml-2" id="filter_region" v-model="stationAddress">
+									</div>
+								</form>
+							</th>
+							<th>
+								<form class="form-inline m-0">
+									<div class="form-group">
+									  <label for="filter_station">УИК</label>
+									  <input type="text" class="form-control form-control-sm ml-2" id="filter_station" v-model="stationNumber">
+									</div>
+								</form>
+							</th>
 							<th>Явка, официальная</th>
 							<th style="border-right: 2px solid black">Явка, видеоподсчет</th>
 							<th class="text-muted"><span>Прогресс</span>
@@ -2397,12 +2411,17 @@
 					data() {
 						return {
 							showAll: false,
+							stationNumber: '',
+							stationAddress: '',
 						};
 					},
 					computed: {
 						stations() {
-							if (this.showAll) return this.$root.stats.stations;
-							return this.$root.stats.stations.filter(s => s.turnout.progress);
+							const filtered = this.$root.stats.stations
+								.filter(s => s.station_address.toLowerCase().includes(this.stationAddress))
+								.filter(s => String(s.station_number).includes(this.stationNumber));
+							if (this.showAll) return filtered;
+							return filtered.filter(s => s.turnout.progress);
 						},
 					},
 					methods: {
