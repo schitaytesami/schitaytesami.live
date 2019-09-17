@@ -335,7 +335,7 @@
 						:clip="clip"
 						:started.sync="started"
 						:completed.sync="completed"
-						:polygons="processEvents().polygons.map(e => e.value)"
+						:polygons="processEvents().polygons"
 						:clickCallback="clickCallback()"
 						ref="player"
 						v-if="clip"
@@ -916,12 +916,12 @@
 						<g v-for="(polygon, i) in polygons">
 							<polygon
 								class="polygon"
-								:stroke="formatColor(i)"
-								:points="polygon.map(pair => pair.join(',')).join(' ')" />
+								:stroke="formatColor(polygon.id || i)"
+								:points="polygon.value.map(pair => pair.join(',')).join(' ')" />
 							<circle
-								v-for="([x, y]) in polygon"
+								v-for="([x, y]) in polygon.value"
 								r="0.005"
-								:fill="formatColor(i)"
+								:fill="formatColor(polygon.id || i)"
 								:cx="x"
 								:cy="y"
 							></circle>
