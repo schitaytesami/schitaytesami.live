@@ -413,11 +413,12 @@
 								<button
 									type="submit"
 									class="btn btn-success w-50"
-									id="next_task_polygon"
+									@click="nextTask"
 								>Готово, дальше! (пробел)</button>
 								<button
 									type="button"
 									class="btn btn-danger w-50"
+									@click="removePolygons"
 								>Удалить разметку (delete)</button>
 							</div>
 							<div class="btn-group mb-3">
@@ -1879,6 +1880,11 @@
 								procQuestions,
 								stationQuestions,
 							};
+						},
+						removePolygons() {
+							this.events
+								.filter(e => e.type === 'polygon' && !e.deleted)
+								.forEach(e => this.removeEvent(e));
 						},
 					},
 					destroyed() {
