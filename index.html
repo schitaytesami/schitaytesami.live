@@ -148,6 +148,12 @@
 			/*background-image: url(https://money.yandex.ru/b/_/znDCcGN9U__lRVsmiQ6akvmMXuE.svg);*/
 		}
 
+		@keyframes delay {
+			to {
+				opacity: 1;
+			}
+		}
+
 		@keyframes highlight {
 			from {
 				color: yellow;
@@ -172,6 +178,11 @@
 		.polygon {
 			stroke-width: 0.002;
 			fill-opacity: 0.5;
+		}
+
+		.animated-delay {
+			animation: delay 150ms ease-out 350ms forwards;
+			opacity: 0;
 		}
 	</style>
 </head>
@@ -1242,7 +1253,7 @@
 	</script>
 
 	<script type="text/x-template" id="app-spinner">
-		<div class="d-flex flex-column justify-content-center align-items-center h-100">
+		<div class="d-flex flex-column justify-content-center align-items-center h-100 animated-delay">
 			<p class="lead text-muted">Загрузка...</p>
 		</div>
 	</script>
