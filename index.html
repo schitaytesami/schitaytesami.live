@@ -1864,7 +1864,7 @@
 							});
 
 							const stationQuestions = this.events
-								.filter(e => e.type === 'station_question' && !e.deleted && !e.submitted)
+								.filter(e => e.type === 'station_question' && !e.deleted)
 								.reduce((acc, cur) => ({ ...acc, [cur.value]: cur }), {});
 
 							const polygons = this.events.filter(e => e.type === 'polygon' && !e.deleted);
