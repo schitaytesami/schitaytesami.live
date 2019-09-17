@@ -718,12 +718,17 @@
 							<th>УИК</th>
 							<th>Явка, официальная</th>
 							<th style="border-right: 2px solid black">Явка, видеоподсчет</th>
-							<th class="text-muted">Прогресс</th>
+							<th class="text-muted"><span>Прогресс</span>
+								<div class="form-check form-check-inline font-weight-normal mr-0 ml-2 align-bottom">
+								  <input type="checkbox" class="form-check-input" id="show_all" v-model="showAll">
+								  <label class="form-check-label" for="show_all">Весь</label>
+								</div>
+							</th>
 							<th class="text-muted">Комментарии</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr v-for="station in $root.stats.stations" v-if="station.turnout.progress > 0" :key="station.id">
+					<tbody v-if="$root.stats.stations">
+						<tr v-for="station in stations" :key="station.id">
 							<td>{{ formatElectionDate(station.election_number) }}</td>
 							<td>{{ formatRegionName(station.station_address) }}</td>
 							<td><router-link :to="{name: 'station', params: { id: station.station_id } }">{{ station.station_number }}</router-link></td>
@@ -2389,6 +2394,17 @@
 				};
 
 				const appStations = {
+					data() {
+						return {
+							showAll: false,
+						};
+					},
+					computed: {
+						stations() {
+							if (this.showAll) return this.$root.stats.stations;
+							return this.$root.stats.stations.filter(s => s.turnout.progress);
+						},
+					},
 					methods: {
 						formatElectionDate: formatElectionDate,
 						formatRegionName: formatRegionName,
