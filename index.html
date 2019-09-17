@@ -192,7 +192,7 @@
 	<div id="app"></div>
 
 	<script type="text/x-template" id="app-navigation-menu">
-		<header>
+		<header v-if="isLoggedIn">
 			<nav class="bg-dark">
 				<div class="navbar justify-content-start flex-nowrap">
 					<ul class="nav nav-pills w-100 navbar-dark">
@@ -271,7 +271,6 @@
 					<p class="text-center text-light" v-else>Успех! Ссылка-приглашение отправлена на вашу электронную почту, проверьте ваш почтовый ящик и папку "Спам"! Переходите по этой ссылке для входа в систему.</p>
 				</div>
 
-				<h3 class="text-center lead">Мур Мяу</h3>
 				<template v-if="$root.user">
 					<button
 						type="submit"
@@ -2380,7 +2379,7 @@
 				const router = new VueRouter({
 					linkActiveClass: 'active',
 					routes: [
-						{ path: '/', name: 'index', component: appIndex },
+						{ path: '/', name: 'index', component: appIndex, redirect: '/donate' },
 						{ path: '/task', name: 'task', component: appTask },
 						{
 							path: '/task/polygon/:id/:csrf',
@@ -2479,7 +2478,7 @@
 					components: {
 						'app-navigation-menu': {
 							template: '#app-navigation-menu',
-							props: ['logout'],
+							props: ['logout', 'isLoggedIn'],
 						},
 						'app-error' : {
 							template: '#app-error',
@@ -2501,7 +2500,7 @@
 					},
 					render(c) {
 						return c('div', { attrs: { class: 'd-flex flex-column h-100' }}, [
-							c('app-navigation-menu', { props: { logout: this.logout } }),
+							c('app-navigation-menu', { props: { logout: this.logout, isLoggedIn: Boolean(this.user) }}),
 							c('app-error', { props: { showError: this.showError } }, this.errorMessage),
 							c(
 								'main', {
