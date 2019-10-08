@@ -367,11 +367,11 @@
 						>
 							<h3 class="m-0 text-left">ОТМЕТКИ</h3>
 							<span class="h5 m-0 ml-1">{{ showEvents ? '▲' : '▼' }}</span>
-							<h2 class="m-0 ml-auto" ref="counter">{{ events.filter(e => !e.deleted).length }}</h2>
+							<h2 class="m-0 ml-auto" ref="counter">{{ processEventsToUI().length }}</h2>
 						</button>
 						<table class="table table-sm table-striped mt-2">
 							<tbody v-if="showEvents">
-								<tr v-for="event in events.filter(e => !e.deleted)" :class="{ 'bg-success': event.submitted }">
+								<tr v-for="event in processEventsToUI()" :class="{ 'bg-success': event.submitted }">
 									<td class="text-left">{{ formatEventTime(event.offset) }}</td>
 									<td class="text-left text-truncate">{{ event.text }}</td>
 									<td class="text-right pr-0">
@@ -1719,8 +1719,8 @@
 
 							if (submitted)
 								try {
-									/* As a delete event will be created anyway,
-										we hide this event from a user to prevent duplications of delete events */
+									// Because a delete event is gonna be created
+									// We hide the current event from a user
 									this.events.splice(idx, 1, { ...this.events[idx], deleted: true });
 
 									deleteEvent = {
@@ -1876,12 +1876,22 @@
 								.reduce((acc, cur) => ({ ...acc, [cur.value]: cur }), {});
 
 							const polygons = this.events.filter(e => e.type === 'polygon' && !e.deleted);
+							const votes = this.events.filter(e => e.type === 'vote' && !e.deleted);
+							const notes = this.events.filter(e => e.type === 'note' && !e.deleted);
 
 							return {
+								votes,
+								notes,
 								polygons,
 								procQuestions,
 								stationQuestions,
 							};
+						},
+						processEventsToUI() {
+							// Show for a user the not deleted and having something to show events
+							return Object.values(this.processEvents())
+								.flatMap(v => Object.values(v))
+								.filter(v => v.text);
 						},
 						removePolygons() {
 							this.events
