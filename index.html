@@ -710,52 +710,57 @@
 	</script>
 
 	<script type="text/x-template" id="app-stations">
-		<div class="row">
-			<div class="col-md-12">
-				<table class="table table-striped mt-2">
-					<thead>
-						<tr>
-							<th>Дата голосования</th>
-							<th>
-								<form class="form-inline m-0">
-									<div class="form-group">
-									  <label for="filter_region">Регион</label>
-									  <input type="text" class="form-control form-control-sm ml-2" id="filter_region" v-model="stationAddress">
-									</div>
-								</form>
-							</th>
-							<th>
-								<form class="form-inline m-0">
-									<div class="form-group">
-									  <label for="filter_station">УИК</label>
-									  <input type="text" class="form-control form-control-sm ml-2" id="filter_station" v-model="stationNumber">
-									</div>
-								</form>
-							</th>
-							<th>Явка, официальная</th>
-							<th style="border-right: 2px solid black">Явка, видеоподсчет</th>
-							<th class="text-muted"><span>Прогресс</span>
-								<div class="form-check form-check-inline font-weight-normal mr-0 ml-2 align-bottom">
-								  <input type="checkbox" class="form-check-input" id="show_all" v-model="showAll">
-								  <label class="form-check-label" for="show_all">Весь</label>
-								</div>
-							</th>
-							<th class="text-muted">Комментарии</th>
-						</tr>
-					</thead>
-					<tbody v-if="$root.stats.stations">
-						<tr v-for="station in stations" :key="station.id">
-							<td>{{ formatElectionDate(station.election_number) }}</td>
-							<td>{{ formatRegionName(station.station_address) }}</td>
-							<td><router-link :to="{name: 'station', params: { id: station.station_id } }">{{ station.station_number }}</router-link></td>
-							<td>{{ station.turnout.official.final }}</td>
-							<td style="border-right: 2px solid black">{{ station.turnout.estimate.final }}</td>
-							<td class="text-muted">{{ formatPercent(station.turnout.progress) }}</td>
-							<td class="text-muted text-truncate">{{ station.turnout.comment }}</td>
-						</tr>
-					</tbody>
-				</table>
-				<app-spinner v-if="$root.isLoading"/>
+		<div>
+			<div class="row">
+				<div class="col">
+				  <input
+				  	type="text"
+				  	placeholder="Регион"
+				  	class="form-control form-control-sm"
+				  	v-model="stationAddress">
+				</div>
+				<div class="col">
+				  <input
+				  	type="text"
+				  	placeholder="УИК"
+				  	class="form-control form-control-sm"
+				  	v-model="stationNumber">
+				</div>
+				<div class="col d-flex align-items-end">
+					<div class="form-check">
+			      <input type="checkbox" class="form-check-input" id="show_all" v-model="showAll">
+			      <label class="form-check-label" for="show_all">Показать все участки</label>
+			    </div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table table-striped mt-2">
+						<thead>
+							<tr>
+								<th>Дата голосования</th>
+								<th>Регион</th>
+								<th>УИК</th>
+								<th>Явка, официальная</th>
+								<th style="border-right: 2px solid black">Явка, видеоподсчет</th>
+								<th class="text-muted">Прогресс</th>
+								<th class="text-muted">Комментарии</th>
+							</tr>
+						</thead>
+						<tbody v-if="$root.stats.stations">
+							<tr v-for="station in stations" :key="station.id">
+								<td>{{ formatElectionDate(station.election_number) }}</td>
+								<td>{{ formatRegionName(station.station_address) }}</td>
+								<td><router-link :to="{name: 'station', params: { id: station.station_id } }">{{ station.station_number }}</router-link></td>
+								<td>{{ station.turnout.official.final }}</td>
+								<td style="border-right: 2px solid black">{{ station.turnout.estimate.final }}</td>
+								<td class="text-muted">{{ formatPercent(station.turnout.progress) }}</td>
+								<td class="text-muted text-truncate">{{ station.turnout.comment }}</td>
+							</tr>
+						</tbody>
+					</table>
+					<app-spinner v-if="$root.isLoading"/>
+				</div>
 			</div>
 		</div>
 	</script>
