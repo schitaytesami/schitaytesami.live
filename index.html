@@ -1797,40 +1797,32 @@
 							const procQuestion = this.processEvents().procQuestions[key];
 							const { type, value } = event.target;
 
-							/* Updates user text based on the type of control element. */
+							// Updates user text based on the type of control element
 							const text = type === 'radio'
 								? this.getProcQuestionText(idx, value)
 								: this.getProcQuestionText(idx, procQuestion.value);
+							const updatedProcQuestion = {
+								...procQuestion,
+								value: type === 'radio' ? value : procQuestion.value,
+								note: type === 'text' ? value : procQuestion.note,
+								text,
+							};
 
-							/* if it was not checked */
+							// if it was not checked
 							if (procQuestion.value === '' && procQuestion.note === '')
-								this.events.push({
-									...procQuestion,
-									value: type === 'radio' ? value : procQuestion.value,
-									note: type === 'text' ? value : procQuestion.note,
-									text,
-								});
+								this.events.push(updatedProcQuestion);
 							else if (!procQuestion.submitted) {
-								/* if it wasn't submitted then it mutates the event */
+								// if it wasn't submitted then it mutates the event
 								const idx = this.events.indexOf(procQuestion);
-								this.events.splice(idx, 1, {
-									...procQuestion,
-									value: type === 'radio' ? value : procQuestion.value,
-									note: type === 'text' ? value : procQuestion.note,
-									text,
-								});
-							} else {
-								/* if it was checked and it was submitted then
-								submits the remove event and pushes the new one */
-								await this.removeEvent(procQuestion);
+								this.events.splice(idx, 1, updatedProcQuestion);
+							}
+							else
+								// if it was checked and it was submitted then pushes the new one
 								this.events.push({
 									...procQuestion,
-									value: type === 'radio' ? value : procQuestion.value,
-									note: type === 'text' ? value : procQuestion.note,
+									...updatedProcQuestion,
 									submitted: false,
-									text,
 								});
-							}
 						},
 						setStationQuestion(value, text, event) {
 							const { checked } = event.target;
